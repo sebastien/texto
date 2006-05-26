@@ -6,8 +6,9 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   07-Fev-2006
+# Last mod.         :   10-Fev-2006
 # History           :
+#                       10-Feb-2006 Added support for XML markup
 #                       07-Feb-2006 Moved from the main module
 #
 # Bugs              :
@@ -299,10 +300,11 @@ class Parser:
 		self.defaultBlockParser = ParagraphBlockParser()
 	
 	def createCustomParsers( self ):
-		self.customParsers["Meta"] = MetaBlockParser()
+		#self.customParsers["Meta"] = MetaBlockParser()
 		#self.customParsers["pre"]  = PreBlockParser()
 		#self.customParsers["table"]= TableBlockParser()
-		
+		pass
+
 	def createInlineParsers( self ):
 		# Escaped and markup inline parser are the most important parsers,
 		# because they MUST be invoked before any other.
@@ -491,8 +493,8 @@ class Parser:
 				# We have specified that markup inlines should not be searched
 				# after the block separator
 				assert markup_match.start()<block_match.start()
-				# Case 1: Markup inline has a start tag
-				if markup_match.group(1) in START_TAGS:
+				# Case 1: Markup is a start tag
+				if Markup_isStartTag(markup_match):
 					# We look for the markup end inline
 					offsets = context.saveOffsets()
 					context.setCurrentBlock(markup_match.end(),
@@ -501,9 +503,9 @@ class Parser:
 					# Kiwi documents may have [start:something] instead of
 					# [start something]
 					markup_end = None
-					if markup_match.group(2):
+					if markup_match.group(1):
 						markup_end = self.markupParser.findEnd(
-							markup_match.group(2).strip(), context)
+							markup_match.group(1).strip(), context)
 					context.restoreOffsets(offsets)
 					# If we found an end markup
 					if markup_end:
@@ -512,7 +514,7 @@ class Parser:
 						# covered by the matched end markup)
 						markup_end = markup_match.end() + markup_end[1]
 						# If the end is greater than the block end, then we have
-						# the can recurse to look for a new block separator
+						# to recurse to look for a new block separator
 						# after the block end
 						if markup_end > block_match.start():
 							offsets = context.saveOffsets()

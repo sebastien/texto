@@ -7,8 +7,9 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   05-Oct-2004
+# Last mod.         :   10-Feb-2006
 # History           :
+#                       10-Feb-2006 Added XML parsing for markup
 #                       26-Dec-2004 Changed quotes syntax, added footnote (SPE)
 #                       05-Oct-2004 Completed inline parsers (SPE)
 #                       29-Sep-2004 Attributes parsing. (SPE)
@@ -143,8 +144,10 @@ RE_REFERENCE = re.compile(REFERENCE, re.LOCALE|re.MULTILINE)
 
 # Custom markup
 
-MARKUP   = u"\[([a-zA-Z]\w*)(\s*\w+)?\s*(:\s*([^\]]*))?\]"
-RE_MARKUP= re.compile(MARKUP, re.LOCALE|re.MULTILINE)
+MARKUP      = u"\[([a-zA-Z]\w*)(\s*\w+)?\s*(:\s*([^\]]*))?\]"
+MARKUP_ATTR = u"""\w+\s*=\s*('[^']*'|"[^"]*")"""
+MARKUP      = u"\<(\w+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
+RE_MARKUP   = re.compile(MARKUP, re.LOCALE|re.MULTILINE)
 
 # Specific elements
 
@@ -585,6 +588,12 @@ class ReferenceInlineParser( InlineParser ):
 #
 #------------------------------------------------------------------------------
 
+def Markup_isStartTag( match ):
+	return not Markup_isEndTag(match) and not match.group().endswith("/>")
+
+def Markup_isEndTag(match ):
+	return match.group().startswith("</")
+
 class MarkupInlineParser( InlineParser ):
 	"""Parses Kiwi generic markup elements."""
 
@@ -598,18 +607,19 @@ class MarkupInlineParser( InlineParser ):
 		parsed."""
 		match = recogniseInfo
 		# Is it an inline ?
-		if match.group(2) == None:
+		if match.group().endswith("/>"):
 			# TODO: Check if element name is recognised or not
-			markup_node = context.document.createElementNS(None, match.group(1).strip())
-			for key, value in context.parseAttributes(match.group(4)).items():
+			markup_name = match.group(1)
+			markup_node = context.document.createElementNS(None, markup_name.strip())
+			for key, value in context.parseAttributes(match.group(2)).items():
 				markup_node.setAttributeNS(None, key, value)
 			node.appendChild(markup_node)
 			return match.end()
-		# Or is it a block ?
-		elif match.group(1) in START_TAGS:
+		# Or is it a block start ?
+		elif self.isStartTag(match):
 			# We search for an end, taking care of setting the offset after the
 			# recognised inline.
-			markup_name  = match.group(2).strip()
+			markup_name  = match.group(1).strip()
 			markup_range = self.findEnd( markup_name, context, match.end())
 			if not markup_range:
 				context.parser.error( START_WITHOUT_END % (markup_name), context )
@@ -630,6 +640,9 @@ class MarkupInlineParser( InlineParser ):
 				else:
 					markup_node = context.document.createElementNS(None, markup_name)
 					node.appendChild(markup_node)
+					# We add the attributes to this tag
+					for key, value in context.parseAttributes(match.group(2)).items():
+						markup_node.setAttributeNS(None, key, value)
 					# FIXME: This should not be necessary
 					old_node = context.currentNode
 					context.currentNode = markup_node
@@ -637,8 +650,9 @@ class MarkupInlineParser( InlineParser ):
 					context.currentNode = old_node
 				context.restoreOffsets(offsets)
 				return markup_range[1]
-		elif match.group(1) in END_TAGS:
-			context.parser.error( END_WITHOUT_START % (match.group(2).strip()),
+		# Or is a a closing element ?
+		elif self.isEndTag(match):
+			context.parser.error( END_WITHOUT_START % (match.group(4).strip()),
 			context )
 			return match.end()
 		else:
@@ -668,6 +682,12 @@ class MarkupInlineParser( InlineParser ):
 				break
 		return None
 
+	def isStartTag( self, match ):
+		return Markup_isStartTag(match)
+
+	def isEndTag( self, match ):
+		return Markup_isEndTag(match)
+
 	def findEnd( self, blockName, context, offsetIncr=0 ):
 		"""Finds the end of the given markup end in the current block. Returns
 		a coupe (start, end) indicating the start and end offsets of the found
@@ -685,11 +705,11 @@ class MarkupInlineParser( InlineParser ):
 		while depth>0 and markup_match and not context.blockEndReached():
 			markup_match = self._searchMarkup(context)
 			if markup_match:
-				if markup_match.group(1).lower() in START_TAGS:
+				if self.isStartTag(markup_match):
 					depth += 1
-				elif markup_match.group(1).lower() in END_TAGS:
+				elif self.isEndTag(markup_match):
 					depth -= 1
-					block_name = markup_match.group(2).strip()
+					block_name = markup_match.group(4).strip()
 				if depth > 0:
 					context.increaseOffset(markup_match.end())
 		# We have found at least one matching block

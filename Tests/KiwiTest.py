@@ -49,5 +49,5 @@ if __name__ == "__main__":
 	if len(sys.argv) == 1:
 		do()
 	else:
-		os.system("rm *.html")
+		os.system("rm %s/*.html" % (os.path.dirname(__file__) or "."))
 # EOF
