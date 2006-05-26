@@ -1,0 +1,285 @@
+== KIWI USER MANUAL
+-- Authors: Sébastien Pierre <spierre@altern.org>
+-- Revision: 0.3
+
+1. Introduction
+===============
+
+!Kiwi! is a text processing utility that helps generate structured XML
+data from naturally formatted plain text.
+
+The requirement behind !Kiwi! comes from the difficulty of editing XML by hand
+and the abscence of a free XML editor that would allow to easily edit XML text
+documents. Kiwi can also be used to edit a structured document that can
+be converted to XML in any environment, simply with a text editor. For
+instance Kiwi allows to write rich documents with a Palm, and then
+convert the document to XML and integrate it on a documentation system
+server.
+
+An important thing to notice is that !Kiwi! alone is almost useless,
+as it only generates an XML file[start footnote]This XML file is in fact an
+OrchideeNoire XML document, which is a format similar to DocBook[end
+footnote]. Kiwi documents can be converted to HTML, PostScript or PDF
+documents using the {<http://projects.type-z.org/on>,OrchideeNoire system}
+which is an XML document processing chain with multiple outputs. Advanced
+users who know the XSLT language can write their own XSLT stylesheets to
+convert and process Kiwi output.
+
+The OrchideeNoire system will be presented at the end of this guide, as
+well as an overview of the available XSLT processors.
+
+2. Features
+===========
+
+The introduction has roughly presented the motivations that originated the
+Kiwi project. The current section presents the features offered by
+Kiwi, i.e. the different elements that compose a Kiwi document.
+
+Kiwi provides support for the following text elements:
+
+	- Chapters, Sections, Paragraphs
+	- Lists and definition lists that can be nested.
+	- Emphasis, underline, preformatted, email address, URLs
+	- Quote, citation
+	- Links, tags and references
+	- Content targetting
+	- Custom markup (aka. custom tags)
+
+The latter feature (ie. !custom tags!) is very important. Custom tags are
+the basic extension mechanism of Kiwi, they provide a way to markup
+specific elements not natively supported by Kiwi. Custom tags can be used
+to markup the following elements:
+
+	- Examples, figures, tables
+	- Notes, footnotes, endnotes.
+	- Meta-information
+	- Keywords definition
+	- Bibliographic references
+
+The list above is not extensive, and custom tags provide an infinite way to
+extend Kiwi XML output. The only important point is that the program that
+will process Kiwi output supports the custom markup, which will be
+presented later in this guide.
+
+2. How to use Kiwi
+====================
+
+The basic thing to know is what you need to use !Kiwi!. First you will
+have to get a [link:name="python interpreter",
+href="http://www.python.org"] (or use it from Java using
+[link:name="Jython", href="http://www.jython.org"]).
+
+As Kiwi produces XML documents, you will also need an XSLT processor.
+There are many in Java, and one very good in Python which is part of the
+[link:name="4Suite", href="http://www.4suite.org"]. Using the `4XSLT`
+command will be explained later.
+
+Last but not least, you will need the !XSL stylsheet! that comes with the
+Kiwi distribution. The two stylesheets, namely `smallHTML.xsl` and
+`smallLout.xsl` allows repsectively to produce HTML documents and Lout
+documents which can be converted to PS or PDF documents using Lout.
+
+Now that the technological problems should be cleared, let's get deeper
+into Kiwi and really learn how to use it.
+
+2.1 Writing a basic text document
+=================================
+
+A basic document is composed of a title, one or more sections, and of
+course paragraphs that constitute the body of the text.
+
+>	== KIWI DOCUMENT TITLE
+>	== KIWI DOCUMENT SUBTTITLE
+>	
+>	1. First section
+>	=================
+>	
+>	Wow, this is my first text using Kiwit.
+
+Thought being not required by Kiwi itself, the title and first section
+are generally required for third-party stylesheets (including those that
+come with OrchidéeNoire). So if you encoutner problems when applying an
+XSLT stylesheet to an XML Kiwi output, the problem may have come from
+here.
+
+2.2 Adding content
+------------------
+
+Once you have written this very simple document you may want to add some
+content, for example paragraphs and lists. Both paragraph and lists (and
+also sections) are *structural elements*, which means that they help you to
+structure the content of the document.
+
+2.2.a Writing paragraphs
+------------------------
+
+Writing !paragraphs! is pretty simple, you basically just have to type your
+text, taking care that all lines have the same *indentation*, and insert a
+blank line between your paragraphs.
+
+You may want to insert !line breaks! inside your paragraphs. In this case
+instead of separating the two parts of your paragraph by a blank line,
+which would lead Kiwi to consider that your paragraph is in fact two
+paragraphs, you insert a *pipe* character on the blank line.
+
+Here is an example of a paragraph with a line break in it:
+
+> Blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+> blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+> |
+> Here we are still in the same paragraph. Blah blah blah blah blah blah blah
+> blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+
+2.2.b Writing lists
+-------------------
+
+The other important structural elements are !lists!. Kiwi provides two
+types of lists: the *classic lists* and the *definition lists*. The
+*classic list* only lists items, whereas the *defintion list* offers a way
+to list terms and give a definition to them.
+
+These two types are not very different, I will explain the differences
+later. Basically a list is composed of an *optional list heading* which is
+a sentence that ends with a colon, like this:
+
+> Here is simple list heading: 
+
+[start note]This optional heading can span over many lines, provided there
+is no paragraph break between those lines.[end note]
+
+The other component of a list are of course *list items* which begin with a
+dash or a single letter or digit with a closing paren, which is followed by
+an *optional list item heading*, which is also followed by a *list item
+body*.
+
+Here is the example of a least that illustrate the differents aspects of the
+lists:
+
+>	 Here is simple list heading: 
+>	   -  Here is the optional list heading:
+>		  Here is the list body
+>	   b) Here is another list item. Note that the indentation of the text
+>		  must be the same as the preceding list item, otherwise it may be
+>		  interpreted as a nested list.
+>	
+>	   1) We can also jump lines between list items.
+>		  - And make nested list items
+>		  - Heading: That also have a list item heading.
+
+[start note]When writing lists, take *great care* with indentation, as if the
+different lines are not properly indented, some lists items could be
+interpreted as nested lists.[end note]
+
+Creating *definition lists* is very similar to classic lists, as this type
+of list simply has a required *list item heading* which should end with a
+backslash.
+
+2.3 Adding structure
+--------------------
+
+Once you have written your text you may want to add structure, for example
+you may want to create sections, sub sections, etc. If you want to create
+!sections! and also nested sections, you just have to insert a *section
+heading* in your text.
+
+A *section heading* consists in a single line of text that is prefixed by
+an optional section number, which is consitiued of digits separated by
+dots. Then follows an optional unerline, like the following example shows:
+
+>	1. I am Section
+>	
+>	I am also a Section
+>	===================
+>	
+>	1.1 I am a nested section
+>	=========================
+
+The leading number is not required, but it does indicate the depth of the
+section. Two criteria are taken in concern for indentifying the section
+position in the section hierarchy. The first criterium is the prefixing
+number which tells (by the number of imbricated digits) if the section is a
+simple section, sub section etc. The other criterium is the indentation
+relatively to the preceding section.
+
+2.4 Adding rich content to your paragraphs
+==========================================
+
+Now you are able to write basic text documents, but you may want to go
+further. Kiwi provide way to mark up everything in your documents. Some
+ways to put this mark-up are simple and quick, some other ways are made
+possible using *custom tags*, which we will discover very soone.
+
+For the moment, here is the list of the available content mark up
+facilities:
+
+	- Emphasis:
+	  Emphasis can be specified for a word, a sentence or even a whole
+	  paragraph. You specify emphasis by surrounding your text by stars,
+	  like the following example `*emphasized text*`.
+
+	- Keyword:
+	  Marking up important terms in your document is a necessary feature
+	  for building glossaries or indexes. You can mark up keywords by
+	  surrounding them by exclamation marks like `!this keyword!`.
+
+	- Email addresses:
+	  Email addresses are automatically detected when you put them in
+	  surrounding `<` and `>` signs, like this address
+	  `<spierre@altern.org>`.
+
+	- URLs:
+	  URLs are identified the same way. You put your full URL (with the
+	  leading protocol, which is required) between surrounding `<` and `>`
+	  like this address
+	  `<http://spierre.lautre.net/projects/simtex/simtex.htm>`.
+
+	- Code:
+	  Whenever you need to put inline code in your text, you can put the
+	  text between surrounding `<` and `>`. This will make the text be
+	  interpreted as code, or code-related elements, such as function,
+	  variable and class names, etc.
+
+	- Litteral:
+	  Litteral text, which will be left as-is can be put between
+	  backquotes. This will make Kiwi skip the processing of the text,
+	  which will appear in the final document the same way as in your
+	  original Kiwi document.
+
+	- Underline:
+	  You can underline some important text by surrounding your word with
+	  underscores, like `_here_`.
+
+
+The different way of marking up listed above should be sufficient for most
+of you needs, but we will seen now how to extend the possibilities of
+Kiwi to best suite your marking needs.
+
+2.5 Using your own markup
+-------------------------
+
+Kiwi offers a way similar to XML to add custom markup to your documents.
+The way you add this markup has been thought to be a little bit more
+simpler than XML.
+
+#TODO: 1) Custom tags (inline, blocks) 2) Custom mark-up
+
+There are two types of mark ups, the first one are !empty marks! which
+consits in a mark to which a set of attributes are bound, like in the
+following example: `[link:name="a link", href="http://my.com/link.html"]`.
+
+So in this form the empty mark *name* is the first element, then comes a
+colon and a list of optional attributes which consist in parirs of
+character sequence and quoted string joined by an equal sign.
+
+The second type of mark ups are the !block marks!. These one allow you to
+mark a whole paragraph or portion of paragraph and have the interesting
+capacity to have nested mark-ups. The markup for specifying an example is
+the following:
+
+
+>	Here is an example, blah blah blah blah blah blah blah blah blah blah
+>	blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+>	|
+>	Blah.
+
+

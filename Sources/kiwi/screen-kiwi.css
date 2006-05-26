@@ -1,0 +1,79 @@
+body {
+	margin-left: 10%;
+	margin-right: 10%;
+	padding: 20pt;
+	padding-top: 10pt;
+	background: rgb(255,255,255);
+	font:  9pt/13pt "Lucida Grande",Lucida,sans-serif;
+	color: rgb(80,80,80);
+}
+
+table tr td {
+	font:  8pt/12pt "Lucida Grande",Lucida,sans-serif;
+}
+
+h1, h2, h3, h4 {
+	font-family: "Trebuchet MS",sans-serif;
+	color: rgb(22, 130, 178);
+	font-weight: normal;
+	padding-top: 0.5em;
+}
+
+strong {
+	color: rgb(103,183,0);
+}
+
+a, a:active, a:visited {
+	color: rgb(22,130,178);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+aimg {
+	border: 0;
+}
+
+#header, #footer {
+	font-size: 7pt;
+	clear: both;
+	width: 100%;
+	color: rgb(177,208,223);
+}
+
+#footer {
+	padding-top:  30pt;
+	text-align: right;
+}
+
+/*  Kiwi-specific  */
+
+.title {
+	margin-bottom:  5em;
+	border-bottom:  1px solid rgb(150, 220, 238);
+}
+
+pre, code {
+	color: rgb(22, 130, 178);
+}
+
+pre {
+	border-left:  1px solid rgb(150, 220, 238);
+	padding-left: 20pt;
+}
+
+table {
+	border-top:  1px solid rgb(150, 220, 238);
+	border-bottom:  1px solid rgb(150, 220, 238);
+}
+
+table tr td {
+	padding: 10px;
+	background-color: rgb(250,250,250);
+}
+
+table tr.odd td {
+	background-color: rgb(255,255,255);
+}

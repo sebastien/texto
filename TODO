@@ -1,0 +1,9 @@
+- Ensure parent with like Section/Content Appendix/Contentm etc..
+- When a paragraph is more indented than the preceding one, then it should be in
+  a blockquote, if the preceding one is also in a block quote, then it should be
+  of the same depth, otherwise a warning is issued.
+
+Document:
+
+- Inserting 3 EOLS makes return to the current document section, otherwise lists
+  are followed
