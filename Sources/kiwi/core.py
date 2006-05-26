@@ -397,6 +397,11 @@ class Parser:
 			if len(node.childNodes) == 0:
 				context.rootNode.removeChild(node)
 		return context.document
+	
+	def parseContext( self, context ):
+		while not context.documentEndReached():
+			print "PARSE"
+			self._parseNextBlock(context)
 
 	def _parseNextBlock( self, context ):
 		assert context!=None

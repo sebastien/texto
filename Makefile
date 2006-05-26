@@ -13,7 +13,7 @@
 #
 # Project name. Do not put spaces.
 PROJECT         = Kiwi
-PROJECT_VERSION = 0.7.8
+PROJECT_VERSION = 0.7.9
 PROJECT_STATUS  = BETA
 
 DOCUMENTATION   = Documentation

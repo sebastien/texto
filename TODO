@@ -1,15 +1,1 @@
-- Ensure parent with like Section/Content Appendix/Contentm etc..
-
-Document:
-
-- Inserting 3 EOLS makes return to the current document section, otherwise lists
-  are followed
-- XML handling
-- Paragraph "blockquote"
-- Add an option to output non html-template processed tags as bold/red text
-  (template debugging mode)
-- Add markdown compatibility mode
-
-"Kiwi" => HTML and XML without the pain.
-
-- Add command line mode for kiwi
+- Table cells should be considered as blocks... but how to do it ?

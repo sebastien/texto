@@ -7,8 +7,9 @@
 # Author            :   Sébastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   15-Mar-2006
+# Last mod.         :   22-Mar-2006
 # History           :
+#                       22-Mar-2006 Table cells parse their content as blocks
 #                       15-Mar-2006 Added support for title headers
 #                       02-Mar-2006 Improved tagged blocks support
 #                       23-Feb-2006 Added tagged blocks
@@ -242,6 +243,8 @@ class TaggedBlockParser(BlockParser):
 			if tagtitle:
 				block_node.setAttributeNS(None, "title", tagtitle[1:].strip())
 			# We get to a content node
+			# Now we can process the document
+			context.parser.parseBlock(context, block_node, self.processText)
 			# TODO: Handle indentation
 			while context.currentNode.nodeName not in BLOCK_ELEMENTS:
 				context.currentNode = context.currentNode.parentNode
@@ -697,11 +700,10 @@ class Table:
 
 	def appendCellContent( self, x, y, text ):
 		cell_type, cell_text = self._ensureCell(x,y)
-		if not text: return
 		if cell_text == None:
 			self._table[y][x] = [cell_type, text]
 		else:
-			self._table[y][x] = [cell_type, cell_text + " " + text]
+			self._table[y][x] = [cell_type, cell_text + "\n" + text]
 	
 	def headerCell( self, x, y ):
 		self._table[y][x] = ["H", self._ensureCell(x,y)[1]]
@@ -714,6 +716,7 @@ class Table:
 		return self._table[y][x][0] == "H"
 	
 	def getNode( self, context, processText ):
+		"""Renders the table as a Kiwi XML document node."""
 		table_node   = context.document.createElementNS(None, "Table")
 		content_node = context.document.createElementNS(None, "Content")
 		# We take care of the title
@@ -729,10 +732,17 @@ class Table:
 				cell_node = context.document.createElementNS(None, "Cell")
 				if cell_type == "H":
 					cell_node.setAttributeNS(None, "type", "header")
+				# We create a temporary Content node that will stop the nodes
+				# from seeking a parent content
+				print "CELL TEXT", cell_text
+				cell_content_node = context.document.createElementNS(None, "Content")
 				new_context = context.clone()
 				new_context.setDocumentText(cell_text)
-				new_context.setCurrentBlock(0,0)
-				new_context.parser.parseBlock(new_context, cell_node, processText)
+				new_context.currentNode = cell_content_node
+				new_context.parser.parseContext(new_context)
+				# This is slightly hackish, but we simply move the nodes there
+				for child in cell_content_node.childNodes:
+					cell_node.appendChild(child)
 				row_node.appendChild(cell_node)
 			content_node.appendChild(row_node)
 		table_node.appendChild(content_node)
@@ -768,7 +778,7 @@ class TableBlockParser( BlockParser ):
 			rows = rows[2:]
 		else:
 			rows = rows[1:]
-		# The cells are separated by piped (||)
+		# The cells are separated by pipes (||)
 		for row in rows:
 			x = 0
 			# The separator variable indicates wether we encountered a
@@ -778,11 +788,11 @@ class TableBlockParser( BlockParser ):
 			# Empty rows are simply ignored
 			if not row.strip(): continue
 			# Otherwise we split the cells in the row
-			for cell in map(string.strip, row.split("||")):
+			for cell in row.split("||"):
 				# We remove leading or trailing borders (|)
 				if cell and cell[0]  == "|": cell = cell[1:]
 				if cell and cell[-1] == "|": cell = cell[:-1]
-				cell = cell.strip()
+				# cell = cell.strip()
 				# Is the cell a separation ?
 				if RE_TABLE_SEPARATOR.match(cell):
 					# If the previous cell was a header

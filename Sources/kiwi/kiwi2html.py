@@ -62,7 +62,7 @@ $(References)
 </html>""")
 
 def convertContent( element ):
-	return process(element, """ <div id='#content'>$(*)</div>""")
+	return process(element, """ <div id='content'>$(*)</div>""")
 
 def convertContent_bodyonly( element ):
 	return process(element, """$(*)""")
@@ -139,12 +139,12 @@ def convertMeta( element ):
 
 def convertmeta( element ):
 	return process(element,
-	"<tr><td class='name'>%s</td><td class='value'>$(*)</td></tr>" %
-	(element.getAttributeNS(None, "name")))
+	"<tr><td class='name'>%s</td><td width='%s' class='value'>$(*)</td></tr>" %
+	(element.getAttributeNS(None, "name"), "90%"))
 
 def convertemail( element ):
 	mail = ""
-	for c in  process(element, """<a href="mailto:$(*)">$(*)</a>"""):
+	for c in  process(element, """$(*)"""):
 		mail += "&#%d;" % (ord(c))
 	return """<a href="mailto:%s">%s</a>""" % (mail, mail)
 
