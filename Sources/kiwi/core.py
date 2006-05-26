@@ -6,8 +6,12 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   10-Fev-2006
+# Last mod.         :   22-Fev-2006
 # History           :
+#                       22-Feb-2006 Slightly updated doc and parsers
+#                       14-Feb-2006 Block separator now supprots DOS
+#                       linebreaknow supprots DOS linebreaks, simplified
+#                       supported markup.
 #                       10-Feb-2006 Added support for XML markup
 #                       07-Feb-2006 Moved from the main module
 #
@@ -46,7 +50,7 @@ TAB_SIZE = 4
 #
 #------------------------------------------------------------------------------
 
-RE_BLOCK_SEPARATOR = re.compile(u"[ \t]*\n[ \t]*\n", re.MULTILINE | re.LOCALE)
+RE_BLOCK_SEPARATOR = re.compile(u"[ \t\r]*\n[ \t\r]*\n", re.MULTILINE | re.LOCALE)
 RE_SPACES = re.compile(u"[\s\n]+", re.LOCALE|re.MULTILINE)
 RE_TABS = re.compile("\t+")
 ATTRIBUTE = u"[\s\n]*([\w_]+)[\s\n]*=[\s\n]*(\"[^\"]+\"|'[^']+')[\s\n]*[,;]?"
@@ -129,7 +133,8 @@ class Context:
 	def setDocumentText( self, text ):
 		"""Sets the text of the current document. This should only be called
 		at context initialisation."""
-		assert type(text) == type(u"")
+		if not type(text) == type(u""):
+			text = unicode(text)
 		self.documentText = text
 		self.documentTextLength = len(text)
 		self.blockEndOffset = self.documentTextLength
@@ -162,7 +167,8 @@ class Context:
 	def currentFragment( self ):
 		"""Returns the current text fragment, from the current offset to the
 		block end offset."""
-		assert self.getOffset()<self.blockEndOffset
+		assert self.getOffset()<self.blockEndOffset,\
+		"Offset greater than block end: %s >= %s" % (self.getOffset(), self.blockEndOffset)
 		if not self._currentFragment:
 			self._currentFragment = \
 			self.documentText[self.getOffset():self.blockEndOffset]
@@ -184,7 +190,7 @@ class Context:
 		if endOffset <= 0: endOffset += self.documentTextLength
 		assert startOffset>=0
 		assert endOffset<=self.documentTextLength
-		assert startOffset<=endOffset
+		assert startOffset<=endOffset, "Start offset to big: %s > %s" % (startOffset, endOffset)
 		self.setOffset(startOffset)
 		self.blockStartOffset = startOffset
 		self.blockEndOffset = endOffset
@@ -292,10 +298,12 @@ class Parser:
 			MarkupBlockParser(),
 			PreBlockParser(),
 			TableBlockParser(),
+			ReferenceEntryBlockParser(),
 			TitleBlockParser(),
 			SectionBlockParser(),
 			ListItemBlockParser(),
-			BibliographicEntryBlockParser()
+			ReferenceEntryBlockParser(),
+			TaggedBlockParser(),
 		))
 		self.defaultBlockParser = ParagraphBlockParser()
 	
@@ -317,27 +325,23 @@ class Parser:
 			self.escapedParser,
 			self.commentParser,
 			self.markupParser,
-			TagInlineParser(),
-			AcronymInlineParser(),
-			CitationInlineParser(),
-			QuoteInlineParser(),
-			DocumentInlineParser(),
-			FootnoteInlineParser(),
-			ReferenceInlineParser(),
 			InlineParser("email",		RE_EMAIL),
 			InlineParser("url",			RE_URL),
+			LinkInlineParser(),
+			InlineParser("pre",			RE_PRE, result=lambda x,y:x.group(3)),
+			InlineParser("code",		RE_CODE_2),
 			InlineParser("code",		RE_CODE),
+			InlineParser("term",		RE_TERM,     normal),
 			InlineParser("strong",		RE_STRONG,   normal),
 			InlineParser("emphasis",	RE_EMPHASIS, normal),
-			InlineParser("term",		RE_TERM,     term  ),
-			InlineParser("keyword",		RE_KEYWORD,  normal),
 			InlineParser("quote",		RE_QUOTED,   normal),
+			InlineParser("citation",	RE_CITATION, normal),
 			# Special characters
 			InlineParser("break",		RE_BREAK),
 			InlineParser("newline",		RE_NEWLINE),
 			InlineParser("dots",		RE_DOTS),
 			ArrowInlineParser(),
-			InlineParser("longdash",	RE_LONGDASH)
+			InlineParser("longdash",	RE_LONGDASH),
 		))
 
 	def _initialiseContextDocument(self, context):
@@ -379,7 +383,7 @@ class Parser:
 	# PARSING__________________________________________________________________
 
 	def parse( self, text ):
-		"""Parses the given text, and returns an Orchid�eNoire XML document"""
+		"""Parses the given text, and returns an XML document"""
 		# Text MUST be unicode
 		assert type(text) == type(u"")
 		context = Context(text)

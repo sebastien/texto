@@ -2,27 +2,28 @@
 # ---------------
 #
 #
-# Revision 1.4.0 (18-Sep-2005)
+# Revision 1.5.0 (22-Feb-2006)
 #
 # Distributed under BSD License
 # See www.type-z.org/copyleft.html
-# (c) Sébastien Pierre - http://www.type-z.org, 2003 - 2005
+# (c) Sébastien Pierre - http://www.type-z.org, 2003 - 2006
 
 
 # Project variables___________________________________________________________
 #
 # Project name. Do not put spaces.
 PROJECT         = Kiwi
-PROJECT_VERSION = 0.7.5
+PROJECT_VERSION = 0.7.8
 PROJECT_STATUS  = BETA
 
 DOCUMENTATION   = Documentation
 SOURCES         = Sources
 TESTS           = Tests
-SCRIPTS         = Scripts
 RESOURCES       = Resources
 DISTRIBUTION    = Distribution
 API             = $(DOCUMENTATION)/API
+DISTROCONTENT   = $(DOCUMENTATION) $(SOURCES) $(TESTS) $(RESOURCES) \
+                  Makefile
 
 # Project files_______________________________________________________________
 
@@ -32,7 +33,7 @@ PROJECT_MODULES = \
 	kiwi.blocks \
 	kiwi.inlines
 
-TEST_MAIN       = $(TESTS)/TestKiwi.py
+TEST_MAIN       = $(TESTS)/KiwiTest.py
 SOURCE_FILES    = $(shell find $(SOURCES) -name "*.py")
 TEST_FILES      = $(shell find $(TESTS) -name "*.py")
 
@@ -64,7 +65,7 @@ prefix          = /usr/local
 
 # Rules_______________________________________________________________________
 
-.PHONY: help info preparing-pre scripts-pre clean check dist doc tags install uninstall
+.PHONY: help info preparing-pre clean check dist doc tags install uninstall todo
 
 help:
 	@echo
@@ -87,12 +88,21 @@ help:
 	@echo
 	@echo "    Look at the makefile for overridable variables."
 
-all: prepare clean check scripts test doc dist install
+todo:
+	@grep  -R --only-matching "TODO.*$$"  $(SOURCE_FILES)
+	@grep  -R --only-matching "FIXME.*$$" $(SOURCE_FILES)
+
+
+all: prepare clean check test doc dist install
 	@echo "Making everything for $(PROJECT)"
 
 info:
 	@echo "$(PROJECT)-$(PROJECT_VERSION) ($(PROJECT_STATUS))"
-prepare: $(PYTHONHOME)/$(PARENT_MODULE)/__init__.py prepare-pre scripts
+	@echo Source file lines:
+	@wc -l $(SOURCE_FILES)
+
+
+prepare: $(PYTHONHOME)/$(PARENT_MODULE)/__init__.py prepare-pre
 	@echo "Preparing done."
 
 prepare-pre:
@@ -106,32 +116,9 @@ $(PYTHONHOME)/$(PARENT_MODULE)/__init__.py:
 	mkdir -p $(PYTHONHOME)/$(PARENT_MODULE)
 	touch $(PYTHONHOME)/$(PARENT_MODULE)/__init__.py
 
-scripts: scripts-pre $(SCRIPTS)/$(PROJECT).sh $(SCRIPTS)/Test$(PROJECT).sh
-	@echo "scripts prepared."
-
-scripts-prepare:
-	@echo "Preparing scripts $(PROJECT)"
-	@mkdir -p $(SCRIPTS)
-
-$(SCRIPTS)/$(PROJECT).sh:
-	@echo "#!/bin/sh" > $(SCRIPTS)/$(PROJECT).sh
-	@echo '$(PYTHON) $(SOURCES)/$(PARENT_MODULE)/$(MAIN_MODULE)/$(PROJECT_MAIN) $$@' >> $(SCRIPTS)/$(PROJECT).sh
-	@chmod +x $(SCRIPTS)/$(PROJECT).sh
-
-$(SCRIPTS)/Test$(PROJECT).sh:
-	@echo '#!/bin/sh' > $(SCRIPTS)/Test$(PROJECT).sh
-	@echo '$(PYTHON) $(TEST_MAIN)' >> $(SCRIPTS)/Test$(PROJECT).sh
-	@chmod +x $(SCRIPTS)/Test$(PROJECT).sh
-
 clean:
 	@echo "Cleaning $(PROJECT)."
-	@rm -rf $(shell find . -name "*.pyc")
-	@rm -rf $(shell find . -name "*.swp")
-	@rm -rf $(shell find . -name "*.swo")
-	@rm -rf $(shell find . -name ".DS_Store")
-	@rm -rf $(shell find . -name ".bak")
-	@rm -rf $(shell find . -name '*~')
-	@find $(SCRIPTS) -name "*$(PROJECT).sh" -exec rm {} ';'
+	@find . -name "*.pyc" -or -name "*.sw?" -or -name ".DS_Store" -or -name "*.bak" -or -name "*~" | xargs rm
 	@rm -rf $(API)
 
 check:
@@ -146,18 +133,9 @@ else
 endif
 	@echo "done."
 
-run: $(SOURCE_FILES) $(TEST_FILES) scripts
-	@echo "Running $(PROJECT), v.$(PROJECT_VERSION)"
-ifeq ($(ARGS),)
-	@echo "  you can pass arguments in with the ARGS variable"
-	@echo "  ex: make run ARGS='-v'"
-endif
-	@echo
-	@./$(SCRIPTS)/$(PROJECT).sh $(ARGS)
-
-test: $(SOURCE_FILES) $(TEST_FILES) scripts
+test: $(SOURCE_FILES) $(TEST_FILES)
 	@echo "Testing $(PROJECT)."
-	@./$(SCRIPTS)/Test$(PROJECT).sh
+	@$(PYTHON) $(TEST_MAIN)
 
 dist:
 	@echo "Creating archive $(DISTRIBUTION)/$(PROJECT)-$(PROJECT_VERSION).tar.gz"
@@ -179,7 +157,7 @@ else
 	@echo "Please see <http://epydoc.sf.net>"
 endif
 
-tags: 
+tags:
 	@echo "Generating $(PROJECT) tags"
 ifeq ($(shell basename spam/$(CTAGS)),ctags)
 	@$(CTAGS) -R

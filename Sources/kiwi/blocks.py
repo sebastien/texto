@@ -7,8 +7,14 @@
 # Author            :   Sébastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   10-Feb-2006
+# Last mod.         :   15-Mar-2006
 # History           :
+#                       15-Mar-2006 Added support for title headers
+#                       02-Mar-2006 Improved tagged blocks support
+#                       23-Feb-2006 Added tagged blocks
+#                       22-Feb-2006 Finished reference entry, fixed bug in
+#                       paragraph content spacing.
+#                       21-Feb-2006 Preliminary reference entry implementation
 #                       10-Feb-2006 Added Block creation in paragraphs to
 #                       allowed "nested paragraphs" (a la Blockquote)
 #                       08-Feb-2006 Changed title format, made paragraph go into
@@ -60,16 +66,18 @@ DEFINITION_LIST  = 2
 
 RE_BLANK          = re.compile(u"\s*", re.LOCALE|re.MULTILINE)
 
-TITLE             = u"\s*(==)(.+)$"
-RUNNING_TITLE     = u"\s*(--)(.+)$"
-TITLES            = u"%s|%s" % (RUNNING_TITLE, TITLE)
-RE_TITLES          = re.compile(TITLES, re.LOCALE|re.MULTILINE)
+TITLE             = u"^\s*(==)(.+)$"
+RE_TITLE          = re.compile(TITLE, re.LOCALE|re.MULTILINE)
+TITLE_HEADER      = u"^\s*(--)([^\:]+):(.+)$"
+RE_TITLES         = re.compile(u"%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MULTILINE)
 
 SECTION_HEADING   = u"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
 SECTION_UNDERLINE = u"^\s*[*-=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
 
+TAGGED_BLOCK      = u"^\s*((\w+\s*)(\:[^_]+)?)?(_+)\s*$"
+RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE | re.LOCALE)
 LIST_ITEM         = u"^(\s*)(-|\*\)|[0-9A-z][\)/\.])\s*"
 RE_LIST_ITEM      = re.compile(LIST_ITEM, re.MULTILINE | re.LOCALE)
 LIST_HEADING      = u"(^\s*[^:{().<]*:)"
@@ -77,7 +85,7 @@ RE_LIST_HEADING   = re.compile(LIST_HEADING, re.MULTILINE | re.LOCALE)
 LIST_ITEM_HEADING = u"^([^:]+(:\s*\n\s*|::\s*))|([^/\\\]+[/\\\]\s*\n\s*)"
 RE_LIST_ITEM_HEADING =  re.compile(LIST_ITEM_HEADING, re.MULTILINE|re.LOCALE)
 
-PREFORMATTED      = u"^(\s*\>\t)(.*)$"
+PREFORMATTED      = u"^(\s*\>(\t|    ))(.*)$"
 RE_PREFORMATTED   = re.compile(PREFORMATTED, re.LOCALE)
 
 CUSTOM_MARKUP = u"\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
@@ -93,8 +101,8 @@ META_FIELD = u'(^|\n)\s*([\w\-]+)\s*:\s*'
 RE_META_FIELD= re.compile(META_FIELD, re.LOCALE)
 RE_META_AUTHOR_EMAIL = re.compile("\<([^>]+)\>", re.LOCALE)
 
-BIBLIOGRAPHIC_ENTRY = u"\s*\.\.+\s+([\w_\-]+)\s*:"
-RE_BIBLIOGRAPHIC_ENTRY = re.compile(BIBLIOGRAPHIC_ENTRY, re.LOCALE|re.MULTILINE)
+REFERENCE_ENTRY    = u"\s+\[([^\]]+)]:"
+RE_REFERENCE_ENTRY = re.compile(REFERENCE_ENTRY, re.LOCALE|re.MULTILINE)
 
 TABLE_SEPARATOR    = "^\s*(-+|=+)\s*$"
 RE_TABLE_SEPARATOR = re.compile(TABLE_SEPARATOR)
@@ -175,14 +183,10 @@ class ParagraphBlockParser(BlockParser):
 		para_node.setAttributeNS(None, "_indent", str(paragraph_depth))
 		context.parser.parseBlock(context, para_node, self.processText)
 		# Now we suppress leading and trailing whitespaces
-		first_text_node = None
-		last_text_node = None
-		for child_node in para_node.childNodes:
-			if child_node.nodeType == child_node.TEXT_NODE:
-				if first_text_node == None:
-					first_text_node = child_node
-				else:
-					last_text_node = child_node
+		first_text_node = para_node.childNodes[0]
+		last_text_node  = para_node.childNodes[-1]
+		if first_text_node.nodeType != para_node.TEXT_NODE: first_text_node = None
+		if last_text_node.nodeType  != para_node.TEXT_NODE: last_text_node  = None
 		# Removed first and last text nodes if empty
 		if first_text_node!=None and first_text_node.data.strip()=="":
 			para_node.removeChild(first_text_node)
@@ -208,6 +212,47 @@ class ParagraphBlockParser(BlockParser):
 		text = context.parser.expandTabs(text)
 		text =  context.parser.normaliseText(text)
 		return text
+
+#------------------------------------------------------------------------------
+#
+#  TaggedBlockParser
+#
+#------------------------------------------------------------------------------
+
+class TaggedBlockParser(BlockParser):
+	"""Parses a paragraph block. This parser always recognised the given block,
+	so it should not appear in the block parsers."""
+
+	def __init__( self ):
+		BlockParser.__init__(self, "TaggedBlock")
+
+	def recognises( self, context ):
+		lines = filter(lambda l:l.strip(), context.currentFragment().split("\n"))
+		if not lines: return
+		return RE_TAGGED_BLOCK.match(lines[0])
+
+	def process( self, context, recogniseInfo ):
+		tagname  = recogniseInfo.group(2)
+		tagtitle = recogniseInfo.group(3)
+		# This is an opening tag
+		if tagname and tagname[0] != "_":
+			# TODO: Asserts we are not already in a sepcific block
+			block_node = context.document.createElementNS(None, "Block")
+			block_node.setAttributeNS(None, "type", tagname)
+			if tagtitle:
+				block_node.setAttributeNS(None, "title", tagtitle[1:].strip())
+			# We get to a content node
+			# TODO: Handle indentation
+			while context.currentNode.nodeName not in BLOCK_ELEMENTS:
+				context.currentNode = context.currentNode.parentNode
+			context.currentNode.appendChild(block_node)
+			context.currentNode = block_node
+			assert context.currentNode
+		# This is a closing tag
+		elif tagname and tagname[0] == "_":
+			while context.currentNode.nodeName != "Block":
+				context.currentNode = context.currentNode.parentNode
+			context.currentNode = context.currentNode.parentNode
 
 #------------------------------------------------------------------------------
 #
@@ -252,8 +297,7 @@ class MarkupBlockParser(BlockParser):
 		offset, match = context.parser.markupParser.recognises(context)
 		# We make sure that the recognised markup is a block markup which has
 		# only whitespaces at the beginning
-		if match and match.group(1) in context.parser.markupParser.START_TAGS\
-		and match.group(2)!=None \
+		if match and context.parser.markupParser.isStartTag(match) \
 		and len(context.currentFragment()[:match.start()].strip())==0:
 			# We parse the tag to see if it is a block tag and that it spans
 			# the whole context current fragment.
@@ -270,7 +314,7 @@ class MarkupBlockParser(BlockParser):
 					result_node = dummy_node.childNodes[0]
 					# We take care of the attributes
 					for key, value in \
-					    context.parseAttributes(match.group(4)).items():
+					    context.parseAttributes(match.group(2)).items():
 						result_node.setAttributeNS(None, key, value)
 					return result_node
 				# Otherwise this means that the block is empty
@@ -293,9 +337,7 @@ class MarkupBlockParser(BlockParser):
 #------------------------------------------------------------------------------
 
 class TitleBlockParser(BlockParser):
-	"""Parses a title object.
-
-	A title object is a text surrounded by two '~'."""
+	"""Parses a title object"""
 
 	def __init__( self ):
 		BlockParser.__init__(self, "title")
@@ -308,29 +350,42 @@ class TitleBlockParser(BlockParser):
 				context.increaseOffset(match.end())
 				matches.append(match)
 			else:
-				return False
+				return matches or False
 		return matches
 
 	def process( self, context, recogniseInfo ):
 		assert recogniseInfo
-		titleNode = context.ensureElement( context.header, "Title" )
 		for match in recogniseInfo:
-			#We get the content of the title
-			titleText = Upper(match.group(2) or match.group(4))
-			# We prefix with 'sub' or 'subsub' depending on the number of
-			# preceding titles
-			titleType  = u"sub" * len(filter(lambda n:n.nodeName.endswith("title"), titleNode.childNodes))
-			titleType += u"title"
-			#We add the node to the document tree
-			resultNode = context.ensureElement(titleNode, titleType)
-			titleNode.appendChild(resultNode)
-			resultNode.appendChild(context.document.createTextNode(self.processText(context, titleText)))
-			#We parse the next title
+			if match.group(1):
+				titleNode = context.ensureElement( context.header, "Title" )
+				# We get the content of the title
+				titleText = Upper(match.group(2) or match.group(4))
+				# We prefix with 'sub' or 'subsub' depending on the number of
+				# preceding titles
+				titleType  = u"sub" * len(filter(lambda n:n.nodeName.endswith("title"), titleNode.childNodes))
+				titleType += u"title"
+				#We add the node to the document tree
+				resultNode = context.ensureElement(titleNode, titleType)
+				titleNode.appendChild(resultNode)
+				resultNode.appendChild(context.document.createTextNode(self.processText(context, titleText)))
+			elif match.group(3):
+				metaNode  = context.ensureElement( context.header, "Meta" )
+				# We get the header name
+				header_name = match.group(4).strip()
+				header_text = match.group(5).strip()
+				# We prepare the header node
+				node = context.document.createElementNS(None, "meta")
+				node.setAttributeNS(None, "name", header_name)
+				node.appendChild(context.document.createTextNode(self.processText(context,
+				header_text)))
+				# And we add it to the document header
+				metaNode.appendChild(node)
+			else:
+				raise Exception("We should not be here ! " + match.group())
 		context.setOffset(context.blockEndOffset)
 
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text.strip())
-
 #------------------------------------------------------------------------------
 #
 #  SectionBlockParser
@@ -603,7 +658,7 @@ class PreBlockParser( BlockParser ):
 		for line in context.currentFragment().split("\n"):
 			match = RE_PREFORMATTED.match(line)
 			if match:
-				text += match.group(2) + "\n"
+				text += match.group(3) + "\n"
 			else:
 				text += line + "\n"
 		if text[-1] == "\n": text = text[:-1]
@@ -626,6 +681,7 @@ class Table:
 		# Table is an array of array of (char, string) where char is either
 		# 'H' for header, or 'T' for text.
 		self._table = []
+		self._title = None
 	
 	def _ensureCell( self, x, y ):
 		"""Ensures that the cell at the given position exists and returns its
@@ -635,6 +691,10 @@ class Table:
 		while x >= len(row): row.append(["T", None])
 		return row[x]
 		
+	def setTitle( self, title ):
+		"""Sets the title for this table."""
+		self._title = title.strip()
+
 	def appendCellContent( self, x, y, text ):
 		cell_type, cell_text = self._ensureCell(x,y)
 		if not text: return
@@ -654,7 +714,15 @@ class Table:
 		return self._table[y][x][0] == "H"
 	
 	def getNode( self, context, processText ):
-		table_node = context.document.createElementNS(None, "Table")
+		table_node   = context.document.createElementNS(None, "Table")
+		content_node = context.document.createElementNS(None, "Content")
+		# We take care of the title
+		if self._title:
+			caption_node = context.document.createElementNS(None, "Caption")
+			caption_text = context.document.createTextNode(self._title)
+			caption_node.appendChild(caption_text)
+			table_node.appendChild(caption_node)
+		# And now of the table
 		for row in self._table:
 			row_node = context.document.createElementNS(None, "Row")
 			for cell_type, cell_text in row:
@@ -666,9 +734,10 @@ class Table:
 				new_context.setCurrentBlock(0,0)
 				new_context.parser.parseBlock(new_context, cell_node, processText)
 				row_node.appendChild(cell_node)
-			table_node.appendChild(row_node)
+			content_node.appendChild(row_node)
+		table_node.appendChild(content_node)
 		return table_node
-				
+
 class TableBlockParser( BlockParser ):
 	"""Parses the content of a tables"""
 
@@ -677,15 +746,30 @@ class TableBlockParser( BlockParser ):
 
 	def recognises( self, context ):
 		lines = context.currentFragment().strip().split("\n")
-		return RE_TABLE_SEPARATOR.match(lines[0]) \
-		and RE_TABLE_SEPARATOR.match(lines[-1])
+		if not len(lines)>1: return False
+		title_match = RE_TITLE.match(lines[0])
+		if title_match:
+			if not len(lines) >= 3: return False
+			start_match = RE_TABLE_SEPARATOR.match(lines[1])
+		else:
+			start_match = RE_TABLE_SEPARATOR.match(lines[0])
+		end_match = RE_TABLE_SEPARATOR.match(lines[-1])
+		return start_match and end_match
 
 	def process( self, context, recogniseInfo ):
 		y = 0
 		table = Table()
 		# For each cell in a row
+		rows = context.currentFragment().strip().split("\n")[:-1]
+		# We take care of the title
+		title_match = RE_TITLE.match(rows[0])
+		if title_match:
+			table.setTitle(title_match.group(2))
+			rows = rows[2:]
+		else:
+			rows = rows[1:]
 		# The cells are separated by piped (||)
-		for row in context.currentFragment().strip().split("\n")[1:-1]:
+		for row in rows:
 			x = 0
 			# The separator variable indicates wether we encountered a
 			# separator during the parsing of the line. If it is not the
@@ -952,30 +1036,46 @@ class MetaBlockParser( BlockParser ):
 
 #------------------------------------------------------------------------------
 #
-#  BibliographicEntryBlockParser
+# ReferenceEntryBlockParser
 #
 #------------------------------------------------------------------------------
 
-
-class BibliographicEntryBlockParser( BlockParser ):
-	"""Parses the content of a Bibliographic entries"""
+class ReferenceEntryBlockParser( BlockParser ):
+	"""Parses the content of a Reference entry"""
 
 	def __init__( self ):
 		BlockParser.__init__(self, "Entry")
 
 	def recognises( self, context ):
 		assert context
-		return RE_BIBLIOGRAPHIC_ENTRY.match(context.currentFragment())
+		return RE_REFERENCE_ENTRY.match(context.currentFragment())
 
 	def process( self, context, match ):
-		entry_name = match.group(1)
-		entry = context.currentFragment()[match.end():]
-		attributes = context.parseAttributes(entry)
-		entry_node = context.document.createElementNS(None, "Entry")
-		entry_node.setAttributeNS(None, "id", entry_name)
-		for key, value in attributes.items():
-			if key.lower() == "type": value = value.lower()
-			entry_node.setAttributeNS(None, key.lower(), value)
-		context.references.appendChild(entry_node)
-		
+		offsets = context.saveOffsets()
+		ranges  = []
+		offset  = 0
+		# We get the start and end offsets of entry blocks
+		while True:
+			m = RE_REFERENCE_ENTRY.search(context.currentFragment(), offset)
+			if not m: break
+			ranges.append((m, m.start()))
+			offset = m.end()
+		ranges.append((None, len(context.currentFragment())))
+		new_ranges = []
+		for i in range(0, len(ranges)-1):
+			new_ranges.append((ranges[i][0], ranges[i][1], ranges[i+1][1]))
+		ranges = new_ranges
+		# We loop for each found reference entry
+		for match, start_offset, end_offset in ranges:
+			entry_name  = match.group(1)
+			# We set the current block and process it
+			sub_offsets = context.saveOffsets()
+			context.setCurrentBlock(context.getOffset() + match.end(), context.getOffset() + end_offset)
+			entry_node = context.document.createElementNS(None, "Entry")
+			entry_node.setAttributeNS(None, "id", entry_name)
+			context.parser.parseBlock(context, entry_node, self.processText)
+			context.references.appendChild(entry_node)
+			context.restoreOffsets(sub_offsets)
+		context.restoreOffsets(offsets)
+
 # EOF-Linux/ASCII-----------------------------------@RisingSun//Python//1.0//EN

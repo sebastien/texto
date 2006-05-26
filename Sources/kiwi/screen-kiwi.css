@@ -23,13 +23,14 @@ strong {
 	color: rgb(103,183,0);
 }
 
-a, a:active, a:visited {
+a:link, a:active, a:visited {
 	color: rgb(22,130,178);
 	text-decoration: none;
 }
 
 a:hover {
-	text-decoration: underline;
+	text-decoration: none;
+	background-color: #dbecf4;
 }
 
 aimg {
@@ -43,6 +44,8 @@ aimg {
 	color: rgb(177,208,223);
 }
 
+#content {
+}
 #footer {
 	padding-top:  30pt;
 	text-align: right;
@@ -51,29 +54,101 @@ aimg {
 /*  Kiwi-specific  */
 
 .title {
-	margin-bottom:  5em;
 	border-bottom:  1px solid rgb(150, 220, 238);
+	margin-bottom:  1em;
 }
 
-pre, code {
-	color: rgb(22, 130, 178);
+#meta {
+	margin-bottom:  2em;
 }
 
-pre {
+#meta tr td {
+	color: rgb(150, 220, 238);
+}
+
+#meta tr td.name {
+	font-weight: bold;
+}
+
+#content pre {
 	border-left:  1px solid rgb(150, 220, 238);
 	padding-left: 20pt;
 }
 
-table {
+#content pre, #content code {
+	color: rgb(22, 130, 178);
+}
+
+#content table {
 	border-top:  1px solid rgb(150, 220, 238);
 	border-bottom:  1px solid rgb(150, 220, 238);
 }
 
-table tr td {
+#content table tr td {
 	padding: 10px;
-	background-color: rgb(250,250,250);
+	background-color: rgb(240,240,240);
 }
 
-table tr.odd td {
+#content table tr.odd td {
 	background-color: rgb(255,255,255);
+}
+
+#content span.term {
+	color: rgb(22, 130, 178);
+	background-color: rgb(240,240,240);
+}
+
+#content span.quote {
+	font-style: italic;
+	color: rgb(120, 120, 120);
+}
+
+#content blockquote.example {
+	font-size: 8pt;
+	padding: 10px;
+	background-color: rgb(240,240,240);
+	border: 1px solid rgb(160,160,160);
+}
+
+#content blockquote.example div.title {
+	margin: 0;
+	padding: 0;
+	padding-top: 5pt;
+	padding-bottom: 5pt;
+	font-size: 9pt;
+	font-weight: bold;
+	text-align: center;
+	border-bottom: 1px dotted rgb(160,160,160);
+}
+
+#content blockquote.example pre {
+	border-left:  1px solid rgb(150, 220, 238);
+	padding: 0;
+	padding-left: 10pt;
+	font-size: 7.5pt;
+}
+
+#references {
+	margin-top: 10pt;
+	color: rgb(200, 200, 200);
+	border-top:  1px solid rgb(230, 230, 230);
+	font-size: 8pt;
+}
+#references a:link, #references a:active, #references a:visited {
+	color: rgb(150,150,150);
+}
+
+#references .entry {
+	padding-top: 5pt;
+	clear: both;
+}
+
+#references .entry .name {
+	float: left;
+	font-weight: bold;
+	padding-right: 5pt;
+}
+
+#references .entry .content {
+	text-align: right;
 }

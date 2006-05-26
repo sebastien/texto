@@ -38,13 +38,13 @@
 #                       -
 #
 
-import os, sys
+import os, sys, StringIO
 
 __doc__ = """Kiwi is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
 XML DOM."""
 
-__version__ = "0.7.5"
+__version__ = "0.7.8"
 __pychecker__ = "blacklist=cDomlette,cDomlettec"
 
 import re, string, operator, getopt, codecs
@@ -57,7 +57,7 @@ import re, string, operator, getopt, codecs
 import xml.dom.minidom
 dom = xml.dom.minidom.getDOMImplementation()
 
-from kiwi import core, html
+from kiwi import core, kiwi2html
 
 #------------------------------------------------------------------------------
 #
@@ -65,7 +65,7 @@ from kiwi import core, html
 #
 #------------------------------------------------------------------------------
 
-usage = u"Kiwi v."+__version__+u""",
+USAGE = u"Kiwi v."+__version__+u""",
    A flexible tool for converting plain text markup to XML and HTML.
    Kiwi can be used to easily generate documentation from plain files or to
    convert exiting Wiki markup to other formats.
@@ -90,6 +90,7 @@ Options:
    -m --html                     Outputs an HTML file corresponding to the Kiwi
                                  document
       --no-style                 Does not include the default CSS in the HTML
+      --body-only                Only returns the content of the <body< element
 
    The available encodings are %s
 
@@ -97,6 +98,12 @@ Misc:
    -h,  --help                    prints this help.
    -v,  --version                 prints the version of Kiwi.
 """
+
+# Error codes
+
+ERROR   = -1
+INFO    = 0
+SUCCESS = 1
 
 # Normalised encodings
 
@@ -121,14 +128,24 @@ ENCODINGS = {
 	MACROMAN:MACROMAN, "mac-roman":MACROMAN
 }
 
-
-if __name__ == "__main__":
+	
+def run( arguments, input = None, noOutput=False ):
+	"""Returns a couple (STATUS, VALUE), where status is 1 when OK, 0 when
+	informative, and -1 when error, and value is a string.
+	
+	The given arguments can be either a string or an array, the input can be
+	None (it will be then taken from the arguments), or be a file-like object,
+	and the noOutput flag will not output the result on stdout or whatever file
+	is given on the command line.
+	"""
+	if type(arguments) == str: arguments = arguments.split()
 
 	# --We extract the arguments
 	try:
-		optlist, args = getopt.getopt(sys.argv[1:], "hpmvi:o:t:",\
+		optlist, args = getopt.getopt(arguments, "hpmvi:o:t:",\
 		["input-encoding=", "output-encoding=", "help", "html",
-		"tab=", "version", "pretty", "no-style", "nostyle"])
+		"tab=", "version", "pretty", "no-style", "nostyle",
+		"body-only", "bodyonly"])
 	except:
 		args=[]
 		optlist = []
@@ -145,13 +162,14 @@ if __name__ == "__main__":
 			pass
 	ENCODINGS_LIST=ENCODINGS_LIST[:-2]+"."
 
-	usage = usage % (ENCODINGS_LIST)
+	usage = USAGE % (ENCODINGS_LIST)
 
 	# We set attributes
 	pretty_print    = 0
 	validate_output = 0
 	generate_html   = 0
 	no_style        = 0
+	body_only       = 0
 	input_enc       = ASCII
 	output_enc      = ASCII
 	if LATIN1 in ENCODINGS:
@@ -164,98 +182,113 @@ if __name__ == "__main__":
 	# We parse the options
 	for opt, arg in optlist:
 		if opt in ('-h', '--help'):
-			print usage.encode(LATIN1); sys.exit()
+			return (INFO, usage.encode(LATIN1))
 		elif opt in ('-v', '--version'):
-			print __version__
-			sys.exit()
+			return (INFO, __version__)
 		elif opt in ('-i', '--input-encoding'):
 			arg = string.lower(arg)
 			if arg in ENCODINGS.keys() and ENCODINGS[arg] in available_enc:
 				input_enc=ENCODINGS[arg]
 			else:
-				print "Kiwi error : Specified input encoding is not available, choose between:"
-				print ENCODINGS_LIST
-				sys.exit(3)
+				r  = "Kiwi error : Specified input encoding is not available, choose between:"
+				r += ENCODINGS_LIST
+				return (ERROR, r)
 		elif opt in ('-o', '--output-encoding'):
 			arg = string.lower(arg)
 			if arg in ENCODINGS.keys() and ENCODINGS[arg] in available_enc:
 				output_enc=ENCODINGS[arg]
 			else:
-				print "Kiwi error: Specified output encoding is not available, choose between:"
-				print ENCODINGS_LIST
-				sys.exit(3)
+				r  = "Kiwi error: Specified output encoding is not available, choose between:"
+				r += ENCODINGS_LIST
+				return (ERROR, r)
 		elif opt in ('-t', '--tab'):
 			TAB_SIZE = int(arg)
 			if TAB_SIZE<1:
-				print "Kiwi error: Specified tab value (%s) should be superior to 0." %\
-				(TAB_SIZE)
-				sys.exit(3)
-			else:
-				sys.stderr.write("Tab value set to %s\n" % (TAB_SIZE))
+				return (ERROR, "Kiwi error: Specified tab value (%s) should be superior to 0." %\
+				(TAB_SIZE))
 		elif opt in ('--no-style', "--nostyle"):
 			no_style     = 1
+		elif opt in ('--body-only', "--bodyonly"):
+			no_style     = 1
+			body_only    = 1
 		elif opt in ('-p', '--pretty'):
 			pretty_print = 1
 		elif opt in ('-m', '--html'):
 			generate_html = 1
 
 	# We check the arguments
-	if len(args)<1:
-		print usage.encode("iso-8859-1")
-		sys.exit(2)
+	if input==None and len(args)<1:
+		return (INFO, usage.encode("iso-8859-1"))
 
 	# We set default values
-	source = args[0]
+	if input == None: source = args[0]
+	else: source = None
 	output = None
 	if len(args)>1: output = args[1]
 
 	#sys.stderr.write("Kiwi started with input as %s and output as %s.\n"\
 	#% (input_enc, output_enc))
-	if source=='-': base_dir = os.path.abspath(".")
+	if input: base_dir = os.getcwd()
+	elif source=='-': base_dir = os.path.abspath(".")
 	else: base_dir = os.path.abspath(os.path.dirname(source))
 
 	parser = core.Parser(base_dir, input_enc, output_enc)
 
 	# We open the input file, taking care of stdin
-	if source=="-":
+	if input != None:
+		ifile = input
+	elif source=="-":
 		ifile = sys.stdin
 	else:
 		try:
 			ifile = codecs.open(source,"r",input_enc)
 		except:
-			sys.stderr.write("Unable to open input file.\n")
-			sys.exit()
+			return (ERROR, "Unable to open input file.")
 
-	if output==None: ofile = sys.stdout
+	if noOutput: pass
+	elif output==None: ofile = sys.stdout
 	else: ofile = open(output,"w")
 
 	try:
 		data = ifile.read()
 	except UnicodeDecodeError, e:
-		sys.stderr.write("Impossible to decode input %s as %s\n" % (source, input_enc))
-		sys.stderr.write("--> %s\n" % (e))
-		sys.exit(-1)
+		r  = "Impossible to decode input %s as %s\n" % (source, input_enc)
+		r += "--> %s\n" % (e)
+		return (ERROR, r)
 
 	if source!="-": ifile.close()
 
+	if type(data) != unicode: data = unicode(data) 
 	xml_document = parser.parse(data)
 
+	result = None
 	if generate_html:
 		variables = {}
 		css_file = file(os.path.dirname(__file__) + "/screen-kiwi.css")
 		if not no_style:
 			variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (css_file.read())
 		css_file.close()
-		ofile.write(html.generate(xml_document, variables).encode(output_enc))
+		result = kiwi2html.processor.generate(xml_document, body_only, variables).encode(output_enc)
+		if not noOutput: ofile.write(result)
 	elif pretty_print:
 		#Ft.Xml.Lib.Print.PrettyPrint(xml_document, ofile, output_enc)
 		#MiniDom:
-		ofile.write(xml_document.toprettyxml("  ").encode(output_enc))
+		result = xml_document.toprettyxml("  ").encode(output_enc)
+		if not noOutput: ofile.write(result)
 	else:
 		#Ft.Xml.Lib.Print.Print(xml_document, ofile, output_enc)
 		#MiniDom:
-		ofile.write(xml_document.toxml().encode(output_enc))
+		result = xml_document.toxml().encode(output_enc)
+		if not noOutput: ofile.write(result)
 
-	if output!=None: ofile.close()
+	return (SUCCESS, result)
+		
+if __name__ == "__main__":
+	status, result = run(sys.argv[1:])
+	if status == ERROR:
+		sys.stderr.write(result)
+	elif status == INFO:
+		sys.stdout.write(result)
+	
 
 # EOF-UNIX/iso-8895-1-------------------------------@RisingSun//Python//1.0//EN

@@ -7,8 +7,10 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   10-Feb-2006
+# Last mod.         :   21-Feb-2006
 # History           :
+#                       21-Feb-2006 Further cleanup and syntax mods
+#                       14-Feb-2006 Cleaned-up uneccessary tags
 #                       10-Feb-2006 Added XML parsing for markup
 #                       26-Dec-2004 Changed quotes syntax, added footnote (SPE)
 #                       05-Oct-2004 Completed inline parsers (SPE)
@@ -37,7 +39,6 @@
 
 import re
 
-__doc__ = """Write module doc here"""
 __pychecker__ = "unusednames=y"
 
 #------------------------------------------------------------------------------
@@ -62,8 +63,8 @@ MUST_BE_START_OR_END = \
 
 # Kiwi core
 
-COMMENT    = u"^\s*#.*$"
-RE_COMMENT = re.compile(COMMENT, re.LOCALE | re.MULTILINE )
+COMMENT          = u"^\s*#.*$"
+RE_COMMENT       = re.compile(COMMENT, re.LOCALE | re.MULTILINE )
 
 ESCAPED_START    = u"{\|"
 RE_ESCAPED_START = re.compile(ESCAPED_START, re.LOCALE)
@@ -74,91 +75,61 @@ RE_ESCAPED_REPLACE=re.compile(ESCAPED_REPLACE, re.LOCALE)
 
 # Text style
 
-LITTERAL         = u"`"
-RE_LITTERAL      = re.compile(LITTERAL, re.LOCALE)
-LITTERAL_REPLACE = u"\`"
-RE_LITTERAL_REPLACE = re.compile(LITTERAL_REPLACE, re.LOCALE)
-CODE     = u"`([^\']+)'"
-RE_CODE  = re.compile(CODE, re.LOCALE|re.MULTILINE)
-STRONG   = u"\*\*([^*]+)\*\*"
-RE_STRONG= re.compile(STRONG, re.LOCALE|re.MULTILINE)
-EMPHASIS = u"\*([^*]+)\*"
-RE_EMPHASIS= re.compile(EMPHASIS, re.LOCALE|re.MULTILINE)
-QUOTED    = u"''(.+)''"
-RE_QUOTED = re.compile(QUOTED, re.LOCALE|re.MULTILINE)
+CODE             = u"`([^\`]+)`"
+RE_CODE          = re.compile(CODE, re.LOCALE|re.MULTILINE)
+CODE_2           = u"``((`?[^`])+)``"
+RE_CODE_2        = re.compile(CODE_2, re.LOCALE|re.MULTILINE)
+PRE              = u"^(\s*\>(\t|    ))(.*)$"
+RE_PRE           = re.compile(PRE, re.LOCALE|re.MULTILINE)
+EMPHASIS         = u"\*([^*]+)\*"
+RE_EMPHASIS      = re.compile(EMPHASIS, re.LOCALE|re.MULTILINE)
+STRONG           = u"\*\*([^*]+)\*\*"
+RE_STRONG        = re.compile(STRONG, re.LOCALE|re.MULTILINE)
+TERM             = u"\_([^_]+)_"
+RE_TERM          = re.compile(TERM, re.LOCALE|re.MULTILINE)
+QUOTED           = u"''(('?[^'])+)''"
+RE_QUOTED        = re.compile(QUOTED, re.LOCALE|re.MULTILINE)
+CITATION         = u"«([^»]+)»"
+RE_CITATION      = re.compile(CITATION,re.LOCALE|re.MULTILINE)
 
 # Special Characters
 
-BREAK    = u"\s*\n\s*\|\s*\n()"
-RE_BREAK= re.compile(BREAK)
-NEWLINE  = u"\s*\\\\n\s*()"
-RE_NEWLINE= re.compile(NEWLINE)
-LONGDASH = u" -- ()"
-RE_LONGDASH= re.compile(LONGDASH)
-ARROW    = u"<-+>|-+->|<-+"
-RE_ARROW = re.compile(ARROW,)
-DOTS     = u" \.\.\.()"
-RE_DOTS  = re.compile(DOTS,)
-
-# Keywords and acronyms
-
-ACRONYM  = u"_([^_]+)_(\s*\(:([^:)]+)(:([^)]+))?\))?"
-RE_ACRONYM = re.compile(ACRONYM,re.LOCALE|re.MULTILINE)
-
-KEYWORD  = u"!([^!]+)!"
-RE_KEYWORD = re.compile(KEYWORD,re.LOCALE|re.MULTILINE)
-
-TERM     = u"'\w+'|\|[^\|]+\|"
-RE_TERM  = re.compile(TERM,re.LOCALE|re.MULTILINE)
-
-CF  = ":([^:)]*)" ; OCF = "(:([^:)]*))?" ; ECF = "(:([^)]+))?"
-
-CITATION = u"\>\>((\<[^<]|[^<])+)\<\<(\s*\(:([^:)]*)(:([^)]+))?\))?"
-RE_CITATION = re.compile(CITATION,re.LOCALE|re.MULTILINE)
-
-QUOTE = u"\<\<((\>[^>]|[^>])+)\>\>(\s*\(" + CF + OCF + OCF + ECF + "\))?"
-RE_QUOTE = re.compile(QUOTE,re.LOCALE|re.MULTILINE)
-
-DOCUMENT = u"``(('[^']|[^'])+)''(\s*\(" + CF + OCF + ECF + "\))?"
-RE_DOCUMENT = re.compile(DOCUMENT,re.LOCALE|re.MULTILINE)
-
-FOOTNOTE = u"\s*\.\.\(((\.[^\.]|[^\.])+)\)\.\."
-RE_FOOTNOTE =  re.compile(FOOTNOTE,re.LOCALE|re.MULTILINE)
-
+BREAK            = u"\s*\n\s*\|\s*\n()"
+RE_BREAK         = re.compile(BREAK)
+NEWLINE          = u"\s*\\\\n\s*()"
+RE_NEWLINE       = re.compile(NEWLINE)
+LONGDASH         = u" -- ()"
+RE_LONGDASH      = re.compile(LONGDASH)
+ARROW            = u"<-+>|-+->|<-+"
+RE_ARROW         = re.compile(ARROW,)
+DOTS             = u" \.\.\.()"
+RE_DOTS          = re.compile(DOTS,)
+ENTITIES         = u"(&(\w+|#[0-9]+);)"
+RE_ENTITIES      = re.compile(ENTITIES,)
 
 # Linking content
 
-EMAIL    = u"\<([\w.\-_]+@[\w.\-_]+)\>"
-RE_EMAIL = re.compile(EMAIL, re.LOCALE|re.MULTILINE)
-URL      = u"\<([A-z]+://[^\>]+)\>"
-RE_URL   = re.compile(URL, re.LOCALE|re.MULTILINE)
-
-TAG       = u"{([\w_-]+)}"
-RE_TAG    = re.compile(TAG, re.LOCALE|re.MULTILINE)
-
-REFERENCE = u"\{([#$][\w_-]+|\<[A-z]+:/[^\>]+\>)\s*[:,;]([^\}]+)\}"
-#FIXME: I came up with the following alternative
-#REFERENCE    = u"{(#\w+|$\w+|<[^>]+>):[^}]+}"
-RE_REFERENCE = re.compile(REFERENCE, re.LOCALE|re.MULTILINE)
+EMAIL            = u"\<([\w.\-_]+@[\w.\-_]+)\>"
+RE_EMAIL         = re.compile(EMAIL, re.LOCALE|re.MULTILINE)
+URL              = u"\<([A-z]+://[^\>]+)\>"
+RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
+LINK             = u"""\[([^\]]+)\]\s*((\(([^ ]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])"""
+RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
 
 
 # Custom markup
+MARKUP           = u"\[([a-zA-Z]\w*)(\s*\w+)?\s*(:\s*([^\]]*))?\]"
+MARKUP_ATTR      = u"""\w+\s*=\s*('[^']*'|"[^"]*")"""
+MARKUP           = u"\<(\w+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
+RE_MARKUP        = re.compile(MARKUP, re.LOCALE|re.MULTILINE)
 
-MARKUP      = u"\[([a-zA-Z]\w*)(\s*\w+)?\s*(:\s*([^\]]*))?\]"
-MARKUP_ATTR = u"""\w+\s*=\s*('[^']*'|"[^"]*")"""
-MARKUP      = u"\<(\w+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
-RE_MARKUP   = re.compile(MARKUP, re.LOCALE|re.MULTILINE)
-
-# Specific elements
-
-TARGET    = u"\[>\s*([^\]]+)\]"
-RE_TARGET = re.compile(TARGET, re.LOCALE|re.MULTILINE)
-
-INCLUDE_RAW = u"\[\s*#\s*:([^\]]+)\]"
-RE_INCLUDE_RAW = re.compile(INCLUDE_RAW,re.LOCALE|re.MULTILINE)
-
-START_TAGS = [u"start", u"debut", u"s"]
-END_TAGS = [u"end", u"fin", u"e"]
+def _processText( context, text ):
+	"""Common operation for expanding tabs and normalising text. Use by
+	acronyms, citations and quotes."""
+	if not text: return text
+	text = context.parser.expandTabs(text)
+	text = context.parser.normaliseText(text)
+	return text
 
 #------------------------------------------------------------------------------
 #
@@ -216,11 +187,14 @@ class InlineParser:
 		called. Modifications are made to the given node."""
 		match = recogniseInfo
 		assert match!=None
-		inline_node = context.document.createElementNS(None, self.name)
 		text = self.result(match, context.documentText)
-		if text:
-			text_node   = context.document.createTextNode(text)
-			inline_node.appendChild(text_node)
+		if self.name:
+			inline_node = context.document.createElementNS(None, self.name)
+			if text:
+				text_node   = context.document.createTextNode(text)
+				inline_node.appendChild(text_node)
+		else:
+			inline_node   = context.document.createTextNode(text)
 		node.appendChild(inline_node)
 		return self.endOf(recogniseInfo)
 
@@ -318,269 +292,37 @@ class EscapedInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  Tag inline parser
+#  Link/Reference parser
 #
 #------------------------------------------------------------------------------
 
-class TagInlineParser( InlineParser ):
-	"""A tag is the equivalent of an anchor in HTML, it is used to be
-	references later."""
+class LinkInlineParser( InlineParser ):
 
 	def __init__( self ):
-		InlineParser.__init__( self, "tag", RE_TAG )
+		InlineParser.__init__( self, "link", RE_LINK )
 
-	def parse( self, context, node, recogniseInfo  ):
-		match = recogniseInfo
-		assert match!=None
-		if node.getAttributeNS(None, "tag"):
-			context.parser.warning("Duplicate tag for block element: " +
-			match.group(1), context)
-		node.setAttributeNS(None, "tag", match.group(1))
-		return self.endOf(recogniseInfo)
-
-#------------------------------------------------------------------------------
-#
-#  Reference identifier
-#
-#------------------------------------------------------------------------------
-
-def identifyReference( reference, node ):
-	"""Identifies a reference from the given string, resuling from a
-	RE_REFERENCE match, sets the type and target attributes of the given
-	node to the proper value and return the value of the type attribute."""
-	# It is an internal reference
-	if reference[0] == "#":
-		node.setAttributeNS(None, u"type", "internal")
-		node.setAttributeNS(None, u"target", reference[1:])
-		return "internal"
-	# It is a bibliographic
-	elif reference[0] == "$":
-		node.setAttributeNS(None, u"type", "bibliographic")
-		node.setAttributeNS(None, u"target", reference[1:])
-		return "bibliographic"
-	# Otherwise it is an URI
-	else:
-		assert reference[0] == "<"
-		node.setAttributeNS(None, u"type", "uri")
-		node.setAttributeNS(None, u"target", reference[1:-1])
-		return "uri"
-
-#------------------------------------------------------------------------------
-#
-#  Acronym inline parser
-#
-#------------------------------------------------------------------------------
-
-def _processText( text, context ):
-	"""Common operation for expanding tabs and normalising text. Use by
-	acronyms, citations and quotes."""
-	if not text: return text
-	text = context.parser.expandTabs(text)
-	text = context.parser.normaliseText(text)
-	return text
-
-class AcronymInlineParser( InlineParser ):
-
-	def __init__( self ):
-		InlineParser.__init__( self, "acronym", RE_ACRONYM )
-
-	def parse( self, context, node, match  ):
-
-		acronym     = _processText(match.group(1), context)
-		description = _processText(match.group(3), context)
-		links       = _processText(match.group(4), context)
-
-		# In case the acronym is a reverse acronym...
-		if description and (acronym.split(" ")) > 1 and len(description.split(" ")) == 1:
-			temp = acronym
-			acronym = description
-			description = temp
-
-		# We create the text node
-		acr_node = context.document.createElementNS(None, self.name)
-		acr_node.appendChild(
-			context.document.createTextNode(acronym.upper().strip()))
-		# Add the attributes if necessary
-		if description:
-			acr_node.setAttributeNS(None, "description", description.strip())
-		if links:
-			# We skip the first character (always a colon)
-			identifyReference(links[1:], acr_node)
-
-		# And append it
-		node.appendChild(acr_node)
-
-		# And increase the offset
-		return self.endOf(match)
-
-#------------------------------------------------------------------------------
-#
-#  Citation inline parser
-#
-#------------------------------------------------------------------------------
-
-class CitationInlineParser( InlineParser ):
-
-	def __init__( self ):
-		InlineParser.__init__( self, "citation", RE_CITATION )
-
-	def parse( self, context, node, match  ):
+	def parse( self, context, node, match ):
 		assert match
-		citation     = _processText(match.group(1), context)
-		authors      = _processText(match.group(4), context)
-		links        = _processText(match.group(5), context)
-		# We create the text node
-		cit_node = context.document.createElementNS(None, self.name)
-		cit_node.appendChild(context.document.createTextNode(citation.strip()))
-		# Add the authors, if any
-		if authors:
-			cit_node.setAttributeNS(None, "authors", authors.strip())
-		if links:
-			# We skip the first character (always a colon)
-			identifyReference(links[1:], cit_node)
-		# And append it
-		node.appendChild(cit_node)
-		# And increase the offset
-		return self.endOf(match)
-
-#------------------------------------------------------------------------------
-#
-#  Quote inline parser
-#
-#------------------------------------------------------------------------------
-
-class QuoteInlineParser( InlineParser ):
-
-	def __init__( self ):
-		InlineParser.__init__( self, "quote", RE_QUOTE )
-
-	def parse( self, context, node, match  ):
-		assert match
-		quote     = _processText(match.group(1), context)
-		title     = _processText(match.group(4), context)
-		authors   = _processText(match.group(6), context)
-		year      = _processText(match.group(8), context)
-		links     = _processText(match.group(10), context)
-
-		# We create the text node
-		quote_node = context.document.createElementNS(None, self.name)
-		quote_node.appendChild(context.document.createTextNode(quote.strip()))
-
-		if title: quote_node.setAttributeNS(None, "title", title.strip())
-		if authors: quote_node.setAttributeNS(None, "authors", authors.strip())
-		if year: quote_node.setAttributeNS(None, "year", year.strip())
-		if links: identifyReference(links, quote_node)
-
-		# And append it
-		node.appendChild(quote_node)
-		# And increase the offset
-		return self.endOf(match)
-
-#------------------------------------------------------------------------------
-#
-#  Document inline parser
-#
-#------------------------------------------------------------------------------
-
-class DocumentInlineParser( InlineParser ):
-
-	def __init__( self ):
-		InlineParser.__init__( self, "document", RE_DOCUMENT )
-
-	def parse( self, context, node, match  ):
-		assert match
-		document = _processText(match.group(1), context)
-		type     = _processText(match.group(4), context)
-		comment  = _processText(match.group(6), context)
-		year     = _processText(match.group(8), context)
-
-		# We create the text node
-		doc_node = context.document.createElementNS(None, self.name)
-		doc_node.appendChild(context.document.createTextNode(document.strip()))
-
-		if type:    doc_node.setAttributeNS(None, "type", type.strip().lower())
-		if comment: doc_node.setAttributeNS(None, "comment", comment.strip())
-		if year:    doc_node.setAttributeNS(None, "year", year.strip())
-
-		# And append it
-		node.appendChild(doc_node)
-		# And increase the offset
-		return self.endOf(match)
-
-#------------------------------------------------------------------------------
-#
-#  Footnote inline parser
-#
-#------------------------------------------------------------------------------
-
-class FootnoteInlineParser( InlineParser ):
-
-	def __init__( self ):
-		InlineParser.__init__( self, "footnote", RE_FOOTNOTE )
-
-	def parse( self, context, node, match  ):
-		assert match
-		content  = _processText(match.group(1), context)
-
-		# We create the text node
-		note_node = context.document.createElementNS(None, self.name)
-		note_node.appendChild(context.document.createTextNode(content.strip()))
-
-		# And append it
-		node.appendChild(note_node)
-		# And increase the offset
-		return self.endOf(match)
-		
-#------------------------------------------------------------------------------
-#
-#  Reference inline parser
-#
-#------------------------------------------------------------------------------
-
-class ReferenceInlineParser( InlineParser ):
-	"""A reference refers to a tag, a bibliographic entry, or an URI."""
-
-	def __init__( self ):
-		InlineParser.__init__( self, "reference", RE_REFERENCE )
-
-	def parse( self, context, node, recogniseInfo  ):
-		match = recogniseInfo
-		assert match!=None
-		# Creates the node and assign the type and target attribute
-		refnode = context.document.createElementNS(None, self.name)
-		reftype = identifyReference(match.group(1), refnode)
-		# Then we set the content of the node
-		if reftype == "uri":
-			refnode.appendChild(context.document.createTextNode(match.group(2)))
+		# We detect wether the link is an URL or Ref link
+		link_node = context.document.createElementNS(None, "link")
+		if match.group(7):
+			ref_entry = match.group(7)
+			link_node.setAttributeNS(None, "type",   "ref")
+			link_node.setAttributeNS(None, "target", ref_entry)
 		else:
-			self._createContent(context, refnode, match.group(2))
-		node.appendChild(refnode)
-		return self.endOf(recogniseInfo)
-
-	def _createContent( self, context, node, text ):
-		"""Creates child nodes and appends them to the given node, where occurences
-		of `p#' and `#' in text are replaced by pageNumber and number elements
-		in the child nodes, while other characters are appended as text nodes."""
-		offset = 0
-		while offset < len(text):
-			pnum = text.find("p#", offset)
-			num  = text.find("#",  offset)
-			if ( pnum < num or num<0 ) and pnum>=0:
-				if pnum>0:
-					node.appendChild(context.document.createTextNode(
-					text[offset:pnum]))
-				node.appendChild(context.document.createElementNS(None, "pageNumber"))
-				offset = pnum + len("p#")
-			elif ( num < pnum or pnum<0 ) and num>=0:
-				if num>0:
-					node.appendChild(context.document.createTextNode(
-					text[offset:num]))
-				node.appendChild(context.document.createElementNS(None, "number"))
-				offset = num + len("#")
-			else:
-				node.appendChild(context.document.createTextNode(
-					text[offset:]))
-				offset = len(text)
+			ref_url   = match.group(4)
+			ref_title = match.group(5)
+			link_node.setAttributeNS(None, "type", "url")
+			link_node.setAttributeNS(None, "target", ref_url)
+			if ref_title: link_node.setAttributeNS(None, "target", ref_title)
+		#Now we parse the content of the link
+		offsets = context.saveOffsets()
+		context.setCurrentBlock(context.getOffset() + match.start() + 1,
+		context.getOffset() + match.start() + 1 + len(match.group(1)))
+		context.parser.parseBlock(context, link_node, _processText)
+		context.restoreOffsets(offsets)
+		node.appendChild(link_node)
+		return match.end()
 
 #------------------------------------------------------------------------------
 #
@@ -599,7 +341,6 @@ class MarkupInlineParser( InlineParser ):
 
 	def __init__( self ):
 		InlineParser.__init__(self, None, RE_MARKUP)
-		self.START_TAGS = START_TAGS
 
 	def parse( self, context, node, recogniseInfo  ):
 		"""Parses the given tag, and returns the offset where the parsed tag
@@ -724,6 +465,5 @@ class MarkupInlineParser( InlineParser ):
 
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text)
-
 
 # EOF-Linux/ASCII-----------------------------------@RisingSun//Python//1.0//EN

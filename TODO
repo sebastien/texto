@@ -6,5 +6,10 @@ Document:
   are followed
 - XML handling
 - Paragraph "blockquote"
+- Add an option to output non html-template processed tags as bold/red text
+  (template debugging mode)
+- Add markdown compatibility mode
 
 "Kiwi" => HTML and XML without the pain.
+
+- Add command line mode for kiwi
