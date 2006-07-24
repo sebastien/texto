@@ -11,6 +11,8 @@ import os, sys, re
 TEST_FILE  = re.compile("([A-Z][0-9]+)\-(\w+)\.kwi")
 TEST_FILES = {}
 
+DIR  = os.path.dirname(__file__)
+KIWI = DIR + "/../Sources/kiwi/main.py"
 def do():
 	# We populate the test files hash table
 	this_dir = os.path.abspath(os.path.dirname(__file__))
@@ -20,7 +22,7 @@ def do():
 		f = TEST_FILES.setdefault(m.group(1), [])
 		f.append((m.group(2), os.path.join(this_dir, path)))
 
-	index_f = file("index.html", "w")
+	index_f = file(DIR + "/index.html", "w")
 	index_f.write("<html><body><h1>Kiwi test suite</h1><table>")
 
 	# And now execute the tests
@@ -30,7 +32,7 @@ def do():
 		index_f.write("<tr><td colspan='3'><code>%s</code></td></tr>" % (group))
 		for test, test_path in TEST_FILES[group]:
 			print "%4s:%20s " % (group, test),
-			inp, out, err = os.popen3("python ../Sources/kiwi/main.py -m " + test_path)
+			inp, out, err = os.popen3("python " + KIWI + " -m " + test_path)
 			dest_path = os.path.splitext(test_path)[0] + ".html"
 			f = open(dest_path, "w")
 			f.write(out.read())
@@ -40,7 +42,7 @@ def do():
 			files.append(dest_path)
 			err =  err.read()
 			if err.strip() == "": print "[OK]"
-			else: print "[FAILED]"
+			else: print "[FAILED]", err
 
 	index_f.write("</table></body></html>")
 	index_f.close()

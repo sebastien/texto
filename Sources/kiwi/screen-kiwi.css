@@ -5,7 +5,7 @@ body {
 	padding-top: 10pt;
 	background: rgb(255,255,255);
 	font:  9pt/13pt "Lucida Grande",Lucida,sans-serif;
-	font:  9.5pt/12pt "Georgia",serif;
+	font:  9.5pt/12pt sans-serif;
 	color: rgb(80,80,80);
 }
 
@@ -92,8 +92,14 @@ aimg {
 	color: rgb(143, 160, 168);
 }
 
+#content ul li {
+	padding-bottom: 0.5em;
+	background-color: rgb(250,250,250);
+}
+
 #content table {
 	border:  1px solid rgb(150, 220, 238);
+	padding: 5pt;
 }
 
 #content table caption {
@@ -105,13 +111,22 @@ aimg {
 	color: rgb(22, 130, 178);
 }
 
+#content table tbody {
+}
+
+#content table tr {
+	margin: 0;
+}
+
 #content table tr td {
-	padding: 10px;
+	margin: 0;
+	padding: 0px;
+	padding-right: 5pt;
 	background-color: rgb(250,250,250);
 }
 
 #content table tr.odd td {
-	background-color: rgb(250,250,250);
+	background-color: rgb(240,240,240);
 }
 
 #content span.term {

@@ -6,8 +6,9 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   22-Fev-2006
+# Last mod.         :   05-Apr-2006
 # History           :
+#                       05-Apr-2006 Updated the parseAttribute for HTML
 #                       22-Feb-2006 Slightly updated doc and parsers
 #                       14-Feb-2006 Block separator now supprots DOS
 #                       linebreaknow supprots DOS linebreaks, simplified
@@ -53,7 +54,7 @@ TAB_SIZE = 4
 RE_BLOCK_SEPARATOR = re.compile(u"[ \t\r]*\n[ \t\r]*\n", re.MULTILINE | re.LOCALE)
 RE_SPACES = re.compile(u"[\s\n]+", re.LOCALE|re.MULTILINE)
 RE_TABS = re.compile("\t+")
-ATTRIBUTE = u"[\s\n]*([\w_]+)[\s\n]*=[\s\n]*(\"[^\"]+\"|'[^']+')[\s\n]*[,;]?"
+ATTRIBUTE = u"""(\w+)\s*=\s*('[^']*'|"[^"]*")"""
 RE_ATTRIBUTE = re.compile(ATTRIBUTE, re.LOCALE|re.MULTILINE)
 
 #------------------------------------------------------------------------------
@@ -164,6 +165,11 @@ class Context:
 		"""Decreases the offset."""
 		self.increaseOffset(-decrease)
 
+	def fragment( self, start, end ):
+		"""Returns the text fragment that starts and ends at the given
+		offsets."""
+		return self.documentText[start:end]
+
 	def currentFragment( self ):
 		"""Returns the current text fragment, from the current offset to the
 		block end offset."""
@@ -259,18 +265,16 @@ class Context:
 		"""Parses attributes expressed in the given text. Attributes have the
 		following form: ATTRIBUTE="VALUE" and are separated by spaces."""
 		if not text: return {}
+		text = text.strip()
 		attributes = {}
 		match  = True
-		offset = 0
 		# We parse attributes
-		while match:
-			match = RE_ATTRIBUTE.match(text, offset)
+		while match and text:
+			match = RE_ATTRIBUTE.match(text)
 			if not match: break
 			attributes[match.group(1)] = match.group(2)[1:-1]
 			offset = match.end()
-		# We warn of malformed attributes
-		if text[offset:].strip():
-			self.parser.warning("Malformed attributes: "+text, self)
+			text = text[match.end():].strip()
 		return attributes
 
 #------------------------------------------------------------------------------
@@ -400,7 +404,6 @@ class Parser:
 	
 	def parseContext( self, context ):
 		while not context.documentEndReached():
-			print "PARSE"
 			self._parseNextBlock(context)
 
 	def _parseNextBlock( self, context ):

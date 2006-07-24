@@ -127,7 +127,6 @@ ENCODINGS = {
 	UTF16:UTF16, "utf16":UTF16,
 	MACROMAN:MACROMAN, "mac-roman":MACROMAN
 }
-
 	
 def run( arguments, input = None, noOutput=False ):
 	"""Returns a couple (STATUS, VALUE), where status is 1 when OK, 0 when
@@ -167,7 +166,7 @@ def run( arguments, input = None, noOutput=False ):
 	# We set attributes
 	pretty_print    = 0
 	validate_output = 0
-	generate_html   = 0
+	generate_html   = 1
 	no_style        = 0
 	body_only       = 0
 	input_enc       = ASCII
@@ -207,14 +206,20 @@ def run( arguments, input = None, noOutput=False ):
 				return (ERROR, "Kiwi error: Specified tab value (%s) should be superior to 0." %\
 				(TAB_SIZE))
 		elif opt in ('--no-style', "--nostyle"):
-			no_style     = 1
+			no_style      = 1
+			generate_html = 1
+			pretty_print  = 0
 		elif opt in ('--body-only', "--bodyonly"):
-			no_style     = 1
-			body_only    = 1
+			no_style      = 1
+			body_only     = 1
+			generate_html = 1
+			pretty_print  = 0
 		elif opt in ('-p', '--pretty'):
-			pretty_print = 1
+			pretty_print  = 1
+			generate_html = 0
 		elif opt in ('-m', '--html'):
 			generate_html = 1
+			pretty_print  = 0
 
 	# We check the arguments
 	if input==None and len(args)<1:
@@ -233,6 +238,9 @@ def run( arguments, input = None, noOutput=False ):
 	else: base_dir = os.path.abspath(os.path.dirname(source))
 
 	parser = core.Parser(base_dir, input_enc, output_enc)
+
+	if source == output and not noOutput:
+		return(ERROR, "Cannot overwrite the source file.")
 
 	# We open the input file, taking care of stdin
 	if input != None:
@@ -267,6 +275,7 @@ def run( arguments, input = None, noOutput=False ):
 		css_file = file(os.path.dirname(__file__) + "/screen-kiwi.css")
 		if not no_style:
 			variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (css_file.read())
+			variables["ENCODING"] = output_enc
 		css_file.close()
 		result = kiwi2html.processor.generate(xml_document, body_only, variables).encode(output_enc)
 		if not noOutput: ofile.write(result)
@@ -286,9 +295,9 @@ def run( arguments, input = None, noOutput=False ):
 if __name__ == "__main__":
 	status, result = run(sys.argv[1:])
 	if status == ERROR:
-		sys.stderr.write(result)
+		sys.stderr.write(result + "\n")
 	elif status == INFO:
-		sys.stdout.write(result)
+		sys.stdout.write(result + "\n")
 	
 
 # EOF-UNIX/iso-8895-1-------------------------------@RisingSun//Python//1.0//EN

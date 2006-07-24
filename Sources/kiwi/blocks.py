@@ -7,8 +7,12 @@
 # Author            :   Sébastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   22-Mar-2006
+# Last mod.         :   25-Apr-2006
 # History           :
+#                       25-Apr-2006 Fixed table and sections
+#                       24-Apr-2006 Fixed list items indent, fixes section
+#                       depth.
+#                       23-Mar-2006 Fixed tagged block
 #                       22-Mar-2006 Table cells parse their content as blocks
 #                       15-Mar-2006 Added support for title headers
 #                       02-Mar-2006 Improved tagged blocks support
@@ -35,22 +39,20 @@
 #                       13-Dec-2003 More list item block parser work (SPE)
 #                       22-Nov-2003 Preliminary work on lists (SPE)
 #                       19-Nov-2003 First (re-)implementation (SPE)
-#
-# Bugs              :
-#                       -
+
 # To do             :
 #                       - Add a "moveToParentNode" method in Blocks
 #                       - ListItem illustrates a case where the current node is
 #                         not proper for parsing blocks
 #                       - Enhance implementation of Meta which is a bit rough
 #
+# -----------------------------------------------------------------------------
 
 import re, string
 from kiwi.formatting import *
 
-__doc__ = """Write module doc here"""
+__doc__       = """Write module doc here"""
 __pychecker__ = "unusednames=recogniseInfo,content"
-
 
 EMPTY_LIST_ITEM = "Empty list item."
 
@@ -67,17 +69,17 @@ DEFINITION_LIST  = 2
 
 RE_BLANK          = re.compile(u"\s*", re.LOCALE|re.MULTILINE)
 
-TITLE             = u"^\s*(==)(.+)$"
+TITLE             = u"^\s*(==)([^=].+)$"
 RE_TITLE          = re.compile(TITLE, re.LOCALE|re.MULTILINE)
 TITLE_HEADER      = u"^\s*(--)([^\:]+):(.+)$"
 RE_TITLES         = re.compile(u"%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MULTILINE)
 
 SECTION_HEADING   = u"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
-SECTION_UNDERLINE = u"^\s*[*-=#]+\s*$"
+SECTION_UNDERLINE = u"^\s*[\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
 
-TAGGED_BLOCK      = u"^\s*((\w+\s*)(\:[^_]+)?)?(_+)\s*$"
+TAGGED_BLOCK      = u"^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
 RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE | re.LOCALE)
 LIST_ITEM         = u"^(\s*)(-|\*\)|[0-9A-z][\)/\.])\s*"
 RE_LIST_ITEM      = re.compile(LIST_ITEM, re.MULTILINE | re.LOCALE)
@@ -86,7 +88,7 @@ RE_LIST_HEADING   = re.compile(LIST_HEADING, re.MULTILINE | re.LOCALE)
 LIST_ITEM_HEADING = u"^([^:]+(:\s*\n\s*|::\s*))|([^/\\\]+[/\\\]\s*\n\s*)"
 RE_LIST_ITEM_HEADING =  re.compile(LIST_ITEM_HEADING, re.MULTILINE|re.LOCALE)
 
-PREFORMATTED      = u"^(\s*\>(\t|    ))(.*)$"
+PREFORMATTED      = u"^(\s*\>(\t|   ))(.*)$"
 RE_PREFORMATTED   = re.compile(PREFORMATTED, re.LOCALE)
 
 CUSTOM_MARKUP = u"\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
@@ -105,8 +107,8 @@ RE_META_AUTHOR_EMAIL = re.compile("\<([^>]+)\>", re.LOCALE)
 REFERENCE_ENTRY    = u"\s+\[([^\]]+)]:"
 RE_REFERENCE_ENTRY = re.compile(REFERENCE_ENTRY, re.LOCALE|re.MULTILINE)
 
-TABLE_SEPARATOR    = "^\s*(-+|=+)\s*$"
-RE_TABLE_SEPARATOR = re.compile(TABLE_SEPARATOR)
+TABLE_ROW_SEPARATOR    = "^\s*(-+|=+|\++)\s*$"
+RE_TABLE_ROW_SEPARATOR = re.compile(TABLE_ROW_SEPARATOR)
 
 LANGUAGE_CODES = ("EN", "FR", "DE", "UK" )
 
@@ -238,12 +240,15 @@ class TaggedBlockParser(BlockParser):
 		# This is an opening tag
 		if tagname and tagname[0] != "_":
 			# TODO: Asserts we are not already in a sepcific block
+			block_depth = context.getBlockIndentation()
 			block_node = context.document.createElementNS(None, "Block")
-			block_node.setAttributeNS(None, "type", tagname)
+			block_node.setAttributeNS(None, "type", tagname.strip().lower())
+			block_node.setAttributeNS(None, "_indent",str(block_depth))
 			if tagtitle:
 				block_node.setAttributeNS(None, "title", tagtitle[1:].strip())
 			# We get to a content node
 			# Now we can process the document
+			context.increaseOffset(len(recogniseInfo.group()))
 			context.parser.parseBlock(context, block_node, self.processText)
 			# TODO: Handle indentation
 			while context.currentNode.nodeName not in BLOCK_ELEMENTS:
@@ -389,6 +394,7 @@ class TitleBlockParser(BlockParser):
 
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text.strip())
+
 #------------------------------------------------------------------------------
 #
 #  SectionBlockParser
@@ -405,13 +411,16 @@ class SectionBlockParser(BlockParser):
 		# We look for the number prefix
 		match = RE_SECTION_HEADING.match(context.currentFragment())
 		# We return directly if there are at least two section numbers (2.3)
-		if match and match.group(4):
-			return (RE_SECTION_HEADING, match)
+		if match:
+			match = RE_SECTION_UNDERLINE.search(context.currentFragment())
+			if match: return (RE_SECTION_HEADING, match)
 		# Or a separator followed by blank space
 		match = RE_SECTION_UNDERLINE.search(context.currentFragment())
 		if  match:
-			# If we reached the end of the block, this OK
-			if match.end() == context.blockEndOffset:
+			# If we reached the end of the block, and that there is something
+			# before, this OK
+			if match.end() == context.blockEndOffset and \
+			context.currentFragment()[:match.start()].strip():
 				return (RE_SECTION_UNDERLINE, match)
 			# Otherwise the rest must be blank
 			else:
@@ -427,9 +436,6 @@ class SectionBlockParser(BlockParser):
 		else:
 			return None
 
-	def getHeadingDepth( self, heading ):
-		return len(filter(lambda x:x, heading.split(".")))
-
 	def process( self, context, recogniseInfo ):
 		context.ensureParent( ("Content", "Appendix", "Chapter", "Section") )
 		matched_type, match = recogniseInfo
@@ -438,27 +444,28 @@ class SectionBlockParser(BlockParser):
 		block_start = context.blockStartOffset
 		block_end = context.blockEndOffset
 		section_type = "Section"
-		# We have a numbered section
-		if matched_type == RE_SECTION_HEADING:
-			# The depth is the number of dot-separated symbols
-			section_depth += self.getHeadingDepth(match.group(1))
-			# Is a chapter or appendix ?
-			first_char = match.group(1)[0]
-			if first_char in ( u'I', u'V', u'V', u'X'):
-				section_type = "Chapter"
-			elif first_char.upper() == "A":
-				section_type = "Appendix"
-			block_start = context.getOffset() + match.end()
-			# We make sure that we end the section before the block delimiter
-			delim_match = RE_SECTION_UNDERLINE.search(context.currentFragment())
-			if delim_match: block_end = context.getOffset() + delim_match.start()
-		# We have an unnumbered section
-		else:
+		# We have an underlined section
+		if matched_type == RE_SECTION_UNDERLINE:
 			block_end = context.getOffset() + match.start()
+		# We look for a number prefix
+		heading_text = context.fragment(block_start, block_end)
+		prefix_match = RE_SECTION_HEADING.match(heading_text)
+		if prefix_match:
+			res  = prefix_match.group()
+			dots = res.count(".")
+			if res.strip()[-1] == "." and dots > 1:
+				dots -= 1
+			section_depth += dots
+			block_start = context.getOffset() + prefix_match.end()
+		# We make sure that we end the section before the block delimiter
+		delim_match = RE_SECTION_UNDERLINE.search(context.currentFragment())
+		if delim_match: block_end = context.getOffset() + delim_match.start()
 		# SECOND STEP - We look for a parent node, which would have a depth
 		# smaller than the current one or that would not be a section node
 		while context.currentNode.nodeName == "Content" \
+		and context.currentNode.parentNode \
 		and context.currentNode.parentNode.nodeName == "Section" \
+		and context.currentNode.parentNode.parentNode \
 		and int(context.currentNode.parentNode.getAttributeNS(None, "_depth")) >= section_depth:
 			context.currentNode = context.currentNode.parentNode.parentNode
 		# THIRD STEP - We create the section
@@ -531,7 +538,7 @@ class ListItemBlockParser(BlockParser):
 
 		# We get the list item identation
 		indent = context.parser.getIndentation(
-			context.parser.charactersToSpaces(itemMatch.group(1)))
+			context.parser.charactersToSpaces(itemMatch.group()))
 		
 		# We look for the optional list heading
 		heading = RE_LIST_ITEM_HEADING.match(current_item_text)
@@ -684,14 +691,21 @@ class Table:
 		# Table is an array of array of (char, string) where char is either
 		# 'H' for header, or 'T' for text.
 		self._table = []
+		self._rows  = 0
+		self._cols  = 0
 		self._title = None
 	
+	def dimension( self ):
+		return len(self._table[0]), len(self._table) 
+
 	def _ensureCell( self, x, y ):
 		"""Ensures that the cell at the given position exists and returns its
 		pair value."""
 		while y >= len(self._table): self._table.append([])
 		row = self._table[y]
 		while x >= len(row): row.append(["T", None])
+		self._cols = max(self._cols, x)
+		self._rows = max(self._rows, y)
 		return row[x]
 		
 	def setTitle( self, title ):
@@ -704,17 +718,17 @@ class Table:
 			self._table[y][x] = [cell_type, text]
 		else:
 			self._table[y][x] = [cell_type, cell_text + "\n" + text]
-	
+
 	def headerCell( self, x, y ):
 		self._table[y][x] = ["H", self._ensureCell(x,y)[1]]
-		
+
 	def dataCell( self, x, y ):
 		self._table[y][x] = ["T", self._ensureCell(x,y)[1]]
-	
+
 	def isHeader( self, x, y ):
 		if len(self._table) < y or len(self._table[y]) < x: return False
 		return self._table[y][x][0] == "H"
-	
+
 	def getNode( self, context, processText ):
 		"""Renders the table as a Kiwi XML document node."""
 		table_node   = context.document.createElementNS(None, "Table")
@@ -734,7 +748,6 @@ class Table:
 					cell_node.setAttributeNS(None, "type", "header")
 				# We create a temporary Content node that will stop the nodes
 				# from seeking a parent content
-				print "CELL TEXT", cell_text
 				cell_content_node = context.document.createElementNS(None, "Content")
 				new_context = context.clone()
 				new_context.setDocumentText(cell_text)
@@ -748,6 +761,14 @@ class Table:
 		table_node.appendChild(content_node)
 		return table_node
 
+	def __repr__( self ):
+		s = ""
+		i = 0
+		for row in self._table:
+			s += "%2d: %s\n" % (i,row)
+			i += 1
+		return s
+
 class TableBlockParser( BlockParser ):
 	"""Parses the content of a tables"""
 
@@ -760,10 +781,10 @@ class TableBlockParser( BlockParser ):
 		title_match = RE_TITLE.match(lines[0])
 		if title_match:
 			if not len(lines) >= 3: return False
-			start_match = RE_TABLE_SEPARATOR.match(lines[1])
+			start_match = RE_TABLE_ROW_SEPARATOR.match(lines[1])
 		else:
-			start_match = RE_TABLE_SEPARATOR.match(lines[0])
-		end_match = RE_TABLE_SEPARATOR.match(lines[-1])
+			start_match = RE_TABLE_ROW_SEPARATOR.match(lines[0])
+		end_match = RE_TABLE_ROW_SEPARATOR.match(lines[-1])
 		return start_match and end_match
 
 	def process( self, context, recogniseInfo ):
@@ -780,40 +801,44 @@ class TableBlockParser( BlockParser ):
 			rows = rows[1:]
 		# The cells are separated by pipes (||)
 		for row in rows:
+			cells = []
 			x = 0
-			# The separator variable indicates wether we encountered a
-			# separator during the parsing of the line. If it is not the
-			# case, then the row spans more than one line.
-			separator = False
 			# Empty rows are simply ignored
 			if not row.strip(): continue
-			# Otherwise we split the cells in the row
-			for cell in row.split("||"):
-				# We remove leading or trailing borders (|)
-				if cell and cell[0]  == "|": cell = cell[1:]
-				if cell and cell[-1] == "|": cell = cell[:-1]
-				# cell = cell.strip()
-				# Is the cell a separation ?
-				if RE_TABLE_SEPARATOR.match(cell):
-					# If the previous cell was a header
-					if cell[0] == "=":
-						table.headerCell(x, y)
-					else:
-						table.dataCell(x, y)
-					separator = True
-				# Otherwise the cell is data
-				else:
+			separator = RE_TABLE_ROW_SEPARATOR.match(row)
+			# If we have not found a separator yet, we simply ensure that the
+			# cell exists and appends content to it
+			if not separator:
+				for cell in row.split("||"):
+					cells.append(cell)
+					# We remove leading or trailing borders (|)
+					if cell and cell[0]  == "|": cell = cell[1:]
+					if cell and cell[-1] == "|": cell = cell[:-1]
 					table.appendCellContent(x,y,cell)
 					# The default cell type is the same as the above
 					# cell, if any.
 					if y>0 and table.isHeader(x,y-1):
 						table.headerCell(x,y)
-				x += 1
-			# If there was at least one separator, then we are on a new
-			# row
-			if separator: y+=1
-		context.currentNode.appendChild(table.getNode(context, self. processText))
-		
+					x += 1
+			# We move to the next row only when we encounter a separator. The
+			# analysis of the separtor will tell you if the above cell is a
+			# header or a data cell
+			else:
+				# FIXME: Should handle vertical tables also
+				# ==================================
+				# HEADER || DATA
+				# =======++-------------------------
+				# ....
+				offset = 0
+				x      = 0
+				for cell in cells:
+					if separator.group(1)[offset] == "=": table.headerCell(x,y)
+					else: table.dataCell(x,y)
+					offset += len(cell)
+					x      += 1
+				y += 1
+		context.currentNode.appendChild(table.getNode(context, self.processText))
+
 #------------------------------------------------------------------------------
 #
 #  MetaBlockParser

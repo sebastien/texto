@@ -1,25 +1,14 @@
 #!/usr/bin/env python
 # Encoding: iso-8859-1
+# vim: tw=80 ts=4 sw=4 noet fenc=latin-1
 # -----------------------------------------------------------------------------
 # Project           :   Kiwi
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
+# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Feb-2006
-# Last mod.         :   15-Mar-2006
-# History           :
-#                       15-Mar-2006 Added support for title headers
-#                       06-Mar-2006 Uses the templates processor
-#                       22-Feb-2006 Fixes, added reference and link support
-#                       14-Feb-2006 Updated to new table model
-#                       10-Feb-2006 Minor bug fixes, and added docuemntation.
-#                       07-Feb-2006 First implementation
-#
-# Bugs              :
-#                       -
-# To do             :
-#                       -
-#
+# Last mod.         :   17-Jul-2006
+# -----------------------------------------------------------------------------
 
 import re, xml.dom
 import sys
@@ -34,6 +23,26 @@ import kiwi.templates
 
 class Processor(kiwi.templates.Processor):
 
+	def defaultProcessElement( self, element, selector ):
+		"""We override this for elements with the 'html' attribute."""
+		if element.getAttributeNS(None, "_html"):
+			res = "<" + element.nodeName
+			att = element.attributes
+			for i in range(att.length):
+				a = att.item(i)
+				if a.name == "_html": continue
+				res += " %s='%s'" % (a.name, element.getAttributeNS(None, a.name))
+			if element.childNodes:
+				res + ">"
+				for e in element.childNodes:
+					res += self.processElement(e)
+				res += "</%s>" % (element.tagName)
+			else:
+				res += "/>"
+			return res
+		else:
+			return kiwi.templates.Processor.defaultProcessElement(self,element,selector)
+		
 	def generate( self, xmlDocument, bodyOnly=False, variables={} ):
 		node = xmlDocument.getElementsByTagName("Document")[0]
 		self.variables = variables
@@ -52,9 +61,37 @@ class Processor(kiwi.templates.Processor):
 
 def convertDocument(element):
 	return process(element, """\
-<html>
-<head>$(Header)$(=HEADER)</head>
-<body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=$(=ENCODING)" />
+<script type="text/javascript">
+
+function init()
+{
+}
+
+function kiwi_toggleSection(e)
+{
+	var target = e.target;
+	var parent = target.parentNode.parentNode;
+	for ( var i=0 ; i<parent.childNodes.length ; i++ )
+	{
+		var child = parent.childNodes[i];
+		if ( child.getAttribute("class") && child.getAttribute("class").indexOf("level",0)==0 )
+		{
+			if ( child.style.display != "block" )
+			{	child.style.display = "block";}
+			else
+			{	child.style.display = "none";}
+		}
+	}
+}
+</script>
+$(Header)$(=HEADER)
+</head>
+<body onload="init()">
 $(Header:title)
 $(Content)
 $(References)
@@ -74,7 +111,11 @@ def convertHeader( element ):
 	return process(element, """<title>$(Title/title)</title>""")
 
 def convertSection( element ):
-	return process(element, """<div class="section"><h2>$(Heading)</h2></div><div>$(Content:section)</div>""")
+	level = int(element.getAttributeNS(None, "_depth")) + 2
+	return process(element,
+	  '<div class="section"><a class="link" onclick="kiwi_toggleSection(event);"><h%d class="heading">$(Heading)</h%d></a>' % (level, level)
+	  + '<div class="level%d">$(Content:section)</div>' % (level)
+	)
 
 def convertReferences( element ):
 	return process(element, """<div id="references">$(Entry)</div>""")
@@ -96,6 +137,9 @@ def convertsubtitle_header( element ):
 def convertParagraph( element ):
 	return process(element, """<p>$(*)</p>""")
 
+def convertParagraph_cell( element ):
+	return process(element, """$(*)<br />""")
+
 def convertList( element ):
 	return process(element, """<ul>$(*)</ul>""")
 
@@ -115,7 +159,7 @@ def convertRow( element ):
 	return process(element, """<tr class='%s'>$(*)</tr>""" % (classes[index]))
 
 def convertCell( element ):
-	return process(element, """<td>$(*)</td>""")
+	return process(element, """<td>$(*:cell)</td>""")
 
 def convertBlock( element ):
 	title = element.getAttributeNS(None,"title") or element.getAttributeNS(None, "type") or ""
@@ -123,7 +167,10 @@ def convertBlock( element ):
 	if title:
 		css_class=" class='%s'" % (element.getAttributeNS(None, "type").lower())
 		title = "<div class='title'>%s</div>"  % (title)
-	return process(element, """<blockquote%s>%s$(*)</blockquote>""" % (css_class, title))
+		div_type = "div"
+	elif not element.getAttributeNS(None, "type"):
+		div_type = "blockquote"
+	return process(element, """<%s%s>%s<div class='content'>$(*)</div></%s>""" % (div_type, css_class, title, div_type))
 
 def convertlink( element ):
 	if element.getAttributeNS(None, "type") == "ref":
@@ -139,8 +186,8 @@ def convertMeta( element ):
 
 def convertmeta( element ):
 	return process(element,
-	"<tr><td class='name'>%s</td><td width='%s' class='value'>$(*)</td></tr>" %
-	(element.getAttributeNS(None, "name"), "90%"))
+	"<tr><td class='name'>%s</td><td class='value'>$(*)</td></tr>" %
+	(element.getAttributeNS(None, "name")))
 
 def convertemail( element ):
 	mail = ""
@@ -160,6 +207,9 @@ def convertterm( element ):
 
 def convertquote( element ):
 	return process(element, """&ldquo;<span class='quote'>$(*)</span>&rdquo;""")
+
+def convertcitation( element ):
+	return process(element, """&laquo;<span class='citation'>$(*)</span>&raquo;""")
 
 def convertemphasis( element ):
 	return process(element, """<b>$(*)</b>""")

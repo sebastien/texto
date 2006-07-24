@@ -1,20 +1,14 @@
 #!/usr/bin/env python
 # Encoding: iso-8859-1
+# vim: tw=80 ts=4 sw=4 noet fenc=latin-1
 # -----------------------------------------------------------------------------
 # Project           :   Kiwi
 # -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   06-Mar-2006
-# Last mod.         :   06-Mar-2006
-# History           :
-#                       06-Mar-2006 Moved from html.py module
-#
-# Bugs              :
-#                       -
-# To do             :
-#                       -
-#
+# Last mod.         :   17-Jul-2006
+# -----------------------------------------------------------------------------
 
 import re, xml.dom
 import sys
@@ -41,6 +35,8 @@ will be expanded by procesing the set of nodes indicated by the XXX expression.
  - $(MyNode:alt) will use the function `convertMyNode_alt' instead of the
    default 'convertMyNode', if available. This allows to setup 'processing
    modes' for your document (like table of content, references, etc).
+ - $(MyNode:alt?) will use the function `convertMyNode_alt' if it is defined, or
+   fallback to `convertMyNode`.
 
 """
 
@@ -89,20 +85,30 @@ class Processor:
 	def processElement( self, element, selector=None ):
 		"""Processes the given element according to the EXPRESSION_TABLE, using the
 		given selector to select an alternative function."""
+		selector_optional = False
+		if selector and selector[-1] == "?":
+			selector = selector[:-1]
+			selector_optional = True
 		if element.nodeType == xml.dom.Node.TEXT_NODE:
 			return escapeHTML(element.data)
 		elif element.nodeType == xml.dom.Node.ELEMENT_NODE:
-			fname = element.tagName
+			fname = element.nodeName
 			if selector: fname += ":" + selector
 			func  = self.expressionTable.get(fname)
 			# There is a function for the element in the EXPRESSION TABLE
 			if func:
 				return func(element)
+			elif selector_optional:
+				self.processElement(element)
 			# Otherwise we simply expand its text
 			else:
-				return "".join([self.processElement(e) for e in element.childNodes])
+				return self.defaultProcessElement(element, selector)
 		else:
 			return ""
+
+	def defaultProcessElement( self, element, selector ):
+		"""Default function for processing elements. This returns the text."""
+		return "".join([self.processElement(e) for e in element.childNodes])
 
 	def interpret( self, element, expression ):
 		"""Interprets the given expression for the given element"""

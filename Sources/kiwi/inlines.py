@@ -7,8 +7,9 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   21-Feb-2006
+# Last mod.         :   05-Apr-2006
 # History           :
+#                       05-Apr-2006 Updated the parse attributes
 #                       21-Feb-2006 Further cleanup and syntax mods
 #                       14-Feb-2006 Cleaned-up uneccessary tags
 #                       10-Feb-2006 Added XML parsing for markup
@@ -116,9 +117,7 @@ RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
 LINK             = u"""\[([^\]]+)\]\s*((\(([^ ]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])"""
 RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
 
-
 # Custom markup
-MARKUP           = u"\[([a-zA-Z]\w*)(\s*\w+)?\s*(:\s*([^\]]*))?\]"
 MARKUP_ATTR      = u"""\w+\s*=\s*('[^']*'|"[^"]*")"""
 MARKUP           = u"\<(\w+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
 RE_MARKUP        = re.compile(MARKUP, re.LOCALE|re.MULTILINE)
@@ -333,9 +332,16 @@ class LinkInlineParser( InlineParser ):
 def Markup_isStartTag( match ):
 	return not Markup_isEndTag(match) and not match.group().endswith("/>")
 
-def Markup_isEndTag(match ):
+def Markup_isEndTag( match ):
 	return match.group().startswith("</")
 
+def Markup_attributes( match ):
+	"""Returns the attribute string of this markup stat element."""
+	text = match.group()[1 + len(match.group(1))+1:-1]
+	if text and text[-1] == "/": text = text[:-1]
+	text = text.strip()
+	return text
+	
 class MarkupInlineParser( InlineParser ):
 	"""Parses Kiwi generic markup elements."""
 
@@ -352,7 +358,8 @@ class MarkupInlineParser( InlineParser ):
 			# TODO: Check if element name is recognised or not
 			markup_name = match.group(1)
 			markup_node = context.document.createElementNS(None, markup_name.strip())
-			for key, value in context.parseAttributes(match.group(2)).items():
+			markup_node.setAttributeNS(None, "_html", "true")
+			for key, value in context.parseAttributes(Markup_attributes(match)).items():
 				markup_node.setAttributeNS(None, key, value)
 			node.appendChild(markup_node)
 			return match.end()
@@ -380,9 +387,10 @@ class MarkupInlineParser( InlineParser ):
 				# parsing
 				else:
 					markup_node = context.document.createElementNS(None, markup_name)
+					markup_node.setAttributeNS(None, "_html", "true")
 					node.appendChild(markup_node)
 					# We add the attributes to this tag
-					for key, value in context.parseAttributes(match.group(2)).items():
+					for key, value in context.parseAttributes(Markup_attributes(match)).items():
 						markup_node.setAttributeNS(None, key, value)
 					# FIXME: This should not be necessary
 					old_node = context.currentNode
