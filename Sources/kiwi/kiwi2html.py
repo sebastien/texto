@@ -111,7 +111,7 @@ def convertHeader( element ):
 	return process(element, """<title>$(Title/title)</title>""")
 
 def convertSection( element ):
-	level = int(element.getAttributeNS(None, "_depth")) + 2
+	level = int(element.getAttributeNS(None, "_depth")) + 1
 	return process(element,
 	  '<div class="section"><a class="link" onclick="kiwi_toggleSection(event);"><h%d class="heading">$(Heading)</h%d></a>' % (level, level)
 	  + '<div class="level%d">$(Content:section)</div>' % (level)

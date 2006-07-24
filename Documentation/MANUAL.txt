@@ -71,7 +71,7 @@
     text, taking care that all lines have the same *indentation*, and insert a
     blank line between your paragraphs.
 
-    You may want to insert !line breaks! inside your paragraphs. In this case
+    You may want to insert !line breaks! within your paragraphs. In this case
     instead of separating the two parts of your paragraph by a blank line,
     which would lead Kiwi to consider that your paragraph is in fact two
     paragraphs, you insert a *pipe* character on the blank line.

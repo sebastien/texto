@@ -321,8 +321,8 @@ class MarkupBlockParser(BlockParser):
 				if len(dummy_node.childNodes)>=1:
 					result_node = dummy_node.childNodes[0]
 					# We take care of the attributes
-					for key, value in \
-					    context.parseAttributes(match.group(2)).items():
+					for key, value \
+					in context.parseAttributes(match.group(2)).items():
 						result_node.setAttributeNS(None, key, value)
 					return result_node
 				# Otherwise this means that the block is empty
@@ -439,7 +439,9 @@ class SectionBlockParser(BlockParser):
 	def process( self, context, recogniseInfo ):
 		context.ensureParent( ("Content", "Appendix", "Chapter", "Section") )
 		matched_type, match = recogniseInfo
-		section_depth = context.getBlockIndentation()
+		section_indent = context.getBlockIndentation()
+		trail = match.group().strip()
+		section_weight = trail.endswith("==") and 2 or trail.endswith("--") and 1 or 0
 		# FIRST STEP - We detect section text bounds
 		block_start = context.blockStartOffset
 		block_end = context.blockEndOffset
@@ -455,7 +457,7 @@ class SectionBlockParser(BlockParser):
 			dots = res.count(".")
 			if res.strip()[-1] == "." and dots > 1:
 				dots -= 1
-			section_depth += dots
+			section_indent += dots
 			block_start = context.getOffset() + prefix_match.end()
 		# We make sure that we end the section before the block delimiter
 		delim_match = RE_SECTION_UNDERLINE.search(context.currentFragment())
@@ -466,11 +468,18 @@ class SectionBlockParser(BlockParser):
 		and context.currentNode.parentNode \
 		and context.currentNode.parentNode.nodeName == "Section" \
 		and context.currentNode.parentNode.parentNode \
-		and int(context.currentNode.parentNode.getAttributeNS(None, "_depth")) >= section_depth:
+		and int(context.currentNode.parentNode.getAttributeNS(None, "_indentation")) - \
+		int(context.currentNode.parentNode.getAttributeNS(None, "_weight")) \
+		>= section_indent + section_weight:
 			context.currentNode = context.currentNode.parentNode.parentNode
+		parent_depth = context.currentNode.parentNode.getAttributeNS(None, "_depth")
+		if not parent_depth: section_depth = 0
+		else: section_depth = int(parent_depth) + 1
 		# THIRD STEP - We create the section
 		section_node = context.document.createElementNS(None, section_type)
+		section_node.setAttributeNS(None, "_indentation", str(section_indent ))
 		section_node.setAttributeNS(None, "_depth", str(section_depth))
+		section_node.setAttributeNS(None, "_weight", str(section_weight))
 		heading_node = context.document.createElementNS(None, "Heading")
 		section_node.appendChild(heading_node)
 		offsets = context.saveOffsets()

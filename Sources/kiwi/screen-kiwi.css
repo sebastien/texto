@@ -46,6 +46,7 @@ aimg {
 }
 
 #content {
+	text-align: justify;
 }
 
 #footer {
@@ -80,6 +81,21 @@ aimg {
 	border-bottom:  1px dotted rgb(150, 220, 238);
 }
 
+#content h1 {
+	font-size: 1.5em;
+	font-weight: normal;
+	padding-top: 1.5em;
+	padding-bottom: 0.5em;
+}
+
+#content h2 {
+	font-size: 1.3em;
+}
+
+#content h3 {
+	font-size: 1.1em;
+}
+
 #content pre {
 	padding: 5pt;
 	border-left:  1px solid rgb(150, 220, 238);
@@ -94,7 +110,6 @@ aimg {
 
 #content ul li {
 	padding-bottom: 0.5em;
-	background-color: rgb(250,250,250);
 }
 
 #content table {
