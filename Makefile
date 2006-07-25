@@ -33,7 +33,7 @@ SOURCES         = Sources
 TESTS           = Tests
 RESOURCES       = Resources
 DISTRIBUTION    = Distribution
-API             = $(DOCUMENTATION)/tahchee-api.html
+API             = $(DOCUMENTATION)/kiwi-api.html
 DISTROCONTENT   = $(DOCUMENTATION) $(SOURCES) $(TESTS) $(RESOURCES) \
                   Makefile LICENSE README CHANGES
 
@@ -145,8 +145,8 @@ dist:
 	-C $(DISTRIBUTION) $(PROJECT)-$(PROJECT_VERSION)
 	@rm -rf $(DISTRIBUTION)/$(PROJECT)-$(PROJECT_VERSION)
 
-man: MANUAL
-	kiwi -m -ilatin-1 MANUAL  MANUAL.html
+man: Documentation/MANUAL.txt
+	kiwi -m -ilatin-1 Documentation/MANUAL.txt  MANUAL.html
 
 doc: man
 	@echo "Generating $(PROJECT) documentation"

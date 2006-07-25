@@ -81,10 +81,16 @@ function kiwi_toggleSection(e)
 		var child = parent.childNodes[i];
 		if ( child.getAttribute("class") && child.getAttribute("class").indexOf("level",0)==0 )
 		{
-			if ( child.style.display != "block" )
-			{	child.style.display = "block";}
+			if ( child.style.display == "block" )
+			{
+				child.style.display = "none";
+				parent.setAttribute("closed", "true")
+			}
 			else
-			{	child.style.display = "none";}
+			{
+				child.style.display = "block";
+				parent.setAttribute("closed", "false")
+			}
 		}
 	}
 }
@@ -114,7 +120,7 @@ def convertSection( element ):
 	level = int(element.getAttributeNS(None, "_depth")) + 1
 	return process(element,
 	  '<div class="section"><a class="link" onclick="kiwi_toggleSection(event);"><h%d class="heading">$(Heading)</h%d></a>' % (level, level)
-	  + '<div class="level%d">$(Content:section)</div>' % (level)
+	  + '<div class="level%d">$(Content:section)</div></div>' % (level)
 	)
 
 def convertReferences( element ):
@@ -149,6 +155,12 @@ def convertListItem( element ):
 def convertTable( element ):
 	return process(element, """<table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table>""")
 
+def convertDefinition( element ):
+	return process(element, """<dl>$(*)</dl>""")
+
+def convertDefinitionItem( element ):
+	return process(element, """<dt>$(Title)</dt><dd>$(Content)</dd>""")
+
 def convertCaption( element ):
 	return process(element, """<caption>$(*)</caption>""")
 
@@ -165,8 +177,8 @@ def convertBlock( element ):
 	title = element.getAttributeNS(None,"title") or element.getAttributeNS(None, "type") or ""
 	css_class = ""
 	if title:
-		css_class=" class='%s'" % (element.getAttributeNS(None, "type").lower())
-		title = "<div class='title'>%s</div>"  % (title)
+		css_class=" class='ann%s'" % (element.getAttributeNS(None, "type").capitalize())
+		title = "<div class='title'>%s</div>"  % (title.capitalize())
 		div_type = "div"
 	elif not element.getAttributeNS(None, "type"):
 		div_type = "blockquote"
@@ -186,7 +198,7 @@ def convertMeta( element ):
 
 def convertmeta( element ):
 	return process(element,
-	"<tr><td class='name'>%s</td><td class='value'>$(*)</td></tr>" %
+	"<tr><td width='0px' class='name'>%s</td><td width='100%%' class='value'>$(*)</td></tr>" %
 	(element.getAttributeNS(None, "name")))
 
 def convertemail( element ):

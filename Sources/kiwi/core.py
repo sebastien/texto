@@ -305,6 +305,7 @@ class Parser:
 			ReferenceEntryBlockParser(),
 			TitleBlockParser(),
 			SectionBlockParser(),
+			DefinitionBlockParser(),
 			ListItemBlockParser(),
 			ReferenceEntryBlockParser(),
 			TaggedBlockParser(),

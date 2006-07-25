@@ -1,6 +1,6 @@
 == KIWI USER MANUAL
 -- Authors: Sébastien Pierre <sebastien@type-z.org>
--- Revision: 0.7.6
+-- Revision: 0.8.0
 
 1. Introduction
 ===============
@@ -13,7 +13,7 @@
     customize the markup or the output documents.
 
     Kiwi was designed to be small, simple and versatile. Its source is easily
-    readable and can be very easily extended/tweaked to match your need.
+    readable and can be very easily extended/tweaked to match your needs.
 
 2. Features
 ===========
@@ -98,7 +98,8 @@
 
     >   Here is simple list heading: 
 
-    [start note]This optional heading can span over many lines, provided there
+    Note ______________________________________________________________________
+    This optional heading can span over many lines, provided there
     is no paragraph break between those lines.[end note]
 
     The other component of a list are of course *list items* which begin with a
@@ -120,15 +121,76 @@
     >         - And make nested list items
     >         - Heading: That also have a list item heading.
 
-    [start note]When writing lists, take *great care* with indentation, as if the
+    Note ________________________________________________________________________
+    When writing lists, take *great care* with indentation, as if the
     different lines are not properly indented, some lists items could be
-    interpreted as nested lists.[end note]
+    interpreted as nested lists.
 
-    Creating *definition lists* is very similar to classic lists, as this type
-    of list simply has a required *list item heading* which should end with a
-    backslash.
+    3.4 Definitions
+    ---------------
 
-    3.3 Sections and subsections
+    You may sometimes want to do group paragraphs or whole subsets of your
+    document under a particular term (or qualifier). For instance, if you are
+    defining concepts, or describing different elements, you may want to tell
+    that a set of paragraphs belong to that particular element.
+
+    This is the purpose of the _definition lists_: they provide a mean to
+    express a term (or a sentence), and the following elements with a higher
+    indentation will be considered as being part of the term definition.
+
+    >   Term::
+    >   
+    >       Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Cras accumsan. 
+    >       
+    >       Nullam ac purus quis magna consectetuer luctus. Duis sit amet sem. 
+    >   
+    >   Other term::
+    >   
+    >       Donec a magna mattis dolor semper pulvinar. Donec viverra libero sit amet dolor.
+    >       Duis ut ante at lacus pharetra iaculis.
+
+    Will be rendered as
+
+        Term::
+        
+            Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Cras accumsan. 
+            
+            Nullam ac purus quis magna consectetuer luctus. Duis sit amet sem. 
+        
+        Other term::
+        
+            Donec a magna mattis dolor semper pulvinar. Donec viverra libero sit amet dolor.
+            Duis ut ante at lacus pharetra iaculis.
+
+    3.4 Notes and annotated blocks
+    ------------------------------
+
+    >   Note ______________________________________________________________
+    >   Lorem ipsum dolor si amet
+
+    will be displayed as
+
+    Note ______________________________________________________________
+    Lorem ipsum dolor si amet
+
+    You can also write a note than contains multiple paragraphs:
+
+    >   Note ______________________________________________________________
+    >   
+    >   Lorem ipsum....
+    >   
+    >   Dolor si amet...
+    >   
+    >   _____________________________________________________________________
+
+    Notes are actually _annotated blocks_, which are blocks surrounded by an
+    annotation (here, the annotation is `Note`). You can use many other
+    annotations (such as  `Example`, `Use case`, etc..), as with annotations
+    will be translated to a lower-case class attribute in your resulting
+    HTML document. So you simply have to add the styles you want in your CSS
+    stylesheet to support more annotations blocks.
+
+    3.5 Sections and subsections
     ----------------------------
 
     Once you have written your text you may want to add structure, for example
@@ -137,8 +199,8 @@
     heading* in your text.
 
     A *section heading* consists in a single line of text that is prefixed by
-    an optional section number, which is consitiued of digits separated by
-    dots. Then follows an optional unerline, like the following example shows:
+    an optional section number, which is constituted of digits separated by
+    dots. Then follows an optional underline, like the following example shows:
 
     >   1. I am Section
     >   
@@ -149,19 +211,42 @@
     >   =========================
 
     The leading number is not required, but it does indicate the depth of the
-    section. Two criteria are taken in concern for indentifying the section
-    position in the section hierarchy. The first criterium is the prefixing
-    number which tells (by the number of imbricated digits) if the section is a
-    simple section, sub section etc. The other criterium is the indentation
-    relatively to the preceding section.
+    section. Three criteria are taken in concern for identifying the section
+    position in the section hierarchy.
+    
+    1)  The first criteria is the prefixing number which tells (by the number of
+        contained digits) if the section is a simple section, sub section etc.
+    2)  The second criteria is the indentation relatively to the preceding
+        section.
+    3)  The third criteria is the underlining of the section. A section
+        underlined with `=` will be of greater importance than a section underlined
+        with `-`, which is in turned of greater importance than a non-underlined
+        section.
 
-4. Available syntax shortcuts
-==========================================
+
+
+    3.6 Tables
+    ----------
+
+    3.7 Document header and title
+    -----------------------------
+
+    todo
+
+    3.8 Links and bibliographic references
+    --------------------------------------
+
+    todo
+
+
+
+4.Syntax summary
+================
 
     Now you are able to write basic text documents, but you may want to go
     further. Kiwi provide way to mark up everything in your documents. Some
     ways to put this mark-up are simple and quick, some other ways are made
-    possible using *custom tags*, which we will discover very soone.
+    possible using *custom tags*, which we will discover very soon.
 
     For the moment, here is the list of the available content mark up
     facilities:
@@ -210,42 +295,25 @@
     ===================================================================
 
 
-    Titles:
-
-    Sections:
-
-    Notes:
-
-        >   NOTE ______________________________________________________________
-        >   asdaskldadlasdk asdasjkdsa jksad
-        >   ____________________________________________________________________
-
-        will be displayed as
-
-        NOTE ______________________________________________________________
-        asdaskldadlasdk asdasjkdsa jksad
-        ___________________________________________________________________
-
-    Specific sections:
-
-        >   Example _______________________________________________
-        >
-        >   This is an example
-        >   _______________________________________________________
-
-
-    Tables:
-
-
     The different way of marking up listed above should be sufficient for most
     of you needs, but we will seen now how to extend the possibilities of
     Kiwi to best suite your marking needs.
 
-Relation to Markdown
-====================
+5. Hacking Kiwi
+===============
 
-    _Kiwi_ is actually very close to [Markdown][MARKDOWN], excepted for small
-    differences :
+    Kiwi is not only a standalone application, it is also a flexible text
+    parsing library that comes with a very easy to use templating system for XML
+    documents.
+
+    Kiwi is actually embedded within [Tahchee](http://www.ivy.fr/tahchee) as a
+    text to HTML plugin that makes it easy to write Web pages.
+
+Relation to Markdown and other text markups
+===========================================
+
+    _Kiwi_ is actually very close to [Markdown][MARKDOWN] (a very well done text
+    markup), but it has a few noticeable differences: 
 
      - Code blocks must be prefixed by `>` characters (in Markdown, this is the
        notation for blockquoted. We decided to use this in Kiwi because code blocks
@@ -258,7 +326,7 @@ Relation to Markdown
        just the opposite of Markdown.
 
      - Underscore notation represents a _term_ in Kiwi, while in Markdown it is the
-       same as using `*`.
+       same as using `*` (emphasis)
 
      - You can really insert your HTML markup anywhere, you have no limitations as
        in Markdown
@@ -270,15 +338,27 @@ Relation to Markdown
      - Footnotes
      - Detailed bilbiographic references
 
+    Kiwi markup was designed to be even more flexible, than markdown,
+    especially when using inline HTML. When writing HTML in Kiwi, the only
+    requirement is to conform to an XML syntax, which means that every
+    opened tag must be closed, otherwise a warning will be issued during the
+    translation.
 
-	Kiwi markup was designed to be even more flexible, than markdown,
-	espectially when using inline HTML. When writing HTML in Kiwi, the only
-	requirement there is is to conform to an XML syntax, which means that every
-	opened tag must be closed, otherwise a warning will be issued during the
-	translation.
+    [Asciidoc][ASCIIDOC] is another well supported and powerful markup to HTML
+    (and PDF) processor, which is helpful in writing documentation. ASCIIDOC may
+    be more powerful than Kiwi for writing large or complex documents.
+    However, we believe that Kiwi is more adapted to common documentation
+    requirements, and can be easily customized to meet specific requirements.
+
+    Kiwi has been in development for more than 5 years (it used to be named
+    SimTex) and has a mature architecture, which proved to be both flexible and
+    fast. It was designed to be extensible and easily embeddable in Web
+    applications for easy text to HTML conversion (which is always useful, even
+    if WYSIWIG editors are now available).
 
 --
 
     [MARKDOWN]: <http://daringfireball.net/projects/markdown/syntax>
+    [ASCIIDOC]: <http://www.methods.co.nz/asciidoc/>
 
 # vim: ts=4 sw=4 tw=80 et fenc=latin-1 syn=kiwi

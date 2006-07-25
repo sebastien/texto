@@ -72,7 +72,6 @@ for symbol in filter(lambda x:x.startswith("convert"), dir()):
 	name2functions[symbol] = eval(symbol)
 processor.register(name2functions)
 process = processor.process
-print processor.expressionTable
 
 def convertDocument( text ):
 	reader = HtmlLib.Reader()

@@ -18,11 +18,13 @@ h1, h2, h3, h4 {
 	color: rgb(22, 130, 178);
 	font-weight: normal;
 	padding-top: 0.5em;
+	cursor: pointer;
 }
 
 strong {
 	color: rgb(103,183,0);
 }
+
 
 a:link, a:active, a:visited {
 	color: rgb(22,130,178);
@@ -48,6 +50,7 @@ aimg {
 #content {
 	text-align: justify;
 }
+
 
 #footer {
 	padding-top:  30pt;
@@ -101,11 +104,23 @@ aimg {
 	border-left:  1px solid rgb(150, 220, 238);
 	padding-left: 20pt;
 	background-color: rgb(250,250,250);
-}
-
-#content pre, #content code {
 	font-size: 80%;
 	color: rgb(143, 160, 168);
+}
+
+#content code {
+	font-size: 80%;
+	color: rgb(143, 160, 168);
+}
+
+#content dt {
+	color: rgb(22,130,178);
+	font-weight: bold;
+}
+
+#content dd {
+	border-left:  1px solid rgb(150, 220, 238);
+	padding-left: 20pt;
 }
 
 #content ul li {
@@ -144,39 +159,48 @@ aimg {
 	background-color: rgb(240,240,240);
 }
 
-#content span.term {
+#content .term {
 	color: rgb(22, 130, 178);
 	border-bottom:  1px solid rgb(150, 220, 238);
 }
 
-#content span.quote {
+#content .quote {
 	font-style: italic;
 	color: rgb(120, 120, 120);
 }
 
-#content blockquote.example {
-	font-size: 8pt;
-	padding: 10px;
-	background-color: rgb(240,240,240);
-	border: 1px solid rgb(160,160,160);
+#content .citation {
+	font-style: italic;
+	color: rgb(120, 120, 120);
 }
 
-#content blockquote.example div.title {
-	margin: 0;
-	padding: 0;
-	padding-top: 5pt;
-	padding-bottom: 5pt;
-	font-size: 9pt;
+#content div[class^="ann"] {
+	margin-top: 5pt;
+	margin-bottom: 5pt;
+	padding: 5pt;
+	padding-left: 20pt;
+	color: rgb(100, 100, 100);
+	font-size: 0.8em;
+}
+
+#content div[class^="ann"] .title {
 	font-weight: bold;
-	text-align: center;
-	border-bottom: 1px dotted rgb(160,160,160);
 }
 
-#content blockquote.example pre {
-	border-left:  1px solid rgb(150, 220, 238);
-	padding: 0;
-	padding-left: 10pt;
-	font-size: 7.5pt;
+#content .annNote {
+	border-left:  1px solid rgb(103,183,0);
+	margin-top: 5pt;
+	margin-bottom: 5pt;
+	padding: 5pt;
+	padding-left: 20pt;
+	background: #fffbe4;
+	color: rgb(100, 100, 100);
+	font-size: 0.8em;
+}
+
+#content .annNote .title {
+	font-weight: bold;
+	display: none;
 }
 
 #references {
@@ -206,3 +230,6 @@ aimg {
 #references .entry .content {
 	text-align: right;
 }
+
+
+

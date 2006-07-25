@@ -56,7 +56,7 @@ __pychecker__ = "unusednames=recogniseInfo,content"
 
 EMPTY_LIST_ITEM = "Empty list item."
 
-BLOCK_ELEMENTS = ("Block", "ListItem", "Content", "Chapter", "Section", "Appendix")
+BLOCK_ELEMENTS = ("Block", "ListItem", "Definition", "Content", "Chapter", "Section", "Appendix")
 
 STANDARD_LIST    = 1
 DEFINITION_LIST  = 2
@@ -71,13 +71,16 @@ RE_BLANK          = re.compile(u"\s*", re.LOCALE|re.MULTILINE)
 
 TITLE             = u"^\s*(==)([^=].+)$"
 RE_TITLE          = re.compile(TITLE, re.LOCALE|re.MULTILINE)
-TITLE_HEADER      = u"^\s*(--)([^\:]+):(.+)$"
+TITLE_HEADER      = u"^\s*(--)([^\:]+):(.+)?$"
 RE_TITLES         = re.compile(u"%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MULTILINE)
 
 SECTION_HEADING   = u"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
 SECTION_UNDERLINE = u"^\s*[\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
+
+DEFINITION_ITEM   = u"^\s*([^\:]+)\:\:\s*$"
+RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.LOCALE|re.MULTILINE)
 
 TAGGED_BLOCK      = u"^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
 RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE | re.LOCALE)
@@ -234,6 +237,13 @@ class TaggedBlockParser(BlockParser):
 		if not lines: return
 		return RE_TAGGED_BLOCK.match(lines[0])
 
+	def _goToParent( self, thisblock, parent ):
+		if not parent: return parent
+		if parent.nodeName == "Block":
+			return parent.parentNode
+		else:
+			return parent
+		
 	def process( self, context, recogniseInfo ):
 		tagname  = recogniseInfo.group(2)
 		tagtitle = recogniseInfo.group(3)
@@ -250,9 +260,7 @@ class TaggedBlockParser(BlockParser):
 			# Now we can process the document
 			context.increaseOffset(len(recogniseInfo.group()))
 			context.parser.parseBlock(context, block_node, self.processText)
-			# TODO: Handle indentation
-			while context.currentNode.nodeName not in BLOCK_ELEMENTS:
-				context.currentNode = context.currentNode.parentNode
+			context.currentNode = self._goToParent( block_node, context.currentNode)
 			context.currentNode.appendChild(block_node)
 			context.currentNode = block_node
 			assert context.currentNode
@@ -360,6 +368,9 @@ class TitleBlockParser(BlockParser):
 			else:
 				return matches or False
 		return matches
+
+	def _processLine( self, line ):
+		pass
 
 	def process( self, context, recogniseInfo ):
 		assert recogniseInfo
@@ -470,7 +481,7 @@ class SectionBlockParser(BlockParser):
 		and context.currentNode.parentNode.parentNode \
 		and int(context.currentNode.parentNode.getAttributeNS(None, "_indentation")) - \
 		int(context.currentNode.parentNode.getAttributeNS(None, "_weight")) \
-		>= section_indent + section_weight:
+		>= section_indent - section_weight:
 			context.currentNode = context.currentNode.parentNode.parentNode
 		parent_depth = context.currentNode.parentNode.getAttributeNS(None, "_depth")
 		if not parent_depth: section_depth = 0
@@ -497,6 +508,50 @@ class SectionBlockParser(BlockParser):
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text.strip())
 
+#------------------------------------------------------------------------------
+#
+#  DefinitionBlockParser
+#
+#------------------------------------------------------------------------------
+
+class DefinitionBlockParser(BlockParser):
+	"""Parses a definition markup element."""
+
+	def __init__( self ):
+		BlockParser.__init__(self, "Definition")
+
+	def recognises( self, context ):
+		return RE_DEFINITION_ITEM.match(context.currentFragment())
+
+	def _getParentDefinition( self, node ):
+		while node and node.nodeName != "Definition":
+			node = node.parentNode
+		return node
+
+	def process( self, context, match ):
+		parent_node = self._getParentDefinition(context.currentNode)
+		_indent = context.getBlockIndentation()
+		# Ensures that the parent Definition node exists
+		if not parent_node:
+			context.ensureParent( BLOCK_ELEMENTS )
+			definition_node = context.document.createElementNS(None, "Definition")
+			definition_node.setAttributeNS(None, "_indent", str(_indent))
+			context.currentNode.appendChild(definition_node)
+			parent_node = definition_node
+		# Creates the defintion item
+		definition_item = context.document.createElementNS(None, "DefinitionItem")
+		definition_item.setAttributeNS(None, "_indent", str(_indent + 1))
+		definition_title = context.document.createElementNS(None, "Title")
+		definition_title.appendChild(context.document.createTextNode(match.group(1)))
+		definition_content = context.document.createElementNS(None, "Content")
+		definition_content.setAttributeNS(None, "_indent", str(_indent + 1))
+		definition_item.appendChild(definition_title)
+		definition_item.appendChild(definition_content)
+		parent_node.appendChild(definition_item)
+		context.currentNode = definition_content
+
+	def processText( self, context, text ):
+		return context.parser.normaliseText(text.strip())
 #------------------------------------------------------------------------------
 #
 #  ListItemBlockParser
@@ -1122,4 +1177,4 @@ class ReferenceEntryBlockParser( BlockParser ):
 			context.restoreOffsets(sub_offsets)
 		context.restoreOffsets(offsets)
 
-# EOF-Linux/ASCII-----------------------------------@RisingSun//Python//1.0//EN
+# EOF
