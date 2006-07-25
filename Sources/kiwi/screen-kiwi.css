@@ -21,6 +21,13 @@ h1, h2, h3, h4 {
 	cursor: pointer;
 }
 
+hr {
+	color: rgb(150, 220, 238);
+	background: rgb(150, 220, 238);
+	height: 1px;
+	border: 0;
+}
+
 strong {
 	color: rgb(103,183,0);
 }
@@ -48,7 +55,7 @@ aimg {
 }
 
 #content {
-	text-align: justify;
+	text-align: left;
 }
 
 

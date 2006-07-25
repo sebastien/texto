@@ -154,4 +154,3 @@ class Processor:
 		return self.processElement(xmlDocument.childNodes[0])
 
 # EOF
-

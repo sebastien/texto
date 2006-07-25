@@ -98,9 +98,9 @@
 
     >   Here is simple list heading: 
 
-    Note ______________________________________________________________________
+
     This optional heading can span over many lines, provided there
-    is no paragraph break between those lines.[end note]
+    is no paragraph break between those lines.
 
     The other component of a list are of course *list items* which begin with a
     dash or a single letter or digit with a closing paren, which is followed by
@@ -121,10 +121,10 @@
     >         - And make nested list items
     >         - Heading: That also have a list item heading.
 
-    Note ________________________________________________________________________
-    When writing lists, take *great care* with indentation, as if the
-    different lines are not properly indented, some lists items could be
-    interpreted as nested lists.
+        Note __________________________________________________________________
+        When writing lists, take *great care* with indentation, as if the
+        different lines are not properly indented, some lists items could be
+        interpreted as nested lists.
 
     3.4 Definitions
     ---------------
@@ -168,10 +168,10 @@
     >   Note ______________________________________________________________
     >   Lorem ipsum dolor si amet
 
-    will be displayed as
+    will be displayed a
 
-    Note ______________________________________________________________
-    Lorem ipsum dolor si amet
+        Note ______________________________________________________________
+        Lorem ipsum dolor si amet
 
     You can also write a note than contains multiple paragraphs:
 
@@ -189,6 +189,12 @@
     will be translated to a lower-case class attribute in your resulting
     HTML document. So you simply have to add the styles you want in your CSS
     stylesheet to support more annotations blocks.
+
+        Note ________________________________________________________________
+
+        As with lists, _indentation is primordial_. Your note block should be
+        more indented than the parent paragraph. All paragraphs with the same
+        indentation level as the note will be considered part of the note.
 
     3.5 Sections and subsections
     ----------------------------
@@ -287,17 +293,26 @@
     -------------------------------------------------------------------
     Newline     ||     `\n`               || Inserts a newline
     -------------------------------------------------------------------
-    Longdash    ||    ` -- `              || longdash --
+    Longdash    ||    ` -- ` or ` --- `   || longdash  --  or  --- 
     -------------------------------------------------------------------
-    Dots        ||    ` ... `             || dots ...
+    Dots        ||    ` ... `             || dots ( ... )
     -------------------------------------------------------------------
     Arrows      ||    ` <-->, -->, <-- `  || arrows <-->, -->, <-- 
+    -------------------------------------------------------------------
+    Entities    ||    `&copy;`, `#&138;`  || &copy;, #&138;
     ===================================================================
 
+    == Escaping
+    ===================================================================
+    Block       || `<[escaped _text_]>`   || <[escaped _text_]>
+    --------------------------------------------------------------------
+    Text        || `\"escaped _text_"`    || \"escaped _text_"
+    ===================================================================
 
     The different way of marking up listed above should be sufficient for most
-    of you needs, but we will seen now how to extend the possibilities of
-    Kiwi to best suite your marking needs.
+    of your needs. However, if you have more particular needs, you can very
+    easily create your own syntax and extend Kiwi. This is the purpose of the
+    next section.
 
 5. Hacking Kiwi
 ===============

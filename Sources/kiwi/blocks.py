@@ -1,51 +1,15 @@
 #!/usr/bin/env python
 # Encoding: iso-8859-1
+# vim: tw=80 ts=4 sw=4 fenc=latin-1 noet
 # -----------------------------------------------------------------------------
 # Project           :   Kiwi
 # Module            :   Block parsers
 # -----------------------------------------------------------------------------
-# Author            :   Sébastien Pierre (SPE)           <sebastien@type-z.org>
+# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   25-Apr-2006
-# History           :
-#                       25-Apr-2006 Fixed table and sections
-#                       24-Apr-2006 Fixed list items indent, fixes section
-#                       depth.
-#                       23-Mar-2006 Fixed tagged block
-#                       22-Mar-2006 Table cells parse their content as blocks
-#                       15-Mar-2006 Added support for title headers
-#                       02-Mar-2006 Improved tagged blocks support
-#                       23-Feb-2006 Added tagged blocks
-#                       22-Feb-2006 Finished reference entry, fixed bug in
-#                       paragraph content spacing.
-#                       21-Feb-2006 Preliminary reference entry implementation
-#                       10-Feb-2006 Added Block creation in paragraphs to
-#                       allowed "nested paragraphs" (a la Blockquote)
-#                       08-Feb-2006 Changed title format, made paragraph go into
-#                       list items if the list items have the same indentation
-#                       as the paragraph.
-#                       27-Dec-2004 Table parser implementation (SPE)
-#                       26-Dec-2004 Fixed list item heading, section depth (SPE)
-#                       01-Dec-2004 Added reference node. (SPE)
-#                       05-Oct-2004 Enhanced meta block fields, attributes are
-#                       handled in custom blocks. (SPE)
-#                       27-Sep-2004 Added meta block parser (SPE)
-#                       31-Mar-2004 Does not add empty paragraphs (SPE)
-#                       23-Jan-2004 Implemented comment block (SPE)
-#                       22-Jan-2004 Fixed list items parsing (SPE)
-#                       20-Jan-2004 Implemented block parser (SPE)
-#                       07-Jan-2004 Updated to use 4Suite DOM (SPE)
-#                       13-Dec-2003 More list item block parser work (SPE)
-#                       22-Nov-2003 Preliminary work on lists (SPE)
-#                       19-Nov-2003 First (re-)implementation (SPE)
-
-# To do             :
-#                       - Add a "moveToParentNode" method in Blocks
-#                       - ListItem illustrates a case where the current node is
-#                         not proper for parsing blocks
-#                       - Enhance implementation of Meta which is a bit rough
-#
+# Last mod.         :   25-Jul-2006
 # -----------------------------------------------------------------------------
 
 import re, string

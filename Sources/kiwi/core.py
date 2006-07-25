@@ -1,26 +1,15 @@
 #!/usr/bin/env python
 # Encoding: iso-8859-1
+# vim: tw=80 ts=4 sw=4 fenc=latin-1 noet
 # -----------------------------------------------------------------------------
 # Project           :   Kiwi
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
+# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   05-Apr-2006
-# History           :
-#                       05-Apr-2006 Updated the parseAttribute for HTML
-#                       22-Feb-2006 Slightly updated doc and parsers
-#                       14-Feb-2006 Block separator now supprots DOS
-#                       linebreaknow supprots DOS linebreaks, simplified
-#                       supported markup.
-#                       10-Feb-2006 Added support for XML markup
-#                       07-Feb-2006 Moved from the main module
-#
-# Bugs              :
-#                       -
-# To do             :
-#                       -
-#
+# Last mod.         :   25-Jul-2006
+# -----------------------------------------------------------------------------
 
 import os, sys
 
@@ -189,6 +178,10 @@ class Context:
 		"""Returns true when the current offset has exceeded the current block
 		end offset"""
 		return self.getOffset() >= self.blockEndOffset
+	
+	def offsetInBlock( self, offset ):
+		"""Tells if the givne offset is in the current block."""
+		return self.blockStartOffset <= offset <= self.blockEndOffset
 
 	def setCurrentBlock( self, startOffset, endOffset ):
 		"""Sets the start and end offset of the current block. The current
@@ -314,7 +307,7 @@ class Parser:
 	
 	def createCustomParsers( self ):
 		#self.customParsers["Meta"] = MetaBlockParser()
-		#self.customParsers["pre"]  = PreBlockParser()
+		self.customParsers["pre"]  = PreBlockParser()
 		#self.customParsers["table"]= TableBlockParser()
 		pass
 
@@ -330,8 +323,10 @@ class Parser:
 			self.escapedParser,
 			self.commentParser,
 			self.markupParser,
+			EscapedStringInlineParser(),
 			InlineParser("email",		RE_EMAIL),
 			InlineParser("url",			RE_URL),
+			EntityInlineParser(),
 			LinkInlineParser(),
 			InlineParser("pre",			RE_PRE, result=lambda x,y:x.group(3)),
 			InlineParser("code",		RE_CODE_2),
@@ -346,7 +341,8 @@ class Parser:
 			InlineParser("newline",		RE_NEWLINE),
 			InlineParser("dots",		RE_DOTS),
 			ArrowInlineParser(),
-			InlineParser("longdash",	RE_LONGDASH),
+			InlineParser("endash",		RE_LONGDASH),
+			InlineParser("emdash",		RE_LONGLONGDASH),
 		))
 
 	def _initialiseContextDocument(self, context):
@@ -407,7 +403,7 @@ class Parser:
 		while not context.documentEndReached():
 			self._parseNextBlock(context)
 
-	def _parseNextBlock( self, context ):
+	def _parseNextBlock( self, context, end=None ):
 		assert context!=None
 		# This variable indicates if at least one block parser recognised the
 		# current block
@@ -416,7 +412,9 @@ class Parser:
 		block_start_offset = context.getOffset()
 		block_end_offset, next_block_start_offset = \
 			self._findNextBlockSeparator(context)
-		# If the block is an empty block
+		# If the block is an empty block (a SEPARATOR), we try to find the
+		# parent node
+		if end != None: block_end_offset = min(end, block_end_offset)
 		if block_end_offset == block_start_offset:
 			# We rewind until we find a "Content" block
 			while context.currentNode.nodeName != "Content":

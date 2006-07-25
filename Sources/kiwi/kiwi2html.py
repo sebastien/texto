@@ -33,7 +33,7 @@ class Processor(kiwi.templates.Processor):
 				if a.name == "_html": continue
 				res += " %s='%s'" % (a.name, element.getAttributeNS(None, a.name))
 			if element.childNodes:
-				res + ">"
+				res += ">"
 				for e in element.childNodes:
 					res += self.processElement(e)
 				res += "</%s>" % (element.tagName)
@@ -243,6 +243,27 @@ def convertbreak( element ):
 
 def convertnewline( element ):
 	return process(element, """<br />""")
+
+def convertarrow( element ):
+	arrow = element.getAttributeNS(None, "type")
+	if   arrow == "left":
+		return "&larr;"
+	elif arrow == "right":
+		return "&rarr;"
+	else:
+		return "&harr;"
+
+def convertdots( element ):
+	return "&hellip;"
+
+def convertendash( element ):
+	return "&ndash;"
+
+def convertemdash( element ):
+	return "&mdash;"
+
+def convertentity( element ):
+	return "&%s;" % (element.getAttributeNS( None, "num"))
 
 # We create the processor, register the rules and define the process variable
 processor      = Processor()

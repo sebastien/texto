@@ -1,42 +1,15 @@
 #!/usr/bin/env python
 # Encoding: iso-8859-1
+# vim: tw=80 ts=4 sw=4 fenc=latin-1 noet
 # -----------------------------------------------------------------------------
 # Project           :   Kiwi
-# Module            :   Main parser
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
+# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   10-Fev-2006
-# History           :
-#                       10-Feb-2006 Added stylesheet selection mode
-#                       07-Feb-2006 Moved some stuff to the core module.
-#                       10-Jan-2006 Reverted to minidom support
-#                       26-Dec-2004 Moved attributes parsing code (SPE)
-#                       22-Dec-2004 Indent bug fix (SPE)
-#                       05-Oct-2004 Small fixes, doc update (SPE)
-#                       27-Sep-2004 Cleans out empty document elements, logger
-#                       handles unicode (SPE)
-#                       19-Jan-2004 Split `parseNextInline' into
-#                       `findNextInline' and `parseNextInline' (SPE)
-#                       13-Jan-2004 Added escaped text support (SPE)
-#                       07-Jan-2004 Updated to used 4Suite DOM, for speed (SPE)
-#                       15-Dec-2003 Added ensureParent method in context (SPE)
-#                       12-Dec-2003 Fixed bugs with empty blocks, rewrote block
-#                       indentation function. (SPE)
-#                       23-Nov-2003 Added error handling with line and
-#                       character. Inserted code for markup recognition in
-#                       block end detection (almost working) (SPE)
-#                       22-Nov-2003 Added proper tab expansion and
-#                       unindentation (SPE)
-#                       19-Nov-2003 Integrated code from previous Kiwi, from
-#                       24-Apr-2001 to 9-Jul-2003 (SPE)
-#
-# Bugs              :
-#                       -
-# To do             :
-#                       -
-#
+# Last mod.         :   25-Jul-2006
+# -----------------------------------------------------------------------------
 
 import os, sys, StringIO
 
@@ -44,7 +17,7 @@ __doc__ = """Kiwi is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
 XML DOM."""
 
-__version__ = "0.7.9"
+__version__ = "0.8.0"
 __pychecker__ = "blacklist=cDomlette,cDomlettec"
 
 import re, string, operator, getopt, codecs
@@ -298,6 +271,5 @@ if __name__ == "__main__":
 		sys.stderr.write(result + "\n")
 	elif status == INFO:
 		sys.stdout.write(result + "\n")
-	
 
-# EOF-UNIX/iso-8895-1-------------------------------@RisingSun//Python//1.0//EN
+# EOF

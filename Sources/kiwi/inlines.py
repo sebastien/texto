@@ -1,42 +1,14 @@
 #!/usr/bin/env python
 # Encoding: iso-8859-1
+# vim: ts=4 sw=4 tw=80 noet fenc=latin-1
 # -----------------------------------------------------------------------------
 # Project           :   Kiwi
-# Module            :   Inline parsers
 # -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   05-Apr-2006
-# History           :
-#                       05-Apr-2006 Updated the parse attributes
-#                       21-Feb-2006 Further cleanup and syntax mods
-#                       14-Feb-2006 Cleaned-up uneccessary tags
-#                       10-Feb-2006 Added XML parsing for markup
-#                       26-Dec-2004 Changed quotes syntax, added footnote (SPE)
-#                       05-Oct-2004 Completed inline parsers (SPE)
-#                       29-Sep-2004 Attributes parsing. (SPE)
-#                       27-Sep-2004 Added support for custom markup, acronyms,
-#                       citations (SPE)
-#                       01-Apr-2004 Implemented reference parser
-#                       31-Mar-2004 Fixed bug in escaped recognition.
-#                       20-Jan-2004 MarkupParser recognises blocks properly
-#                       (SPE)
-#                       19-Jan-2004 Working on MarkupParser, added InlineParser
-#                       `endOf' method (SPE)
-#                       13-Jan-2004 Added EscapedParser, improved
-#                       MarkupParser (SPE)
-#                       07-Jan-2004 Added support for 4DOM (SPE)
-#                       15-Dec-2003 Added preliminary comment node (SPE)
-#                       23-Nov-2003 Added MarkupInlineParser (SPE)
-#                       19-Nov-2003 First implementation (SPE)
-#
-# Bugs              :
-#                       - Attributes in acronyms, citations and quotes should
-#                         be normalised
-# To do             :
-#                       -
-#
+# Last mod.         :   25-Jul-2006
+# -----------------------------------------------------------------------------
 
 import re
 
@@ -67,12 +39,15 @@ MUST_BE_START_OR_END = \
 COMMENT          = u"^\s*#.*$"
 RE_COMMENT       = re.compile(COMMENT, re.LOCALE | re.MULTILINE )
 
-ESCAPED_START    = u"{\|"
+ESCAPED_START    = u"<\["
 RE_ESCAPED_START = re.compile(ESCAPED_START, re.LOCALE)
-ESCAPED_END      = u"\|}"
+ESCAPED_END      = u"\]>"
 RE_ESCAPED_END   = re.compile(ESCAPED_END, re.LOCALE)
-ESCAPED_REPLACE  = u"\}"
+ESCAPED_REPLACE  = u'\\"'
 RE_ESCAPED_REPLACE=re.compile(ESCAPED_REPLACE, re.LOCALE)
+
+ESCAPED_STRING   = u'\\\\"([^"]+)"'
+RE_ESCAPED_STRING = re.compile(ESCAPED_STRING, re.MULTILINE|re.LOCALE)
 
 # Text style
 
@@ -90,7 +65,7 @@ TERM             = u"\_([^_]+)_"
 RE_TERM          = re.compile(TERM, re.LOCALE|re.MULTILINE)
 QUOTED           = u"''(('?[^'])+)''"
 RE_QUOTED        = re.compile(QUOTED, re.LOCALE|re.MULTILINE)
-CITATION         = u"Â«([^Â»]+)Â»"
+CITATION         = u"«([^»]+)»"
 RE_CITATION      = re.compile(CITATION,re.LOCALE|re.MULTILINE)
 
 # Special Characters
@@ -101,9 +76,11 @@ NEWLINE          = u"\s*\\\\n\s*()"
 RE_NEWLINE       = re.compile(NEWLINE)
 LONGDASH         = u" -- ()"
 RE_LONGDASH      = re.compile(LONGDASH)
+LONGLONGDASH     = u" --- ()"
+RE_LONGLONGDASH      = re.compile(LONGLONGDASH)
 ARROW            = u"<-+>|-+->|<-+"
 RE_ARROW         = re.compile(ARROW,)
-DOTS             = u" \.\.\.()"
+DOTS             = u"\.\.\.()"
 RE_DOTS          = re.compile(DOTS,)
 ENTITIES         = u"(&(\w+|#[0-9]+);)"
 RE_ENTITIES      = re.compile(ENTITIES,)
@@ -224,6 +201,25 @@ class ArrowInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
+#  Entity parsers
+#
+#------------------------------------------------------------------------------
+
+class EntityInlineParser( InlineParser ):
+
+	def __init__( self ):
+		InlineParser.__init__( self, "entity", RE_ENTITIES )
+
+	def parse( self, context, node, match ):
+		assert match
+		text = match.group(2)
+		entity_node = context.document.createElementNS(None, "entity")
+		entity_node.setAttributeNS(None, "num", text)
+		node.appendChild(entity_node)
+		return match.end()
+
+#------------------------------------------------------------------------------
+#
 #  CommentInlineParser
 #
 #------------------------------------------------------------------------------
@@ -288,6 +284,22 @@ class EscapedInlineParser( InlineParser ):
 		node.appendChild(escaped_node)
 		# And increase the offset
 		return self.endOf(recogniseInfo)
+
+#------------------------------------------------------------------------------
+#
+#  Escaped String Inline Parser
+#
+#------------------------------------------------------------------------------
+
+class EscapedStringInlineParser( InlineParser ):
+
+	def __init__( self ):
+		InlineParser.__init__( self, None, RE_ESCAPED_STRING )
+
+	def parse( self, context, node, match ):
+		res = context.document.createTextNode(match.group(1))
+		node.appendChild(res)
+		return match.end()
 
 #------------------------------------------------------------------------------
 #
@@ -369,6 +381,7 @@ class MarkupInlineParser( InlineParser ):
 			# recognised inline.
 			markup_name  = match.group(1).strip()
 			markup_range = self.findEnd( markup_name, context, match.end())
+			markup_end   = markup_range[0]
 			if not markup_range:
 				context.parser.error( START_WITHOUT_END % (markup_name), context )
 				return match.end()
@@ -386,7 +399,7 @@ class MarkupInlineParser( InlineParser ):
 				# Otherwise we create the node for the markup and continue
 				# parsing
 				else:
-					markup_node = context.document.createElementNS(None, markup_name)
+					markup_node = context.document.createElementNS(None, "Content")
 					markup_node.setAttributeNS(None, "_html", "true")
 					node.appendChild(markup_node)
 					# We add the attributes to this tag
@@ -395,7 +408,24 @@ class MarkupInlineParser( InlineParser ):
 					# FIXME: This should not be necessary
 					old_node = context.currentNode
 					context.currentNode = markup_node
-					context.parser.parseBlock(context, markup_node, self.processText)
+					context.currentNode = markup_node
+					before_offset = context.getOffset()
+					next_block = context.parser._findNextBlockSeparator(context)
+					# There may be many blocks contained in the markup delimited
+					# by the node. Here we try to parse all the blocks until be
+					# reach the end of the markup minus 1 (that is the last
+					# separator before the block end)
+					if context.offsetInBlock(next_block[0]) or context.offsetInBlock(next_block[1]):
+						end_offset  = context.blockEndOffset
+						context.setOffset(context.blockStartOffset)
+						while context.getOffset() < end_offset :
+							context.parser._parseNextBlock(context, end=markup_end)
+					# If there was no block contained, we parse the text as a
+					# single block
+					else:
+						context.parser.parseBlock(context, markup_node, self.processText)
+					markup_node.nodeName = markup_name
+					markup_node.tagName = markup_name
 					context.currentNode = old_node
 				context.restoreOffsets(offsets)
 				return markup_range[1]
@@ -474,4 +504,4 @@ class MarkupInlineParser( InlineParser ):
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text)
 
-# EOF-Linux/ASCII-----------------------------------@RisingSun//Python//1.0//EN
+# EOF
