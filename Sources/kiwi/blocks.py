@@ -443,16 +443,19 @@ class SectionBlockParser(BlockParser):
 		and context.currentNode.parentNode \
 		and context.currentNode.parentNode.nodeName == "Section" \
 		and context.currentNode.parentNode.parentNode \
-		and int(context.currentNode.parentNode.getAttributeNS(None, "_indentation")) - \
+		and int(context.currentNode.parentNode.getAttributeNS(None, "_indent")) - \
 		int(context.currentNode.parentNode.getAttributeNS(None, "_weight")) \
 		>= section_indent - section_weight:
 			context.currentNode = context.currentNode.parentNode.parentNode
-		parent_depth = context.currentNode.parentNode.getAttributeNS(None, "_depth")
+		if context.currentNode.parentNode:
+			parent_depth = context.currentNode.parentNode.getAttributeNS(None, "_depth")
+		else:
+			parent_depth = None
 		if not parent_depth: section_depth = 0
 		else: section_depth = int(parent_depth) + 1
 		# THIRD STEP - We create the section
 		section_node = context.document.createElementNS(None, section_type)
-		section_node.setAttributeNS(None, "_indentation", str(section_indent ))
+		section_node.setAttributeNS(None, "_indent", str(section_indent ))
 		section_node.setAttributeNS(None, "_depth", str(section_depth))
 		section_node.setAttributeNS(None, "_weight", str(section_weight))
 		heading_node = context.document.createElementNS(None, "Heading")
@@ -464,6 +467,7 @@ class SectionBlockParser(BlockParser):
 		context.restoreOffsets(offsets)
 		# Now we create a Content node
 		content_node = context.document.createElementNS(None, "Content")
+		content_node.setAttributeNS(None, "_indent", str(section_indent ))
 		section_node.appendChild(content_node)
 		# We append the section node and assign it as current node
 		context.currentNode.appendChild(section_node)
@@ -497,7 +501,15 @@ class DefinitionBlockParser(BlockParser):
 		_indent = context.getBlockIndentation()
 		# Ensures that the parent Definition node exists
 		if not parent_node:
-			context.ensureParent( BLOCK_ELEMENTS )
+			parent_node = context.currentNode
+			while True:
+				if parent_node.parentNode == None: break
+				if parent_node.parentNode.nodeType == parent_node.DOCUMENT_NODE: break
+				if not parent_node.getAttributeNS(None, "_indent"): break
+				if int(parent_node.getAttributeNS(None, "_indent")) <= _indent: break
+				parent_node = parent_node.parentNode
+				if parent_node.nodeName not in BLOCK_ELEMENTS: continue
+			context.currentNode = parent_node
 			definition_node = context.document.createElementNS(None, "Definition")
 			definition_node.setAttributeNS(None, "_indent", str(_indent))
 			context.currentNode.appendChild(definition_node)
