@@ -71,7 +71,7 @@ class Context:
 		- parser: a reference to the Kiwi parser instance using the context.
 	"""
 
-	def __init__( self, documentText ):
+	def __init__( self, documentText, markOffsets=False ):
 		self.document = None
 		self.rootNode = None
 		self.header   = None
@@ -85,6 +85,7 @@ class Context:
 		self.setDocumentText(documentText)
 		self._currentFragment = None
 		self.parser = None
+		self.markOffsets = markOffsets
 
 	def _getElementsByTagName(self, node, name):
 		if node.nodeType == node.ELEMENT_NODE and \
@@ -383,11 +384,15 @@ class Parser:
 
 	# PARSING__________________________________________________________________
 
-	def parse( self, text ):
-		"""Parses the given text, and returns an XML document"""
+	def parse( self, text, offsets=True ):
+		"""Parses the given text, and returns an XML document. If `offsets` is
+		set to True, then all nodes of the document are annotated with their
+		position in the original text as well with a number. The document will
+		also have an `offsets` attribute that will contain a list of (start,
+		end) offset tuples for each element."""
 		# Text MUST be unicode
 		assert type(text) == type(u"")
-		context = Context(text)
+		context = Context(text, markOffsets=offsets)
 		self._initialiseContextDocument(context)
 		context.parser = self
 		while not context.documentEndReached():
@@ -397,6 +402,8 @@ class Parser:
 		context.appendices ):
 			if len(node.childNodes) == 0:
 				context.rootNode.removeChild(node)
+		if offsets:
+			context.offsets = self._updateElementOffsets(context, offsets=[])
 		return context.document
 	
 	def parseContext( self, context ):
@@ -444,8 +451,10 @@ class Parser:
 
 	def parseBlock( self, context, node, textProcessor ):
 		"""Parses the current block, looking for the inlines it may contain."""
+		if context.markOffsets: node.setAttributeNS(None, "_start", str(context.getOffset()))
 		while not context.blockEndReached():
 			self._parseNextInline(context, node, textProcessor)
+		if context.markOffsets: node.setAttributeNS(None, "_end", str(context.getOffset()))
 
 	def _parseNextInline( self, context, node, textProcessor ):
 		"""Parses the content of the current block, starting at the context
@@ -550,6 +559,31 @@ class Parser:
 		# There was no block separator, so we reached the document end
 		else:
 			return (context.documentTextLength, context.documentTextLength)
+
+	def _updateElementOffsets( self, context, node=None, start=0, end=0,
+	counter=0, offsets=None ):
+		"""This function ensures that every element has a _start and _end
+		attribute indicating the bit of original data it comes from."""
+		# TODO: OPTIMIZE THIS
+		if node == None: node = context.document.childNodes[0]
+		# We get the child element nodes, and update their indexes
+		elements = filter(lambda n:n.nodeType == n.ELEMENT_NODE, node.childNodes)
+		node.setAttributeNS(None, "_number", str(counter))
+		if offsets != None:
+			assert len(offsets) == counter, "%s != %s" % (len(offsets) , counter)
+			offsets.append(map(int, (start, end)))
+		for e in elements:
+			counter = self._updateElementOffsets(context, e, start, end, counter + 1)
+			start = e.getAttributeNS(None, "_start")
+			end   = e.getAttributeNS(None, "_end")
+		if not node.getAttributeNS(None, "_start"):
+			if elements: start  = int(elements[0].getAttributeNS(None,  "_start"))
+			node.setAttributeNS(None, "_start", str(start))
+		if not node.getAttributeNS(None, "_end"):
+			if elements: end  = int(elements[-1].getAttributeNS(None,  "_end"))
+			node.setAttributeNS(None, "_end", str(end))
+		return counter
+
 
 	# TEXT PROCESSING UTILITIES________________________________________________
 

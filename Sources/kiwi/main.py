@@ -264,7 +264,14 @@ def run( arguments, input = None, noOutput=False ):
 		if not noOutput: ofile.write(result)
 
 	return (SUCCESS, result)
-		
+
+def text2htmlbody( text ):
+	"""Converts the given text to HTML, returning only the body."""
+	s = StringIO.StringIO(text)
+	_, text = run("-m --body-only --", s, noOutput=True)
+	s.close()
+	return text
+
 if __name__ == "__main__":
 	status, result = run(sys.argv[1:])
 	if status == ERROR:

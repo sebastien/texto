@@ -42,7 +42,7 @@ class Processor(kiwi.templates.Processor):
 			return res
 		else:
 			return kiwi.templates.Processor.defaultProcessElement(self,element,selector)
-		
+
 	def generate( self, xmlDocument, bodyOnly=False, variables={} ):
 		node = xmlDocument.getElementsByTagName("Document")[0]
 		self.variables = variables
@@ -66,35 +66,6 @@ def convertDocument(element):
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=$(=ENCODING)" />
-<script type="text/javascript">
-
-function init()
-{
-}
-
-function kiwi_toggleSection(e)
-{
-	var target = e.target;
-	var parent = target.parentNode.parentNode;
-	for ( var i=0 ; i<parent.childNodes.length ; i++ )
-	{
-		var child = parent.childNodes[i];
-		if ( child.getAttribute("class") && child.getAttribute("class").indexOf("level",0)==0 )
-		{
-			if ( child.style.display == "block" )
-			{
-				child.style.display = "none";
-				parent.setAttribute("closed", "true")
-			}
-			else
-			{
-				child.style.display = "block";
-				parent.setAttribute("closed", "false")
-			}
-		}
-	}
-}
-</script>
 $(Header)$(=HEADER)
 </head>
 <body onload="init()">
@@ -104,22 +75,67 @@ $(References)
 </body>
 </html>""")
 
+def element_number( element ):
+	"""Utility function that returns the element number (part of the element
+	offset attributes)"""
+	number = element.getAttributeNS(None, "_number")
+	if number: return int(number)
+	else: return None
+
+def wdiv( element, text ):
+	"""Wraps the given text in a DIV extended with offsets attributes if the
+	given element has offset attributes."""
+	number = element_number(element)
+	if number == None: return text
+	return "<div id='KIWI%s' start='%s' end='%s'>%s</div>" % (
+		element.getAttributeNS(None, '_number'),
+		element.getAttributeNS(None, '_start'),
+		element.getAttributeNS(None, '_end'),
+		text
+	)
+
+def wspan( element, text ):
+	"""Wraps the given text in a SPAN extended with offsets attributes if the
+	given element has offset attributes."""
+	number = element_number(element)
+	if number == None: return text
+	return "<div id='KIWI%s' start='%s' end='%s'>%s</div>" % (
+		element.getAttributeNS(None, '_number'),
+		element.getAttributeNS(None, '_start'),
+		element.getAttributeNS(None, '_end'),
+		text
+	)
+
+def wattrs( element ):
+	"""Returns the offset attributes of this element if it has any."""
+	number = element_number(element)
+	if number == None: return ""
+	return " id='KIWI%s' start='%s' end='%s'" % (
+		element.getAttributeNS(None, '_number'),
+		element.getAttributeNS(None, '_start'),
+		element.getAttributeNS(None, '_end')
+	)
+
 def convertContent( element ):
-	return process(element, """ <div id='content'>$(*)</div>""")
+	return process(element, wdiv(element, """<div id='content'>$(*)</div>"""))
 
 def convertContent_bodyonly( element ):
-	return process(element, """$(*)""")
+	return process(element, wdiv(element, """$(*)"""))
 
 def convertContent_table( element ):
-	return process(element, """<tbody>$(*)</tbody>""")
+	return process(element, """<tbody%s>$(*)</tbody>""" % (wattrs(element)))
 
 def convertHeader( element ):
-	return process(element, """<title>$(Title/title)</title>""")
+	return process(element, "<title%s>$(Title/title)</title>" % (wattrs(element)))
+
+def convertHeading( element ):
+	return process(element, wspan(element, "$(*)"))
 
 def convertSection( element ):
 	level = int(element.getAttributeNS(None, "_depth")) + 1
 	return process(element,
-	  '<div class="section"><a class="link" onclick="kiwi_toggleSection(event);"><h%d class="heading">$(Heading)</h%d></a>' % (level, level)
+	  '<div class="section"><a class="link">'
+	  + '<h%d class="heading">$(Heading)</h%d></a>' % (level, level)
 	  + '<div class="level%d">$(Content:section)</div></div>' % (level)
 	)
 
@@ -135,43 +151,43 @@ def convertHeader_title( element ):
 	class="title">$(Title/title:header)$(Title/subtitle:header)</div>$(Meta)""")
 
 def converttitle_header( element ):
-	return process(element, """<h1>$(*)</h1>""")
+	return process(element, """<h1%s>$(*)</h1>""" % (wattrs(element)))
 
 def convertsubtitle_header( element ):
-	return process(element, """<h2>$(*)</h2>""")
+	return process(element, """<h2%s>$(*)</h2>""" % (wattrs(element)))
 
 def convertParagraph( element ):
-	return process(element, """<p>$(*)</p>""")
+	return process(element, """<p%s>$(*)</p>""" % (wattrs(element)))
 
 def convertParagraph_cell( element ):
 	return process(element, """$(*)<br />""")
 
 def convertList( element ):
-	return process(element, """<ul>$(*)</ul>""")
+	return process(element, """<ul%s>$(*)</ul>""" % (wattrs(element)))
 
 def convertListItem( element ):
-	return process(element, """<li>$(*)</li>""")
+	return process(element, """<li%s>$(*)</li>""" % (wattrs(element)))
 
 def convertTable( element ):
 	return process(element, """<table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table>""")
 
 def convertDefinition( element ):
-	return process(element, """<dl>$(*)</dl>""")
+	return process(element, """<dl%s>$(*)</dl>""" % (wattrs(element)))
 
 def convertDefinitionItem( element ):
 	return process(element, """<dt>$(Title)</dt><dd>$(Content)</dd>""")
 
 def convertCaption( element ):
-	return process(element, """<caption>$(*)</caption>""")
+	return process(element, """<caption%s>$(*)</caption>""" % (wattrs(element)))
 
 def convertRow( element ):
 	try: index = element.parentNode.childNodes.index(element) % 2 + 1
 	except: index = 0 
 	classes = ( "", "even", "odd" )
-	return process(element, """<tr class='%s'>$(*)</tr>""" % (classes[index]))
+	return process(element, """<tr class='%s'%s>$(*)</tr>""" % (classes[index], wattrs(element)))
 
 def convertCell( element ):
-	return process(element, """<td>$(*:cell)</td>""")
+	return process(element, """<td%s>$(*:cell)</td>""" % (wattrs(element)))
 
 def convertBlock( element ):
 	title = element.getAttributeNS(None,"title") or element.getAttributeNS(None, "type") or ""
@@ -182,7 +198,7 @@ def convertBlock( element ):
 		div_type = "div"
 	elif not element.getAttributeNS(None, "type"):
 		div_type = "blockquote"
-	return process(element, """<%s%s>%s<div class='content'>$(*)</div></%s>""" % (div_type, css_class, title, div_type))
+	return process(element, """<%s%s>%s<div class='content'%s>$(*)</div></%s>""" % (div_type, css_class, title, wattrs(element), div_type))
 
 def convertlink( element ):
 	if element.getAttributeNS(None, "type") == "ref":
@@ -230,7 +246,7 @@ def convertstrong( element ):
 	return process(element, """<strong>$(*)</strong>""")
 
 def convertpre( element ):
-	return process(element, """<pre>$(*)</pre>""")
+	return process(element, """<pre%s>$(*)</pre>""" % (wattrs(element)))
 
 def convertcode( element ):
 	return process(element, """<code>$(*)</code>""")

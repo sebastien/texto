@@ -116,7 +116,7 @@ prepare:
 clean:
 	@echo "Cleaning $(PROJECT)."
 	@find . -name "*.pyc" -or -name "*.sw?" -or -name ".DS_Store" -or -name "*.bak" -or -name "*~" -exec rm '{}' ';'
-	@rm -rf $(DOCUMENTATION)/API build dist
+	@rm -rf $(DOCUMENTATION)/API build dist Tests/????-*.html
 
 check:
 	@echo "Checking $(PROJECT) sources :"
