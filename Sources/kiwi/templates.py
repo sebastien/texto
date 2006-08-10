@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   06-Mar-2006
-# Last mod.         :   17-Jul-2006
+# Last mod.         :   10-Aug-2006
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -56,13 +56,29 @@ class Processor:
 
 	def register( self, name2functions ):
 		"""Fills the EXPRESSION_TABLE which maps element names to processing
-		functions."""
+		functions. This function is only useful when you implement your
+		templates in the same way as the `kiwi2html` module, ie. with processing
+		functions like `convertXXX_VVV` where `XXX` stands for the element name,
+		and `_VVV` is the optional variant (selected by`$(element:variant)`).
+		
+		You may prefer to use the `registerElementProcessor` instead if you want
+		to register a processor for an individual tag.
+		"""
 		self.expressionTable = {}
 		for name, function in name2functions.items():
 			if name.startswith("convert"):
 				ename = name[len("convert"):]
 				ename = ename.replace("_", ":")
 				self.expressionTable[ename] = function
+
+	def registerElementProcessor( self, function, elementName, variant=None  ):
+		"""Registers the given function to process the given element name and
+		the given optional variant.
+		
+		Note that this will replace any previsously registered processor for the
+		element and variant."""
+		if variant: elementName += ":" + variant
+		self.expressionTable[elementName] = function
 
 	def resolveSet( self, element, names ):
 		"""Resolves the set of names in the given element. When ["Paragraph"] is
