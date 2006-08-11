@@ -384,7 +384,7 @@ class Parser:
 
 	# PARSING__________________________________________________________________
 
-	def parse( self, text, offsets=True ):
+	def parse( self, text, offsets=False ):
 		"""Parses the given text, and returns an XML document. If `offsets` is
 		set to True, then all nodes of the document are annotated with their
 		position in the original text as well with a number. The document will
@@ -624,6 +624,7 @@ class Parser:
 		else:
 			return new_text
 
+	@classmethod
 	def getIndentation( self, text ):
 		"""Returns the indentation of a string.
 
@@ -633,13 +634,18 @@ class Parser:
 
 		Tabs have the value given by the *TAB_SIZE* variable."""
 		lines = filter(lambda x:len(x)>0, string.split(text, '\n', 4))
-		count = float(0)
-		for line in lines: count += self.countLeadingSpaces(line)
-		if len(lines):
-			return int(round(count/len(lines)))
-		else:
-			return int(count)
+		indent = map(self.countLeadingSpaces, lines)
+		if len(lines) == 0:
+			res = 0
+		elif len(lines) == 1:
+			res = indent[0]
+		elif len(lines) == 2:
+			res = indent[1]
+		else: 
+			res = max(max(indent[0], indent[1]), indent[2])
+		return res
 
+	@classmethod
 	def countLeadingSpaces( self, text ):
 		"""Returns the number of leading spaces in the given line.
 		A tab will have the value given by the TAB_SIZE global."""
@@ -653,6 +659,7 @@ class Parser:
 				return count
 		return count
 
+	@classmethod
 	def charactersToSpaces( self, text ):
 		"""Returns a string where all characters are converted to spaces.
 		Newlines and tabs are preserved"""
