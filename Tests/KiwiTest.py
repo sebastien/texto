@@ -31,7 +31,7 @@ def do():
 	for group in groups:
 		index_f.write("<tr><td colspan='3'><code>%s</code></td></tr>" % (group))
 		for test, test_path in TEST_FILES[group]:
-			print "%4s:%20s " % (group, test),
+			print "%4s:%25s " % (group, test),
 			inp, out, err = os.popen3("python " + KIWI + " -m " + test_path)
 			dest_path = os.path.splitext(test_path)[0] + ".html"
 			f = open(dest_path, "w")

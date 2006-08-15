@@ -68,7 +68,7 @@ def convertDocument(element):
 <meta http-equiv="Content-Type" content="text/html; charset=$(=ENCODING)" />
 $(Header)$(=HEADER)
 </head>
-<body onload="init()">
+<body>
 $(Header:title)
 $(Content)
 $(References)

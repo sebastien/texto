@@ -439,6 +439,9 @@ class SectionBlockParser(BlockParser):
 		if delim_match: block_end = context.getOffset() + delim_match.start()
 		# SECOND STEP - We look for a parent node, which would have a depth
 		# smaller than the current one or that would not be a section node
+		while context.currentNode != "Content" \
+		and   context.currentNode.parentNode.nodeName not in ("Document", "Section"):
+			context.currentNode = context.currentNode.parentNode
 		while context.currentNode.nodeName == "Content" \
 		and context.currentNode.parentNode \
 		and context.currentNode.parentNode.nodeName == "Section" \
@@ -447,6 +450,7 @@ class SectionBlockParser(BlockParser):
 		int(context.currentNode.parentNode.getAttributeNS(None, "_weight")) \
 		>= section_indent - section_weight:
 			context.currentNode = context.currentNode.parentNode.parentNode
+
 		if context.currentNode.parentNode:
 			parent_depth = context.currentNode.parentNode.getAttributeNS(None, "_depth")
 		else:
