@@ -177,7 +177,7 @@ aimg {
 
 #content .term {
 	color: rgb(22, 130, 178);
-	border-bottom:  1px solid rgb(150, 220, 238);
+	background: rgb(240, 250, 256);
 }
 
 #content .quote {

@@ -239,7 +239,8 @@ def run( arguments, input = None, noOutput=False ):
 
 	if source!="-": ifile.close()
 
-	if type(data) != unicode: data = unicode(data) 
+	if type(data) != unicode:
+		data = data.decode(input_enc)
 	xml_document = parser.parse(data)
 
 	result = None
