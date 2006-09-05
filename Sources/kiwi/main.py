@@ -251,7 +251,9 @@ def run( arguments, input = None, noOutput=False ):
 			variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (css_file.read())
 			variables["ENCODING"] = output_enc
 		css_file.close()
-		result = kiwi2html.processor.generate(xml_document, body_only, variables).encode(output_enc)
+		result = kiwi2html.processor.generate(xml_document, body_only, variables)
+		if result: result = result.encode(output_enc)
+		else: result = ""
 		if not noOutput: ofile.write(result)
 	elif pretty_print:
 		#Ft.Xml.Lib.Print.PrettyPrint(xml_document, ofile, output_enc)

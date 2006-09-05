@@ -381,11 +381,11 @@ class MarkupInlineParser( InlineParser ):
 			# recognised inline.
 			markup_name  = match.group(1).strip()
 			markup_range = self.findEnd( markup_name, context, match.end())
-			markup_end   = markup_range[0]
 			if not markup_range:
 				context.parser.error( START_WITHOUT_END % (markup_name), context )
 				return match.end()
 			else:
+				markup_end   = markup_range[0]
 				# We do not want the context to be altered by block parsing
 				offsets = context.saveOffsets()
 				context.setCurrentBlock(context.getOffset()+match.end(),
