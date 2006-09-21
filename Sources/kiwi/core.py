@@ -329,7 +329,7 @@ class Parser:
 			InlineParser("url",			RE_URL),
 			EntityInlineParser(),
 			LinkInlineParser(),
-			InlineParser("pre",			RE_PRE, result=lambda x,y:x.group(3)),
+			PreInlineParser(),
 			InlineParser("code",		RE_CODE_2),
 			InlineParser("code",		RE_CODE),
 			InlineParser("term",		RE_TERM,     normal),
@@ -339,6 +339,7 @@ class Parser:
 			InlineParser("citation",	RE_CITATION, normal),
 			# Special characters
 			InlineParser("break",		RE_BREAK),
+			InlineParser(None,			RE_SWALLOW_BREAK),
 			InlineParser("newline",		RE_NEWLINE),
 			InlineParser("dots",		RE_DOTS),
 			ArrowInlineParser(),

@@ -55,7 +55,7 @@ CODE             = u"`([^\`]+)`"
 RE_CODE          = re.compile(CODE, re.LOCALE|re.MULTILINE)
 CODE_2           = u"``((`?[^`])+)``"
 RE_CODE_2        = re.compile(CODE_2, re.LOCALE|re.MULTILINE)
-PRE              = u"^(\s*\>(\t|    ))(.*)$"
+PRE              = u"^((\s*\>(\t|    ))(.*)\n)+"
 RE_PRE           = re.compile(PRE, re.LOCALE|re.MULTILINE)
 EMPHASIS         = u"\*([^*]+)\*"
 RE_EMPHASIS      = re.compile(EMPHASIS, re.LOCALE|re.MULTILINE)
@@ -72,6 +72,8 @@ RE_CITATION      = re.compile(CITATION,re.LOCALE|re.MULTILINE)
 
 BREAK            = u"\s*\n\s*\|\s*\n()"
 RE_BREAK         = re.compile(BREAK)
+SWALLOW_BREAK    = u"\s*\|\s*\n()"
+RE_SWALLOW_BREAK = re.compile(SWALLOW_BREAK)
 NEWLINE          = u"\s*\\\\n\s*()"
 RE_NEWLINE       = re.compile(NEWLINE)
 LONGDASH         = u" -- ()"
@@ -169,9 +171,10 @@ class InlineParser:
 			if text:
 				text_node   = context.document.createTextNode(text)
 				inline_node.appendChild(text_node)
-		else:
+			node.appendChild(inline_node)
+		elif not self.name is None:
 			inline_node   = context.document.createTextNode(text)
-		node.appendChild(inline_node)
+			node.appendChild(inline_node)
 		return self.endOf(recogniseInfo)
 
 #------------------------------------------------------------------------------
@@ -216,6 +219,28 @@ class EntityInlineParser( InlineParser ):
 		entity_node = context.document.createElementNS(None, "entity")
 		entity_node.setAttributeNS(None, "num", text)
 		node.appendChild(entity_node)
+		return match.end()
+
+#------------------------------------------------------------------------------
+#
+#  Pre parsers
+#
+#------------------------------------------------------------------------------
+
+class PreInlineParser( InlineParser ):
+
+	def __init__( self ):
+		InlineParser.__init__( self, "pre", PRE )
+
+	def parse( self, context, node, match ):
+		lines = []
+		for text in match.group().split("\n"):
+			submatch = RE_PRE.match(text + "\n")
+			if text: text = context.parser.expandTabs(submatch.group(4))
+			lines.append(text)
+		pre_node = context.document.createElementNS(None, 'pre')
+		pre_node.appendChild(context.document.createTextNode("\n".join(lines)))
+		node.appendChild(pre_node)
 		return match.end()
 
 #------------------------------------------------------------------------------

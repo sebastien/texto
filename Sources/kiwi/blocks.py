@@ -43,7 +43,7 @@ RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
 SECTION_UNDERLINE = u"^\s*[\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
 
-DEFINITION_ITEM   = u"^\s*([^\:]+)\:\:\s*$"
+DEFINITION_ITEM   = u"^\s*([^\:]+)\:\:\s*(\n+\s*|\s*\|\s*\n)*"
 RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.LOCALE|re.MULTILINE)
 
 TAGGED_BLOCK      = u"^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
@@ -207,7 +207,7 @@ class TaggedBlockParser(BlockParser):
 			return parent.parentNode
 		else:
 			return parent
-		
+
 	def process( self, context, recogniseInfo ):
 		tagname  = recogniseInfo.group(2)
 		tagtitle = recogniseInfo.group(3)
@@ -529,9 +529,18 @@ class DefinitionBlockParser(BlockParser):
 		definition_item.appendChild(definition_content)
 		parent_node.appendChild(definition_item)
 		context.currentNode = definition_content
+		# We check if there is a rest after the definition name
+		rest = context.documentText[context.blockStartOffset + match.end():context.blockEndOffset]
+		if not context.parser.normaliseText(rest).strip(): rest = ""
+		if rest:
+			offsets = context.saveOffsets()
+			context.setCurrentBlock(context.blockStartOffset + match.end(), context.blockEndOffset)
+			context.parser.parseBlock(context, definition_content, self.processText)
+			context.restoreOffsets(offsets)
 
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text.strip())
+
 #------------------------------------------------------------------------------
 #
 #  ListItemBlockParser
@@ -708,6 +717,7 @@ class PreBlockParser( BlockParser ):
 		return True
 		
 	def process( self, context, recogniseInfo ):
+		"PRE?", context.currentFragment()
 		text = ""
 		for line in context.currentFragment().split("\n"):
 			match = RE_PREFORMATTED.match(line)
