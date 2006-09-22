@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   25-Jul-2006
+# Last mod.         :   22-Sep-2006
 # -----------------------------------------------------------------------------
 
 import os, sys, StringIO
@@ -17,7 +17,7 @@ __doc__ = """Kiwi is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
 XML DOM."""
 
-__version__ = "0.7.9"
+__version__ = "0.8.0"
 __pychecker__ = "blacklist=cDomlette,cDomlettec"
 
 import re, string, operator, getopt, codecs

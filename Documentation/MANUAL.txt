@@ -234,6 +234,8 @@
     3.6 Tables
     ----------
 
+    todo
+
     3.7 Document header and title
     -----------------------------
 
@@ -246,8 +248,8 @@
 
 
 
-4.Syntax summary
-================
+4. Syntax summary
+=================
 
     Now you are able to write basic text documents, but you may want to go
     further. Kiwi provide way to mark up everything in your documents. Some
@@ -370,8 +372,6 @@ Relation to Markdown and other text markups
     fast. It was designed to be extensible and easily embeddable in Web
     applications for easy text to HTML conversion (which is always useful, even
     if WYSIWIG editors are now available).
-
---
 
     [MARKDOWN]: <http://daringfireball.net/projects/markdown/syntax>
     [ASCIIDOC]: <http://www.methods.co.nz/asciidoc/>
