@@ -22,8 +22,8 @@ import re, string, operator, getopt, codecs
 import xml.dom.minidom
 dom = xml.dom.minidom.getDOMImplementation()
 
-from kiwi.inlines import *
-from kiwi.blocks  import *
+from inlines import *
+from blocks  import *
 
 #------------------------------------------------------------------------------
 #
@@ -406,7 +406,7 @@ class Parser:
 		if offsets:
 			context.offsets = self._updateElementOffsets(context, offsets=[])
 		return context.document
-	
+
 	def parseContext( self, context ):
 		while not context.documentEndReached():
 			self._parseNextBlock(context)
@@ -425,7 +425,8 @@ class Parser:
 		if end != None: block_end_offset = min(end, block_end_offset)
 		if block_end_offset == block_start_offset:
 			# We rewind until we find a "Content" block
-			while context.currentNode.nodeName != "Content":
+			while context.currentNode.nodeName != "Content" and \
+			context.currentNode.parentNode != None:
 				context.currentNode = context.currentNode.parentNode
 		# Otherwise
 		else:
@@ -599,7 +600,7 @@ class Parser:
 		of each line, where n is given by the 'cut' argument.  This tabs
 		expansion algorithm works better than Python line expansion
 		algorithms."""
-		assert text
+		if not text: return ""
 		new_text = ""
 		for line in text.split("\n"):
 			start = 0

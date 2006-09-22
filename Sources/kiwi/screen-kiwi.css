@@ -133,6 +133,7 @@ aimg {
 #content dd {
 	border-left:  1px solid rgb(150, 220, 238);
 	padding-left: 20pt;
+	margin-bottom: 2em;
 }
 
 #content dd pre {
@@ -246,6 +247,4 @@ aimg {
 #references .entry .content {
 	text-align: right;
 }
-
-
 
