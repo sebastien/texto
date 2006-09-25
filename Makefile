@@ -35,7 +35,7 @@ RESOURCES       = Resources
 DISTRIBUTION    = Distribution
 API             = $(DOCUMENTATION)/kiwi-api.html
 DISTROCONTENT   = $(DOCUMENTATION) $(SOURCES) $(TESTS) $(RESOURCES) \
-                  Makefile LICENSE README CHANGES
+                  Makefile 
 
 # Project files_______________________________________________________________
 
