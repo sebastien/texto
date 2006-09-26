@@ -717,7 +717,6 @@ class PreBlockParser( BlockParser ):
 		return True
 		
 	def process( self, context, recogniseInfo ):
-		"PRE?", context.currentFragment()
 		text = ""
 		for line in context.currentFragment().split("\n"):
 			match = RE_PREFORMATTED.match(line)
@@ -728,8 +727,9 @@ class PreBlockParser( BlockParser ):
 		if text[-1] == "\n": text = text[:-1]
 		pre_node = context.document.createElementNS(None, self.name)
 		pre_node.appendChild(context.document.createTextNode(text))
+		pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
+		pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
 		context.currentNode.appendChild(pre_node)
-
 
 #------------------------------------------------------------------------------
 #

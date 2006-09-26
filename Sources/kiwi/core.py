@@ -447,7 +447,9 @@ class Parser:
 				recognised = self.defaultBlockParser.recognises(context)
 				context.setOffset(block_start_offset)
 				assert recognised
+			start_offset = str(context.getOffset())
 			blockParser.process(context, recognised)
+			node = context.currentNode
 		# Anyway, we set the offset to the next block start
 		context.setOffset(next_block_start_offset)
 
