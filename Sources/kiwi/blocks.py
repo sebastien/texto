@@ -43,7 +43,7 @@ RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
 SECTION_UNDERLINE = u"^\s*[\*\-\=#][\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
 
-DEFINITION_ITEM   = u"^\s*([^\:]+)\:\:\s*(\n+\s*|\s*\|\s*\n)*"
+DEFINITION_ITEM   = u"^\s*((\:[^\:]|[^\:])+)\:\:\s*(\n+\s*|\s*\|\s*\n)*"
 RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.LOCALE|re.MULTILINE)
 
 TAGGED_BLOCK      = u"^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
