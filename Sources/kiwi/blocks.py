@@ -9,7 +9,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   25-Jul-2006
+# Last mod.         :   27-Jul-2006
 # -----------------------------------------------------------------------------
 
 import re, string
@@ -440,6 +440,7 @@ class SectionBlockParser(BlockParser):
 		# SECOND STEP - We look for a parent node, which would have a depth
 		# smaller than the current one or that would not be a section node
 		while context.currentNode != "Content" \
+		and   context.currentNode.parentNode \
 		and   context.currentNode.parentNode.nodeName not in ("Document", "Section"):
 			context.currentNode = context.currentNode.parentNode
 		while context.currentNode.nodeName == "Content" \
@@ -522,7 +523,12 @@ class DefinitionBlockParser(BlockParser):
 		definition_item = context.document.createElementNS(None, "DefinitionItem")
 		definition_item.setAttributeNS(None, "_indent", str(_indent + 1))
 		definition_title = context.document.createElementNS(None, "Title")
-		definition_title.appendChild(context.document.createTextNode(match.group(1)))
+		# Parse the content of the definition title
+		offsets = context.saveOffsets()
+		context.setCurrentBlock(context.blockStartOffset, context.blockStartOffset + len(match.group(1)))
+		context.parser.parseBlock(context, definition_title, self.processText)
+		context.restoreOffsets(offsets)
+		# And continue the processing
 		definition_content = context.document.createElementNS(None, "Content")
 		definition_content.setAttributeNS(None, "_indent", str(_indent + 1))
 		definition_item.appendChild(definition_title)

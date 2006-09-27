@@ -190,7 +190,7 @@ class Context:
 		if endOffset <= 0: endOffset += self.documentTextLength
 		assert startOffset>=0
 		assert endOffset<=self.documentTextLength
-		assert startOffset<=endOffset, "Start offset to big: %s > %s" % (startOffset, endOffset)
+		assert startOffset<=endOffset, "Start offset too big: %s > %s" % (startOffset, endOffset)
 		self.setOffset(startOffset)
 		self.blockStartOffset = startOffset
 		self.blockEndOffset = endOffset

@@ -443,7 +443,7 @@ class MarkupInlineParser( InlineParser ):
 					if context.offsetInBlock(next_block[0]) or context.offsetInBlock(next_block[1]):
 						end_offset  = context.blockEndOffset
 						context.setOffset(context.blockStartOffset)
-						while context.getOffset() < end_offset :
+						while context.getOffset() < markup_end :
 							context.parser._parseNextBlock(context, end=markup_end)
 					# If there was no block contained, we parse the text as a
 					# single block

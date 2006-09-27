@@ -17,7 +17,7 @@ __doc__ = """Kiwi is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
 XML DOM."""
 
-__version__ = "0.8.0"
+__version__ = "0.8.0a"
 __pychecker__ = "blacklist=cDomlette,cDomlettec"
 
 import re, string, operator, getopt, codecs
