@@ -579,34 +579,87 @@ class Parser:
 		return (start,end)
 
 	def _nodeEnsureOffsets( self, node, start=None, end=None ):
-		if start is None or end is None: return
-		if self._nodeHasOffsets(node): return
-		node.setAttributeNS(None, "_start", str(start))
-		node.setAttributeNS(None, "_end", str(end))
+		nstart, nend = self._nodeGetOffsets(node)
+		if not nstart and start:
+			node.setAttributeNS(None, "_start", str(start))
+		if not nend and end:
+			node.setAttributeNS(None, "_end", str(end))
 
 	def _updateElementOffsets( self, context, node=None, counter=0, offsets=None ):
 		"""This function ensures that every element has a _start and _end
 		attribute indicating the bit of original data it comes from."""
 		if node == None: node = context.document.childNodes[0]
 		node.setAttributeNS(None, "_number", str(counter))
+		# The given offsets parameter is an array with the node number and the
+		# offsets. It can be used by embedders to easily access nods by offset
 		if offsets != None:
 			assert len(offsets) == counter, "%s != %s" % (len(offsets) , counter)
 			this_offsets = [None,None]
 			offsets.append(this_offsets)
-		# We get the child element nodes, and update their indexes
+		# The first step is to fill an array with the child nodes offsets
+		# Each child node may or may not have an offset
 		child_offsets = []
 		start = end = None
 		for e in [n for n in node.childNodes if n.nodeType == n.ELEMENT_NODE]:
 			counter = self._updateElementOffsets(context, e, counter + 1)
-			if self._nodeHasOffsets(e):
-				child_offsets.append(self._nodeGetOffsets(e))
+			child_offsets.append(self._nodeGetOffsets(e))
+		# Once this list is created, we retried the start offset of the earliest
+		# child that has a start offset, same for the end offset of the latest
+		# child
+		child_start = None
+		child_end   = None
 		if child_offsets:
-			self._nodeEnsureOffsets(node, child_offsets[0][0], child_offsets[-1][1])
+			i = 0
+			j = len(child_offsets) - 1
+			while i < len(child_offsets) and child_offsets[i][0] == None: i += 1
+			while j >= 0 and child_offsets[j][1] == None: j -= 1
+			if i < len(child_offsets): child_start = child_offsets[i][0]
+			if j >= 0: child_end   = child_offsets[j][1]
+		# We update the current node with the child offsets (this allows node
+		# that have incomplete offsets to be completed)
+		self._nodeEnsureOffsets(node, child_start, child_end)
+		# And now we update the children offsets again (so that they actually
+		# all have offsets), because we have all the information we need to
+		# actually update the children offsets
+		start, end = self._nodeGetOffsets(node)
+		self._propagateElementOffsets(node,start,end)
+		# As we now the current node offsets, we can set the real values in the
+		# fiven offsets array, by simply updating the offsets value in the
+		# `this_offsets` list.
 		if offsets!=None:
 			o = self._nodeGetOffsets(node)
 			this_offsets[0] = o[0]
 			this_offsets[1] = o[1]
+		# And we return the number of this node
 		return counter
+
+	def _propagateElementOffsets( self, element, start=None, end=None ):
+		"""Used by the _updateElementOffsets to ensure start and end offsets in
+		all children and descendants."""
+		#if start is None or end is None: return
+		child_nodes = list([n for n in element.childNodes if n.nodeType == n.ELEMENT_NODE]) 
+		self._nodeEnsureOffsets(element, start, end)
+		# At first, we set the bounds properly, so that the first child node
+		# start is this node start, and the last node end is this node end
+		if child_nodes:
+			self._nodeEnsureOffsets(child_nodes[0],  start=start)
+			self._nodeEnsureOffsets(child_nodes[-1], end=end)
+		# Now 
+		for child in child_nodes:
+			if self._nodeHasOffsets(child):
+				_,nstart = self._nodeGetOffsets(child)
+				if nstart: start = nstart
+			else:
+				self._propagateElementOffsets(child, start=start)
+		child_nodes.reverse()
+		for child in child_nodes:
+			if self._nodeHasOffsets(child):
+				nend,_ = self._nodeGetOffsets(child)
+				if nend: end = nend
+			else:
+				self._propagateElementOffsets(child,end=end)
+		# TODO: Maybe update the element offsetsd
+
 
 	# TEXT PROCESSING UTILITIES________________________________________________
 
