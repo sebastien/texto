@@ -655,7 +655,7 @@ class ListItemBlockParser(BlockParser):
 		list_item_node.setAttributeNS(None, "_indent", str(indent))
 		list_item_node.setAttributeNS(None, "_start", str(start_offset))
 		if next_item_match:
-			list_item_node.setAttributeNS(None, "_end", next_item_match.start() -1)
+			list_item_node.setAttributeNS(None, "_end", str(context.getOffset() + next_item_match.start() -1))
 		# and the optional heading
 		if heading:
 			offsets = context.saveOffsets()

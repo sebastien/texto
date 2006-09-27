@@ -580,16 +580,19 @@ class Parser:
 			offsets.append(map(int, (start, end)))
 		for e in elements:
 			counter = self._updateElementOffsets(context, e, start, end, counter + 1)
-			start = e.getAttributeNS(None, "_start")
-			end   = e.getAttributeNS(None, "_end")
-		if not node.getAttributeNS(None, "_start"):
-			if elements: start  = int(elements[0].getAttributeNS(None,  "_start"))
+			start   = e.getAttributeNS(None, "_start")
+			end     = e.getAttributeNS(None, "_end")
+		# We update the elements if necessary, ensuring that the element range
+		# contains the union of all elements ranges
+		if elements: start  = int(elements[0].getAttributeNS(None,  "_start"))
+		if elements: end  = int(elements[-1].getAttributeNS(None,  "_end"))
+		this_start = node.getAttributeNS(None, "_start")
+		this_end   = node.getAttributeNS(None, "_end")
+		if this_start == None or this_start == '' or int(this_start) > start:
 			node.setAttributeNS(None, "_start", str(start))
-		if not node.getAttributeNS(None, "_end"):
-			if elements: end  = int(elements[-1].getAttributeNS(None,  "_end"))
+		if this_end   == None or this_end == '' or int(this_end) < end:
 			node.setAttributeNS(None, "_end", str(end))
 		return counter
-
 
 	# TEXT PROCESSING UTILITIES________________________________________________
 
