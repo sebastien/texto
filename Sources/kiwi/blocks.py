@@ -545,7 +545,7 @@ class DefinitionBlockParser(BlockParser):
 			context.restoreOffsets(offsets)
 
 	def processText( self, context, text ):
-		return context.parser.normaliseText(text.strip())
+		return context.parser.normaliseText(text)
 
 #------------------------------------------------------------------------------
 #
