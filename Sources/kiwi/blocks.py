@@ -151,6 +151,8 @@ class ParagraphBlockParser(BlockParser):
 		# Now we can process the document
 		para_node = context.document.createElementNS(None, self.name)
 		para_node.setAttributeNS(None, "_indent", str(paragraph_depth))
+		para_node.setAttributeNS(None, "_start", str(context.blockStartOffset))
+		para_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
 		context.parser.parseBlock(context, para_node, self.processText)
 		# Now we suppress leading and trailing whitespaces
 		first_text_node = para_node.childNodes[0]
@@ -522,9 +524,9 @@ class DefinitionBlockParser(BlockParser):
 		# Creates the defintion item
 		definition_item = context.document.createElementNS(None, "DefinitionItem")
 		definition_item.setAttributeNS(None, "_indent", str(_indent + 1))
-		definition_item.setAttributeNS(None, "_start", str(context.blockStartOffset))
-		definition_item.setAttributeNS(None, "_end", str(context.blockStartOffset + len(match.group())))
 		definition_title = context.document.createElementNS(None, "Title")
+		definition_title.setAttributeNS(None, "_start", str(context.blockStartOffset))
+		definition_title.setAttributeNS(None, "_end", str(context.blockStartOffset + len(match.group())))
 		# Parse the content of the definition title
 		offsets = context.saveOffsets()
 		context.setCurrentBlock(context.blockStartOffset, context.blockStartOffset + len(match.group(1)))
@@ -533,6 +535,8 @@ class DefinitionBlockParser(BlockParser):
 		# And continue the processing
 		definition_content = context.document.createElementNS(None, "Content")
 		definition_content.setAttributeNS(None, "_indent", str(_indent + 1))
+		definition_content.setAttributeNS(None, "_start", str(context.blockStartOffset + match.end()))
+		definition_content.setAttributeNS(None, "_end", str(context.blockEndOffset))
 		definition_item.appendChild(definition_title)
 		definition_item.appendChild(definition_content)
 		parent_node.appendChild(definition_item)

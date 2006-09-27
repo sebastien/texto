@@ -455,12 +455,12 @@ class Parser:
 
 	def parseBlock( self, context, node, textProcessor ):
 		"""Parses the current block, looking for the inlines it may contain."""
-		if context.markOffsets and not node.getAttributeNS(None,"_start"):
-			node.setAttributeNS(None, "_start", str(context.getOffset()))
+		#if context.markOffsets and not node.getAttributeNS(None,"_start"):
+		#	node.setAttributeNS(None, "_start", str(context.getOffset()))
 		while not context.blockEndReached():
 			self._parseNextInline(context, node, textProcessor)
-		if context.markOffsets and not node.getAttributeNS(None,"_end"):
-			node.setAttributeNS(None, "_end", str(context.getOffset()))
+		#if context.markOffsets and not node.getAttributeNS(None,"_end"):
+		#	node.setAttributeNS(None, "_end", str(context.getOffset()))
 
 	def _parseNextInline( self, context, node, textProcessor ):
 		"""Parses the content of the current block, starting at the context
@@ -566,32 +566,46 @@ class Parser:
 		else:
 			return (context.documentTextLength, context.documentTextLength)
 
-	def _updateElementOffsets( self, context, node=None, start=0, end=0,
-	counter=0, offsets=None ):
+	def _nodeHasOffsets( self, node ):
+		return node.getAttributeNS(None, "_start") and node.getAttributeNS(None, "_end") 
+
+	def _nodeGetOffsets( self, node ):
+		start = node.getAttributeNS(None, "_start") 
+		end   = node.getAttributeNS(None, "_end") 
+		if start: start = int(start)
+		elif start != 0: start = None
+		if end: end = int(end)
+		else: end = None
+		return (start,end)
+
+	def _nodeEnsureOffsets( self, node, start=None, end=None ):
+		if start is None or end is None: return
+		if self._nodeHasOffsets(node): return
+		node.setAttributeNS(None, "_start", str(start))
+		node.setAttributeNS(None, "_end", str(end))
+
+	def _updateElementOffsets( self, context, node=None, counter=0, offsets=None ):
 		"""This function ensures that every element has a _start and _end
 		attribute indicating the bit of original data it comes from."""
-		# TODO: OPTIMIZE THIS
 		if node == None: node = context.document.childNodes[0]
-		# We get the child element nodes, and update their indexes
-		elements = filter(lambda n:n.nodeType == n.ELEMENT_NODE, node.childNodes)
 		node.setAttributeNS(None, "_number", str(counter))
 		if offsets != None:
 			assert len(offsets) == counter, "%s != %s" % (len(offsets) , counter)
-			offsets.append(map(int, (start, end)))
-		for e in elements:
-			counter = self._updateElementOffsets(context, e, start, end, counter + 1)
-			start   = e.getAttributeNS(None, "_start")
-			end     = e.getAttributeNS(None, "_end")
-		# We update the elements if necessary, ensuring that the element range
-		# contains the union of all elements ranges
-		if elements: start  = int(elements[0].getAttributeNS(None,  "_start"))
-		if elements: end  = int(elements[-1].getAttributeNS(None,  "_end"))
-		this_start = node.getAttributeNS(None, "_start")
-		this_end   = node.getAttributeNS(None, "_end")
-		if this_start == None or this_start == '' or int(this_start) > start:
-			node.setAttributeNS(None, "_start", str(start))
-		if this_end   == None or this_end == '' or int(this_end) < end:
-			node.setAttributeNS(None, "_end", str(end))
+			this_offsets = [None,None]
+			offsets.append(this_offsets)
+		# We get the child element nodes, and update their indexes
+		child_offsets = []
+		start = end = None
+		for e in [n for n in node.childNodes if n.nodeType == n.ELEMENT_NODE]:
+			counter = self._updateElementOffsets(context, e, counter + 1)
+			if self._nodeHasOffsets(e):
+				child_offsets.append(self._nodeGetOffsets(e))
+		if child_offsets:
+			self._nodeEnsureOffsets(node, child_offsets[0][0], child_offsets[-1][1])
+		if offsets!=None:
+			o = self._nodeGetOffsets(node)
+			this_offsets[0] = o[0]
+			this_offsets[1] = o[1]
 		return counter
 
 	# TEXT PROCESSING UTILITIES________________________________________________
