@@ -466,6 +466,7 @@ class SectionBlockParser(BlockParser):
 		section_node.setAttributeNS(None, "_depth", str(section_depth))
 		section_node.setAttributeNS(None, "_weight", str(section_weight))
 		section_node.setAttributeNS(None, "_start", str(block_start))
+		section_node.setAttributeNS(None, "_sstart", str(block_start))
 		heading_node = context.document.createElementNS(None, "Heading")
 		section_node.appendChild(heading_node)
 		offsets = context.saveOffsets()
@@ -660,7 +661,7 @@ class ListItemBlockParser(BlockParser):
 		# We create the list item
 		list_item_node = context.document.createElementNS(None, "ListItem")
 		list_item_node.setAttributeNS(None, "_indent", str(indent))
-		list_item_node.setAttributeNS(None, "_start", str(start_offset))
+		#list_item_node.setAttributeNS(None, "_start", str(start_offset))
 		if next_item_match:
 			list_item_node.setAttributeNS(None, "_end", str(context.getOffset() + next_item_match.start() -1))
 		# and the optional heading

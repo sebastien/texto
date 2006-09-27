@@ -567,28 +567,33 @@ class Parser:
 			return (context.documentTextLength, context.documentTextLength)
 
 	def _nodeHasOffsets( self, node ):
-		return node.getAttributeNS(None, "_start") and node.getAttributeNS(None, "_end") 
+		start, end = self._nodeGetOffsets(node)
+		return start != None and end != None
 
 	def _nodeGetOffsets( self, node ):
 		start = node.getAttributeNS(None, "_start") 
 		end   = node.getAttributeNS(None, "_end") 
-		if start: start = int(start)
-		elif start != 0: start = None
-		if end: end = int(end)
+		if start == '': start = None
+		if end   == '': end   = None
+		if start != None: start = int(start)
+		else: start = None
+		if end != None: end = int(end)
 		else: end = None
 		return (start,end)
 
 	def _nodeEnsureOffsets( self, node, start=None, end=None ):
 		nstart, nend = self._nodeGetOffsets(node)
-		if not nstart and start:
+		if nstart is None and start != None:
 			node.setAttributeNS(None, "_start", str(start))
-		if not nend and end:
+		if nend is None and end != None:
 			node.setAttributeNS(None, "_end", str(end))
 
 	def _updateElementOffsets( self, context, node=None, counter=0, offsets=None ):
 		"""This function ensures that every element has a _start and _end
 		attribute indicating the bit of original data it comes from."""
-		if node == None: node = context.document.childNodes[0]
+		if node == None:
+			node = context.document.childNodes[0]
+			self._nodeEnsureOffsets(node, 0, context.documentTextLength)
 		node.setAttributeNS(None, "_number", str(counter))
 		# The given offsets parameter is an array with the node number and the
 		# offsets. It can be used by embedders to easily access nods by offset
@@ -598,9 +603,14 @@ class Parser:
 			offsets.append(this_offsets)
 		# The first step is to fill an array with the child nodes offsets
 		# Each child node may or may not have an offset
+		child_nodes = tuple([n for n in node.childNodes if n.nodeType == n.ELEMENT_NODE])
+		nstart, nend = self._nodeGetOffsets(node)
+		if child_nodes:
+			self._nodeEnsureOffsets(child_nodes[0], start=nstart)
+			self._nodeEnsureOffsets(child_nodes[-1], end=nend)
 		child_offsets = []
 		start = end = None
-		for e in [n for n in node.childNodes if n.nodeType == n.ELEMENT_NODE]:
+		for e in child_nodes:
 			counter = self._updateElementOffsets(context, e, counter + 1)
 			child_offsets.append(self._nodeGetOffsets(e))
 		# Once this list is created, we retried the start offset of the earliest
@@ -646,18 +656,16 @@ class Parser:
 			self._nodeEnsureOffsets(child_nodes[-1], end=end)
 		# Now 
 		for child in child_nodes:
-			if self._nodeHasOffsets(child):
+			self._propagateElementOffsets(child, start=start)
+			if self._nodeGetOffsets(child)[1] != None:
 				_,nstart = self._nodeGetOffsets(child)
-				if nstart: start = nstart
-			else:
-				self._propagateElementOffsets(child, start=start)
+				if nstart != None: start = nstart
 		child_nodes.reverse()
 		for child in child_nodes:
-			if self._nodeHasOffsets(child):
+			self._propagateElementOffsets(child,end=end)
+			if self._nodeGetOffsets(child)[0] != None:
 				nend,_ = self._nodeGetOffsets(child)
-				if nend: end = nend
-			else:
-				self._propagateElementOffsets(child,end=end)
+				if nend != None: end = nend
 		# TODO: Maybe update the element offsetsd
 
 
