@@ -117,7 +117,7 @@ def wattrs( element ):
 	)
 
 def convertContent( element ):
-	return process(element, wdiv(element, """<div id='content'>$(*)</div>"""))
+	return process(element, wdiv(element, """<div class='content'>$(*)</div>"""))
 
 def convertContent_bodyonly( element ):
 	return process(element, wdiv(element, """$(*)"""))
