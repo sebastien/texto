@@ -43,7 +43,7 @@ RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
 SECTION_UNDERLINE = u"^\s*[\*\-\=#][\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
 
-DEFINITION_ITEM   = u"^\s*((\:[^\:]|[^\:])+)\:\:\s*(\n+\s*|\s*\|\s*\n)*"
+DEFINITION_ITEM   = u"^\s*((\:[^\:]|[^\:])+)\:\:+\s*(\n+\s*|\s*\|\s*\n)*"
 RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.LOCALE|re.MULTILINE)
 
 TAGGED_BLOCK      = u"^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
@@ -522,6 +522,8 @@ class DefinitionBlockParser(BlockParser):
 		# Creates the defintion item
 		definition_item = context.document.createElementNS(None, "DefinitionItem")
 		definition_item.setAttributeNS(None, "_indent", str(_indent + 1))
+		definition_item.setAttributeNS(None, "_start", str(context.blockStartOffset))
+		definition_item.setAttributeNS(None, "_end", str(context.blockStartOffset + len(match.group())))
 		definition_title = context.document.createElementNS(None, "Title")
 		# Parse the content of the definition title
 		offsets = context.saveOffsets()
