@@ -565,6 +565,7 @@ class ListItemBlockParser(BlockParser):
 	def process( self, context, itemMatch ):
 
 		context.ensureParent( ("Content", "Appendix", "Chapter", "Section", "List") )
+		start_offset = context.getOffset()
 
 		# Step 1: Determine the range of the current line item in the current
 		# block. There may be more than one line item as in the following:
@@ -649,10 +650,12 @@ class ListItemBlockParser(BlockParser):
 			list_node.setAttributeNS(None, "_indent", str(indent))
 			context.currentNode.appendChild(list_node)
 			context.currentNode = list_node
-
 		# We create the list item
 		list_item_node = context.document.createElementNS(None, "ListItem")
 		list_item_node.setAttributeNS(None, "_indent", str(indent))
+		list_item_node.setAttributeNS(None, "_start", str(start_offset))
+		if next_item_match:
+			list_item_node.setAttributeNS(None, "_end", next_item_match.start() -1)
 		# and the optional heading
 		if heading:
 			offsets = context.saveOffsets()

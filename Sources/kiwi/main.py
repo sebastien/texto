@@ -58,6 +58,7 @@ Options:
    -o --output-encoding          Allows to specify the output encoding
    -t --tab                      The value for tabs (tabs equal N sapces).
                                  Set to 4 by default.
+   -f --offsets                  Add offsets information
    -p --pretty                   Pretty prints the output XML, this should only
                                  be used for viewing the output.
    -m --html                     Outputs an HTML file corresponding to the Kiwi
@@ -114,8 +115,8 @@ def run( arguments, input = None, noOutput=False ):
 
 	# --We extract the arguments
 	try:
-		optlist, args = getopt.getopt(arguments, "hpmvi:o:t:",\
-		["input-encoding=", "output-encoding=", "help", "html",
+		optlist, args = getopt.getopt(arguments, "hpmfvi:o:t:",\
+		["input-encoding=", "output-encoding=", "offsets", "help", "html",
 		"tab=", "version", "pretty", "no-style", "nostyle",
 		"body-only", "bodyonly"])
 	except:
@@ -138,6 +139,7 @@ def run( arguments, input = None, noOutput=False ):
 
 	# We set attributes
 	pretty_print    = 0
+	show_offsets    = False
 	validate_output = 0
 	generate_html   = 1
 	no_style        = 0
@@ -193,6 +195,8 @@ def run( arguments, input = None, noOutput=False ):
 		elif opt in ('-m', '--html'):
 			generate_html = 1
 			pretty_print  = 0
+		elif opt in ('-f', '--offsets'):
+			show_offsets = True
 
 	# We check the arguments
 	if input==None and len(args)<1:
@@ -241,7 +245,7 @@ def run( arguments, input = None, noOutput=False ):
 
 	if type(data) != unicode:
 		data = data.decode(input_enc)
-	xml_document = parser.parse(data)
+	xml_document = parser.parse(data, offsets=show_offsets)
 
 	result = None
 	if generate_html:

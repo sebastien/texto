@@ -455,10 +455,12 @@ class Parser:
 
 	def parseBlock( self, context, node, textProcessor ):
 		"""Parses the current block, looking for the inlines it may contain."""
-		if context.markOffsets: node.setAttributeNS(None, "_start", str(context.getOffset()))
+		if context.markOffsets and not node.getAttributeNS(None,"_start"):
+			node.setAttributeNS(None, "_start", str(context.getOffset()))
 		while not context.blockEndReached():
 			self._parseNextInline(context, node, textProcessor)
-		if context.markOffsets: node.setAttributeNS(None, "_end", str(context.getOffset()))
+		if context.markOffsets and not node.getAttributeNS(None,"_end"):
+			node.setAttributeNS(None, "_end", str(context.getOffset()))
 
 	def _parseNextInline( self, context, node, textProcessor ):
 		"""Parses the content of the current block, starting at the context
