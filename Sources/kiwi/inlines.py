@@ -93,7 +93,7 @@ EMAIL            = u"\<([\w.\-_]+@[\w.\-_]+)\>"
 RE_EMAIL         = re.compile(EMAIL, re.LOCALE|re.MULTILINE)
 URL              = u"\<([A-z]+://[^\>]+)\>"
 RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
-LINK             = u"""\[([^\]]+)\]\s*((\(([^ ]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])"""
+LINK             = u"""\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])"""
 RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
 
 # Custom markup
