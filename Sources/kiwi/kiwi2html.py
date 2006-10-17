@@ -134,8 +134,8 @@ def convertHeading( element ):
 def convertSection( element ):
 	level = int(element.getAttributeNS(None, "_depth")) + 1
 	return process(element,
-	  '<div class="section"><a class="link">'
-	  + '<h%d class="heading">$(Heading)</h%d></a>' % (level, level)
+	  '<div class="section">'
+	  + '<h%d class="heading">$(Heading)</h%d>' % (level, level)
 	  + '<div class="level%d">$(Content:section)</div></div>' % (level)
 	)
 
