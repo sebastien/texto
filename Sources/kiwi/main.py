@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   22-Sep-2006
+# Last mod.         :   18-Oct-2006
 # -----------------------------------------------------------------------------
 
 import os, sys, StringIO
@@ -65,6 +65,7 @@ Options:
                                  document
       --no-style                 Does not include the default CSS in the HTML
       --body-only                Only returns the content of the <body< element
+      --level=n                  If n>0, n will transform HTML h1 to h2, etc...
 
    The available encodings are %s
 
@@ -118,7 +119,7 @@ def run( arguments, input = None, noOutput=False ):
 		optlist, args = getopt.getopt(arguments, "hpmfvi:o:t:",\
 		["input-encoding=", "output-encoding=", "offsets", "help", "html",
 		"tab=", "version", "pretty", "no-style", "nostyle",
-		"body-only", "bodyonly"])
+		"body-only", "bodyonly", "level="])
 	except:
 		args=[]
 		optlist = []
@@ -144,6 +145,7 @@ def run( arguments, input = None, noOutput=False ):
 	generate_html   = 1
 	no_style        = 0
 	body_only       = 0
+	level_offset    = 0
 	input_enc       = ASCII
 	output_enc      = ASCII
 	if LATIN1 in ENCODINGS:
@@ -197,6 +199,8 @@ def run( arguments, input = None, noOutput=False ):
 			pretty_print  = 0
 		elif opt in ('-f', '--offsets'):
 			show_offsets = True
+		elif opt in ('--level'):
+			level_offset = min(10, max(0, int(arg)))
 
 	# We check the arguments
 	if input==None and len(args)<1:
@@ -250,6 +254,7 @@ def run( arguments, input = None, noOutput=False ):
 	result = None
 	if generate_html:
 		variables = {}
+		variables["LEVEL"] = level_offset
 		css_file = file(os.path.dirname(__file__) + "/screen-kiwi.css")
 		if not no_style:
 			variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (css_file.read())
