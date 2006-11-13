@@ -255,7 +255,7 @@ def run( arguments, input = None, noOutput=False ):
 	if generate_html:
 		variables = {}
 		variables["LEVEL"] = level_offset
-		css_file = file(os.path.dirname(__file__) + "/screen-kiwi.css")
+		css_file = file(os.path.dirname(kiwi2html.__file__) + "/screen-kiwi.css")
 		if not no_style:
 			variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (css_file.read())
 			variables["ENCODING"] = output_enc

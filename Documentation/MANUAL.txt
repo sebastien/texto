@@ -48,7 +48,7 @@
         - Move the `Sources/kiwi` directory somewhere in your `PYTHON_PATH` (this
           may be Python `site-packages` directory)
         - Create a script that invokes
-          > python -c "import sys,kiwi.main;kiwi.run(sys.argv[1:])"
+          > python -c "import sys,kiwi.main;kiwi.main.run(sys.argv[1:])"
 
     Now, you can play with the `kiwi` command with any example provided in the `Tests`
     directory, to get a feel of what it is like. Note that `kiwi -p` produces a

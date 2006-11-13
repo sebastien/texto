@@ -107,9 +107,9 @@ todo:
 	@grep  -R --only-matching "FIXME.*$$" $(SOURCE_FILES)
 
 prepare:
-	@echo "WARNING : You may required root priviledges to execute this rule."
+	@echo "WARNING : You may require root priviledges to execute this rule."
 	@echo "Preparing python for $(PROJECT)"
-	sudo ln -snf $(PWD)/$(SOURCES)/$(PACKAGE) \
+	ln -snf $(PWD)/$(SOURCES)/$(PACKAGE) \
 		  $(PYTHONHOME)/$(PACKAGE)
 	@echo "Preparing done."
 
