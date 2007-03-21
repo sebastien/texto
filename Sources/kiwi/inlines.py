@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   25-Jul-2006
+# Last mod.         :   21-Mar-2007
 # -----------------------------------------------------------------------------
 
 import re
@@ -55,6 +55,8 @@ CODE             = u"`([^\`]+)`"
 RE_CODE          = re.compile(CODE, re.LOCALE|re.MULTILINE)
 CODE_2           = u"``((`?[^`])+)``"
 RE_CODE_2        = re.compile(CODE_2, re.LOCALE|re.MULTILINE)
+CODE_3           = u"'([^\']+)'"
+RE_CODE_3        = re.compile(CODE_3, re.LOCALE|re.MULTILINE)
 PRE              = u"^((\s*\>(\t|    ))(.*)\n)+"
 RE_PRE           = re.compile(PRE, re.LOCALE|re.MULTILINE)
 EMPHASIS         = u"\*([^*]+)\*"

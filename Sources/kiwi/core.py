@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   25-Jul-2006
+# Last mod.         :   21-Mar-2007
 # -----------------------------------------------------------------------------
 
 import os, sys
@@ -336,6 +336,7 @@ class Parser:
 			InlineParser("strong",		RE_STRONG,   normal),
 			InlineParser("emphasis",	RE_EMPHASIS, normal),
 			InlineParser("quote",		RE_QUOTED,   normal),
+			InlineParser("code",		RE_CODE_3),
 			InlineParser("citation",	RE_CITATION, normal),
 			# Special characters
 			InlineParser("break",		RE_BREAK),
