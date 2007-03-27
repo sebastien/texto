@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   18-Oct-2006
+# Last mod.         :   27-Mar-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, StringIO
@@ -17,7 +17,7 @@ __doc__ = """Kiwi is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
 XML DOM."""
 
-__version__ = "0.8.0a"
+__version__ = "0.8.1"
 __pychecker__ = "blacklist=cDomlette,cDomlettec"
 
 import re, string, operator, getopt, codecs
@@ -255,7 +255,7 @@ def run( arguments, input = None, noOutput=False ):
 	if generate_html:
 		variables = {}
 		variables["LEVEL"] = level_offset
-		css_file = file(os.path.dirname(kiwi2html.__file__) + "/screen-kiwi.css")
+		css_file = file(os.path.join(os.path.dirname(kiwi2html.__file__), "screen-kiwi.css"))
 		if not no_style:
 			variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (css_file.read())
 			variables["ENCODING"] = output_enc
