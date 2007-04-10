@@ -18,7 +18,7 @@ from distutils.core import setup
 
 NAME        = "Kiwi"
 VERSION     = kiwi.main.__version__
-WEBSITE     = "http://www.ivy.fr/" + name.lower()
+WEBSITE     = "http://www.ivy.fr/" + NAME.lower()
 SUMMARY     = "Intuitive, flexible structured text to markup processor"
 DESCRIPTION = """\
 Kiwi is a structured text (markup) to XML/HTML processor. Very close in syntax
@@ -37,8 +37,8 @@ the markup syntax whenever you want. Kiwi is integrated into the Tahchee
 # ------------------------------------------------------------------------------
 
 setup(
-    name        = NAME
-    version     = VERSION
+    name        = NAME,
+    version     = VERSION,
     author      = "Sebastien Pierre", author_email = "sebastien@type-z.org",
     description = SUMMARY, long_description = DESCRIPTION,
     license     = "Revised BSD License",
