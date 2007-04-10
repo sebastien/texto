@@ -119,7 +119,8 @@ def _processText( context, text ):
 
 class InlineParser:
 
-	def __init__( self, name, regexp, result=lambda x,y: x.group(1) ):
+	def __init__( self, name, regexp, result=lambda x,y: x.group(1),
+		requiresLeadingSpace=False):
 		"""Creates a new InlineParser.
 
 		Name is the name of the parser, *regexp* is the string expression
@@ -138,6 +139,7 @@ class InlineParser:
 		else:
 			self.regexp = regexp
 		self.result = result
+		self.requiresLeadingSpace = requiresLeadingSpace
 
 	def recognises( self, context ):
 		"""Recognises this inlines in the given context, within the current
@@ -147,7 +149,12 @@ class InlineParser:
 		method. This means that the returned offset is RELATIVE TO THE CURRENT
 		CONTEXT OFFSET."""
 		match = self.regexp.search(context.currentFragment())
+		fragment = context.currentFragment()
 		if match:
+			match_start = max(0,match.start()-1)
+			if self.requiresLeadingSpace and match_start>0 and \
+			fragment[match_start] not in (u' ', u'\t'):
+				return (None, None)
 			return (match.start(), match)
 		else:
 			return (None, None)

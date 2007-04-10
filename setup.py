@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   25-Jul-2006
+# Last mod.         :   10-Apr-2007
 # -----------------------------------------------------------------------------
 
 
@@ -27,8 +27,9 @@ and has a more advanced XML/HTML integration.
 
 When using Kiwi, you can still write XML or HTML tags within your text, and use
 the markup syntax whenever you want. Kiwi is integrated into the Tahchee
-<http://www.ivy.fr/tahchee> static web site build system."""
+<http://www.ivy.fr/tahchee> static web site build system.
 """
+
 # ------------------------------------------------------------------------------
 #
 # SETUP DECLARATION
@@ -54,8 +55,8 @@ setup(
       "Intended Audience :: Information Technology",
       "License :: OSI Approved :: BSD License",
       "Natural Language :: English",
-	  "Topic :: Documentation",
-	  "Topic :: Software Development :: Documentation",
+      "Topic :: Documentation",
+      "Topic :: Software Development :: Documentation",
       "Topic :: Text Processing",
       "Topic :: Text Processing :: Markup",
       "Topic :: Text Processing :: Markup :: HTML",
