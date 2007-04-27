@@ -40,7 +40,7 @@ RE_TITLES         = re.compile(u"%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MU
 
 SECTION_HEADING   = u"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
-SECTION_UNDERLINE = u"^\s*[\*\-\=#][\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
+SECTION_UNDERLINE = u"^\s*[\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
 
 DEFINITION_ITEM   = u"^\s*((\:[^\:]|[^\:])+)\:\:+\s*(\n+\s*|\s*\|\s*\n)*"
