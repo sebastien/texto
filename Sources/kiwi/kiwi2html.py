@@ -240,9 +240,6 @@ def convertquote( element ):
 def convertcitation( element ):
 	return process(element, """&laquo;<span class='citation'>$(*)</span>&raquo;""")
 
-def convertemphasis( element ):
-	return process(element, """<b>$(*)</b>""")
-
 def convertstrong( element ):
 	return process(element, """<strong>$(*)</strong>""")
 
@@ -253,7 +250,7 @@ def convertcode( element ):
 	return process(element, """<code>$(*)</code>""")
 
 def convertemphasis( element ):
-	return process(element, """<b>$(*)</b>""")
+	return process(element, """<em>$(*)</em>""")
 
 def convertbreak( element ):
 	return process(element, """<br />""")
