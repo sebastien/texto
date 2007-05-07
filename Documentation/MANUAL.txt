@@ -1,4 +1,4 @@
-== KIWI USER MANUAL
+== Kiwi User Manual
 -- Authors: Sébastien Pierre <sebastien@type-z.org>
 -- Revision: 0.8.0
 
@@ -228,7 +228,6 @@
         underlined with `=` will be of greater importance than a section underlined
         with `-`, which is in turned of greater importance than a non-underlined
         section.
-
 
 
     3.6 Tables
