@@ -418,6 +418,20 @@ class SectionBlockParser(BlockParser):
 		matched_type, match = recogniseInfo
 		section_indent = context.getBlockIndentation()
 		trail = match.group().strip()
+		# RULE:
+		# A section underlined with '==' weights more than a section
+		# underlined with '--', which weights more than a section 
+		# underline with nothing. This means that if you have
+		#
+		#  1. One
+		#  ======
+		#
+		#  2. Two
+		#  ------
+		#
+		#  3. Three
+		#
+		# These sections will all be children of the previous section
 		section_weight = trail.endswith("==") and 2 or trail.endswith("--") and 1 or 0
 		# FIRST STEP - We detect section text bounds
 		block_start = context.blockStartOffset
@@ -429,42 +443,20 @@ class SectionBlockParser(BlockParser):
 		# We look for a number prefix
 		heading_text = context.fragment(block_start, block_end)
 		prefix_match = RE_SECTION_HEADING.match(heading_text)
+		dots_count   = 0
 		if prefix_match:
 			res  = prefix_match.group()
-			dots = res.count(".")
-			if res.strip()[-1] == "." and dots > 1:
-				dots -= 1
-			section_indent += dots
+			dots_count = len( filter(lambda x:x, res.split(".")) )
 			block_start = context.getOffset() + prefix_match.end()
 		# We make sure that we end the section before the block delimiter
 		delim_match = RE_SECTION_UNDERLINE.search(context.currentFragment())
 		if delim_match: block_end = context.getOffset() + delim_match.start()
-		# SECOND STEP - We look for a parent node, which would have a depth
-		# smaller than the current one or that would not be a section node
-		while context.currentNode != "Content" \
-		and   context.currentNode.parentNode \
-		and   context.currentNode.parentNode.nodeName not in ("Document", "Section"):
-			context.currentNode = context.currentNode.parentNode
-		while context.currentNode.nodeName == "Content" \
-		and context.currentNode.parentNode \
-		and context.currentNode.parentNode.nodeName == "Section" \
-		and context.currentNode.parentNode.parentNode \
-		and int(context.currentNode.parentNode.getAttributeNS(None, "_indent")) - \
-		int(context.currentNode.parentNode.getAttributeNS(None, "_weight")) \
-		>= section_indent - section_weight:
-			context.currentNode = context.currentNode.parentNode.parentNode
-
-		if context.currentNode.parentNode:
-			parent_depth = context.currentNode.parentNode.getAttributeNS(None, "_depth")
-		else:
-			parent_depth = None
-		if not parent_depth: section_depth = 0
-		else: section_depth = int(parent_depth) + 1
+		context.currentNode = context.getParentSection(dots_count-section_weight)
+		section_depth = context.getDepthInSection(context.currentNode) + 1
 		# THIRD STEP - We create the section
 		section_node = context.document.createElementNS(None, section_type)
 		section_node.setAttributeNS(None, "_indent", str(section_indent ))
 		section_node.setAttributeNS(None, "_depth", str(section_depth))
-		section_node.setAttributeNS(None, "_weight", str(section_weight))
 		section_node.setAttributeNS(None, "_start", str(block_start))
 		section_node.setAttributeNS(None, "_sstart", str(block_start))
 		heading_node = context.document.createElementNS(None, "Heading")
@@ -481,6 +473,7 @@ class SectionBlockParser(BlockParser):
 		# We append the section node and assign it as current node
 		context.currentNode.appendChild(section_node)
 		context.currentNode = content_node
+		context.declareSection(section_node, content_node, dots_count-section_weight)
 
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text.strip())

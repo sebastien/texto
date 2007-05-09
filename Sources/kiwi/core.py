@@ -86,6 +86,7 @@ class Context:
 		self._currentFragment = None
 		self.parser = None
 		self.markOffsets = markOffsets
+		self.sections = []
 
 	def _getElementsByTagName(self, node, name):
 		if node.nodeType == node.ELEMENT_NODE and \
@@ -120,6 +121,27 @@ class Context:
 					self.currentNode = self.currentNode.parentNode
 				else:
 					return
+
+	def declareSection( self, node, contentNode, depth ):
+		"""Declares a section node with the given depth (which can be
+		negative)."""
+		self.sections.append((node, contentNode, depth))
+
+	def getParentSection( self, depth ):
+		"""Gets the section that would be the parent section for the
+		given depth."""
+		s = filter(lambda s:s[2] < depth, self.sections)
+		if s: return s[-1][1]
+		else: return self.content
+
+	def getDepthInSection( self, node ):
+		"""Returns the number of parent sections of the given node."""
+		sections = 0
+		while node.parentNode:
+			if node.nodeName == "Section":
+				sections += 1
+			node = node.parentNode
+		return sections
 
 	def setDocumentText( self, text ):
 		"""Sets the text of the current document. This should only be called

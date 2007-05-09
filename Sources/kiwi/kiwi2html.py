@@ -133,7 +133,7 @@ def convertHeading( element ):
 
 def convertSection( element ):
 	offset = element._processor.variables.get("LEVEL") or 0
-	level = int(element.getAttributeNS(None, "_depth")) + 1 + offset
+	level = int(element.getAttributeNS(None, "_depth")) + offset
 	return process(element,
 	  '<div class="section">'
 	  + '<h%d class="heading">$(Heading)</h%d>' % (level, level)

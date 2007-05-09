@@ -34,7 +34,7 @@
         - Can be easy customized with your own markup
 
 2. Quick start
-====================
+==============
 
     To get up and running with Kiwi, you will need a Python interpreter, as well as
     the `make` command (it is not required if you want to install Kiwi manually):
