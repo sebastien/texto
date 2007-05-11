@@ -218,6 +218,11 @@ class Context:
 		self.blockEndOffset = endOffset
 		self._currentFragment = None
 
+	def setCurrentBlockEnd( self, endOffset ):
+		assert endOffset >= self.blockStartOffset
+		self.blockEndOffset = endOffset
+		self._currentFragment = None
+
 	def getBlockIndentation( self ):
 		"""Returns the indentation of the current block."""
 		return self.parser.getIndentation(
@@ -317,6 +322,7 @@ class Parser:
 			CommentBlockParser(),
 			MarkupBlockParser(),
 			PreBlockParser(),
+			PreBlockParser2(),
 			TableBlockParser(),
 			ReferenceEntryBlockParser(),
 			TitleBlockParser(),
@@ -476,6 +482,9 @@ class Parser:
 				assert recognised
 			start_offset = str(context.getOffset())
 			blockParser.process(context, recognised)
+			# Just in case the parser modified the end offset, we update
+			# the next block start offset
+			next_block_start_offset  = context.blockEndOffset
 			node = context.currentNode
 		# Anyway, we set the offset to the next block start
 		context.setOffset(next_block_start_offset)
@@ -543,53 +552,63 @@ class Parser:
 					local_offset, block_match.start())
 				# If we have not found a markup, we break
 				if not markup_match: break
-				# We have specified that markup inlines should not be searched
-				# after the block separator
-				assert markup_match.start()<block_match.start()
-				# Case 1: Markup is a start tag
-				if Markup_isStartTag(markup_match):
-					# We look for the markup end inline
-					offsets = context.saveOffsets()
-					context.setCurrentBlock(markup_match.end(),
-					context.documentTextLength)
-					# There may be no 2nd group, so we  have to check this. Old
-					# Kiwi documents may have [start:something] instead of
-					# [start something]
-					markup_end = None
-					if markup_match.group(1):
-						markup_end = self.markupParser.findEnd(
-							markup_match.group(1).strip(), context)
-					context.restoreOffsets(offsets)
-					# If we found an end markup
-					if markup_end:
-						# The returned end is relative to the start markup end
-						# offset (markup_end is a couple indicating the range
-						# covered by the matched end markup)
-						markup_end = markup_match.end() + markup_end[1]
-						# If the end is greater than the block end, then we have
-						# to recurse to look for a new block separator
-						# after the block end
-						if markup_end > block_match.start():
-							offsets = context.saveOffsets()
-							context.setOffset(markup_end)
-							result =  self._findNextBlockSeparator(context)
-							context.restoreOffsets(offsets)
-							return result
-						# Otherwise we simply increase the offset, and look for
-						# other possible markup inlines
-						else:
-							local_offset = markup_end
-					# If there was not markup end, we skip the markup inline
-					else:
-						local_offset = markup_match.end()
-				# We have a single tag, so we simply increase the offset
-				else:
-					local_offset = markup_match.end()
+				if markup_match:
+					# We have specified that markup inlines should not be searched
+					# after the block separator
+					local_offset, result = self._delimitXMLMarkupBlock(context, markup_match, block_match, local_offset)
+					if not result is None: return result
 			# We have found a block with no nested markup
 			return (block_match.start(), block_match.end())
 		# There was no block separator, so we reached the document end
 		else:
 			return (context.documentTextLength, context.documentTextLength)
+
+	def _delimitXMLMarkupBlock( self, context, markupMatch, blockMatch, localOffset ):
+		markup_match = markupMatch
+		block_match  = blockMatch
+		local_offset = localOffset
+		assert markup_match.start()<block_match.start()
+		# Case 1: Markup is a start tag
+		if Markup_isStartTag(markup_match):
+			# We look for the markup end inline
+			offsets = context.saveOffsets()
+			context.setCurrentBlock(markup_match.end(),context.documentTextLength)
+			# There may be no 2nd group, so we  have to check this. Old
+			# Kiwi documents may have [start:something] instead of
+			# [start something]
+			markup_end = None
+			if markup_match.group(1):
+				markup_end = self.markupParser.findEnd(
+					markup_match.group(1).strip(), context)
+			context.restoreOffsets(offsets)
+			# If we found an end markup
+			if markup_end:
+				# The returned end is relative to the start markup end
+				# offset (markup_end is a couple indicating the range
+				# covered by the matched end markup)
+				markup_end = markup_match.end() + markup_end[1]
+				# If the end is greater than the block end, then we have
+				# to recurse to look for a new block separator
+				# after the block end
+				if markup_end > block_match.start():
+					offsets = context.saveOffsets()
+					context.setOffset(markup_end)
+					result =  self._findNextBlockSeparator(context)
+					context.restoreOffsets(offsets)
+					# NOTE: This is the case where we found
+					# the block
+					return local_offset, result
+				# Otherwise we simply increase the offset, and look for
+				# other possible markup inlines
+				else:
+					local_offset = markup_end
+			# If there was not markup end, we skip the markup inline
+			else:
+				local_offset = markup_match.end()
+		# We have a single tag, so we simply increase the offset
+		else:
+			local_offset = markup_match.end()
+		return local_offset, None
 
 	def _nodeHasOffsets( self, node ):
 		start, end = self._nodeGetOffsets(node)
@@ -769,7 +788,22 @@ class Parser:
 		return count
 
 	@classmethod
-	def charactersToSpaces( self, text ):
+	def removeLeadingSpaces( self, text, maximum=None ):
+		i = 0 ; count = 0
+		for char in text:
+			if not maximum is None and count >= maximum:
+				return text[i:]
+			if char==u"\t":
+				count += TAB_SIZE-operator.mod(count,TAB_SIZE)
+			elif char==u" ":
+				count+=1
+			else:
+				return text[i:]
+			i += 1
+		return ''
+
+	@classmethod
+	def charactersToSpaces( self, text):
 		"""Returns a string where all characters are converted to spaces.
 		Newlines and tabs are preserved"""
 		new_text = u""

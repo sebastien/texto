@@ -74,7 +74,7 @@ RE_META_AUTHOR_EMAIL = re.compile("\<([^>]+)\>", re.LOCALE)
 REFERENCE_ENTRY    = u"\s+\[([^\]]+)]:"
 RE_REFERENCE_ENTRY = re.compile(REFERENCE_ENTRY, re.LOCALE|re.MULTILINE)
 
-TABLE_ROW_SEPARATOR    = "^\s*(-+|=+|\++)\s*$"
+TABLE_ROW_SEPARATOR    = "^\s*([\-\+]+|[\=\+]+)\s*$"
 RE_TABLE_ROW_SEPARATOR = re.compile(TABLE_ROW_SEPARATOR)
 
 LANGUAGE_CODES = ("EN", "FR", "DE", "UK" )
@@ -717,7 +717,8 @@ class ListItemBlockParser(BlockParser):
 #------------------------------------------------------------------------------
 
 class PreBlockParser( BlockParser ):
-	"""Parses the content of a preformatted block"""
+	"""Parses the content of a preformatted block, where every line is
+	prefixed by '>   '."""
 
 	def __init__( self ):
 		BlockParser.__init__(self, "pre")
@@ -737,6 +738,73 @@ class PreBlockParser( BlockParser ):
 			else:
 				text += line + "\n"
 		if text[-1] == "\n": text = text[:-1]
+		pre_node = context.document.createElementNS(None, self.name)
+		pre_node.appendChild(context.document.createTextNode(text))
+		pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
+		pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
+		context.currentNode.appendChild(pre_node)
+
+class PreBlockParser2( BlockParser ):
+	"""Parses the content of a preformatted block which is delimited with
+	'<<<' and '>>>' characters."""
+
+	def __init__( self ):
+		BlockParser.__init__(self, "pre")
+
+	def recognises( self, context ):
+		head_lines =  context.currentFragment().split("\n")
+		if not head_lines: return False
+		if self.isStartLine(context, head_lines[0]):
+			indent = context.parser.getIndentation(head_lines[0])
+			for line in head_lines[1:]:
+				if context.parser.getIndentation(line) < indent:
+					return False
+		else:
+			return False
+		return True, indent
+
+	def isStartLine( self, context, line ):
+		line_indent = context.parser.getIndentation(line)
+		if line.replace("\t", " ").strip() == "<<<":
+			return True, line_indent
+		else:
+			return None
+
+	def isEndLine( self, context, line, indent ):
+		line_indent = context.parser.getIndentation(line)
+		if line_indent != indent: return False
+		return line.replace("\t", " ").strip() == ">>>"
+
+	def findBlockEnd( self, context, indent ):
+		# FIXME: Issue a warning if no end is found
+		cur_offset = context.blockEndOffset + 1
+		block_end = context.blockEndOffset
+		lines = context.currentFragment().split("\n")
+		if self.isEndLine(context, lines[-1], indent):
+			return block_end
+		while True:
+			next_eol = context.documentText.find("\n", cur_offset)
+			if next_eol == -1:
+				break
+			line = context.documentText[cur_offset:next_eol]
+			if self.isEndLine(context, line, indent):
+				block_end = next_eol + 1
+				break
+			if line.strip() and context.parser.getIndentation(line) < indent:
+				break
+			block_end = next_eol + 1
+			cur_offset = block_end
+		return block_end
+
+	def process( self, context, recogniseInfo ):
+		result = []
+		indent = recogniseInfo[1]
+		context.setCurrentBlockEnd(self.findBlockEnd(context, indent))
+		lines = context.currentFragment().split("\n")
+		for line in lines[1:]:
+			cut_line = context.parser.removeLeadingSpaces(line, indent)
+			result.append(cut_line)
+		text = "\n".join(result)
 		pre_node = context.document.createElementNS(None, self.name)
 		pre_node.appendChild(context.document.createTextNode(text))
 		pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
@@ -793,6 +861,8 @@ class Table:
 
 	def isHeader( self, x, y ):
 		if len(self._table) < y or len(self._table[y]) < x: return False
+		row = self._table[y]
+		if x>=len(row): return False
 		return self._table[y][x][0] == "H"
 
 	def getNode( self, context, processText ):
@@ -875,6 +945,9 @@ class TableBlockParser( BlockParser ):
 			# If we have not found a separator yet, we simply ensure that the
 			# cell exists and appends content to it
 			if not separator:
+				# If the separtor is not '||' it is '|'
+				if  row.find("||") == -1:
+					row = row.replace("|", "||")
 				for cell in row.split("||"):
 					cells.append(cell)
 					# We remove leading or trailing borders (|)
@@ -910,7 +983,6 @@ class TableBlockParser( BlockParser ):
 #  MetaBlockParser
 #
 #------------------------------------------------------------------------------
-
 
 class MetaBlockParser( BlockParser ):
 	"""Parses the content of a Meta block"""

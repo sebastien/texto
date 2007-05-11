@@ -233,14 +233,71 @@
     3.6 Tables
     ----------
 
-    todo
+     Tables are written using the following markup:
 
-    3.7 Document header and title
+     == Tables
+     ===================================================================
+     Table header    || ``== Header``
+     -------------------------------------------------------------------
+     Row separator   || Use a line of dashes, equal signs or plus signs
+     -------------------------------------------------------------------
+     Cell separator  || ``||``
+     ===================================================================
+
+     Optionally, table borders can use single pipes ``|``.
+
+     The previous feature table has been written using the following markup:
+
+     >       == Tables
+     >       ===================================================================
+     >       Table header    || ``== Header``
+     >       -------------------------------------------------------------------
+     >       Row separator   || Use a line of dashes, equal signs or plus signs
+     >       -------------------------------------------------------------------
+     >       Cell separator  || ``||``
+     >       =============================================
+
+
+    3.7 Preformatted text
+    ---------------------
+
+    There are two ways of doing preformatted text. The first one is by prefixing
+    each line of your text by '>' plus one tab or at least 3 spaces.
+
+    >   >   def hello():
+    >   >     print "Hello, world !"
+
+    will be rendered as
+
+    >   def hello():
+    >     print "Hello, world !"
+
+    Using this '>' markup  helps explicitly delimiting a block and visually
+    denoting where the indentation starts. However, this markup makes typing and
+    copy-pasting more difficult, which is why we provide an alternative markup:
+
+    >   <<<
+    >   def hello():
+    >      print "Hello, world !"
+    >   >>>
+
+    which produces the same result
+
+    <<<
+    def hello():
+    print "Hello, world !"
+    >>>
+
+    but involves less typing. The rule for this is that you have '<<<' and '>>>'
+    standing on empty lines, and that the lines within these delimiters are
+    either empty or have at least the same indentation as the delimiters.
+
+    3.8 Document header and title
     -----------------------------
 
     todo
 
-    3.8 Links and bibliographic references
+    3.9 Links and bibliographic references
     --------------------------------------
 
     todo
@@ -375,4 +432,4 @@ Relation to Markdown and other text markups
     [MARKDOWN]: <http://daringfireball.net/projects/markdown/syntax>
     [ASCIIDOC]: <http://www.methods.co.nz/asciidoc/>
 
-# vim: ts=4 sw=4 tw=80 et fenc=latin-1 syn=kiwi
+# vim: ts=2 sw=2 tw=80 et fenc=latin-1 syn=kiwi
