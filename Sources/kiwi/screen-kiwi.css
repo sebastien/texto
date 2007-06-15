@@ -135,8 +135,13 @@ aimg {
 	border-left: 0px;
 }
 
+.kiwiContent ul {
+	padding-top: 0em;
+	margin-top: 0em;
+}
+
 .kiwiContent ul li {
-	padding-bottom: 0.5em;
+	padding-bottom: 0.2em;
 }
 
 .kiwiContent table {

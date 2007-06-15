@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Feb-2006
-# Last mod.         :   02-Apr-2006
+# Last mod.         :   22-May-2007
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -108,13 +108,15 @@ def wspan( element, text ):
 
 def wattrs( element ):
 	"""Returns the offset attributes of this element if it has any."""
+	res = ""
 	number = element_number(element)
-	if number == None: return ""
-	return " id='KIWI%s' start='%s' end='%s'" % (
-		element.getAttributeNS(None, '_number'),
-		element.getAttributeNS(None, '_start'),
-		element.getAttributeNS(None, '_end')
-	)
+	if number != None:
+		res = " id='KIWI%s' start='%s' end='%s'" % (
+			element.getAttributeNS(None, '_number'),
+			element.getAttributeNS(None, '_start'),
+			element.getAttributeNS(None, '_end')
+		)
+	return res
 
 def convertContent( element ):
 	return process(element, wdiv(element, """<div class='content'>$(*)</div>"""))
@@ -188,7 +190,10 @@ def convertRow( element ):
 	return process(element, """<tr class='%s'%s>$(*)</tr>""" % (classes[index], wattrs(element)))
 
 def convertCell( element ):
-	return process(element, """<td%s>$(*:cell)</td>""" % (wattrs(element)))
+	cell_attrs = ""
+	if element.hasAttributeNS(None, "colspan"):
+		cell_attrs += " colspan='%s'" % (element.getAttributeNS(None, "colspan"))
+	return process(element, """<td%s%s>$(*:cell)</td>""" % (cell_attrs,wattrs(element)))
 
 def convertBlock( element ):
 	title = element.getAttributeNS(None,"title") or element.getAttributeNS(None, "type") or ""

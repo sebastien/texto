@@ -57,7 +57,7 @@ CODE_2           = u"``((`?[^`])+)``"
 RE_CODE_2        = re.compile(CODE_2, re.LOCALE|re.MULTILINE)
 CODE_3           = u"'([^']+)'"
 RE_CODE_3        = re.compile(CODE_3, re.LOCALE|re.MULTILINE)
-PRE              = u"^((\s*\>(\t|    ))(.*)\n)+"
+PRE              = u"^((\s*\>(\t|   ))(.*)\n?)+"
 RE_PRE           = re.compile(PRE, re.LOCALE|re.MULTILINE)
 EMPHASIS         = u"\*([^*]+)\*"
 RE_EMPHASIS      = re.compile(EMPHASIS, re.LOCALE|re.MULTILINE)
@@ -247,6 +247,9 @@ class PreInlineParser( InlineParser ):
 
 	def __init__( self ):
 		InlineParser.__init__( self, "pre", PRE )
+
+	def recognises( self, context ):
+		return InlineParser.recognises(self,context)
 
 	def parse( self, context, node, match ):
 		lines = []

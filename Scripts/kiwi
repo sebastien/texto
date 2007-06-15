@@ -1,1 +1,0 @@
-python -c "import sys,kiwi.main;kiwi.main.run(sys.argv[1:])"

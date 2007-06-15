@@ -48,7 +48,7 @@ RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.LOCALE|re.MULTILINE)
 
 TAGGED_BLOCK      = u"^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
 RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE | re.LOCALE)
-LIST_ITEM         = u"^(\s*)(-|\*\)|[0-9A-z][\)/])\s*"
+LIST_ITEM         = u"^(\s*)(-|\*\)|[0-9A-z][\)/]|\[[ \-\~xX]\])\s*"
 RE_LIST_ITEM      = re.compile(LIST_ITEM, re.MULTILINE | re.LOCALE)
 LIST_HEADING      = u"(^\s*[^:{().<]*:)"
 RE_LIST_HEADING   = re.compile(LIST_HEADING, re.MULTILINE | re.LOCALE)
@@ -757,6 +757,7 @@ class PreBlockParser2( BlockParser ):
 		if self.isStartLine(context, head_lines[0]):
 			indent = context.parser.getIndentation(head_lines[0])
 			for line in head_lines[1:]:
+				if not line.replace("\t", " ").strip(): continue
 				if context.parser.getIndentation(line) < indent:
 					return False
 		else:
@@ -773,7 +774,8 @@ class PreBlockParser2( BlockParser ):
 	def isEndLine( self, context, line, indent ):
 		line_indent = context.parser.getIndentation(line)
 		if line_indent != indent: return False
-		return line.replace("\t", " ").strip() == ">>>"
+		line = line.replace("\t", " ").strip()
+		return  line == ">>>"
 
 	def findBlockEnd( self, context, indent ):
 		# FIXME: Issue a warning if no end is found
@@ -794,16 +796,31 @@ class PreBlockParser2( BlockParser ):
 				break
 			block_end = next_eol + 1
 			cur_offset = block_end
-		return block_end
+		return block_end - 1
+
+	def getCommonPrefix( self, linea, lineb ):
+		if not lineb.replace("\t", " ").strip():
+			return linea
+		else:
+			limit = 0
+			max_limit = min(len(linea), len(lineb))
+			while limit < max_limit and linea[limit] in "\t " and linea[limit] == lineb[limit]:
+				limit += 1
+			assert linea[:limit] == lineb[:limit]
+			return linea[:limit]
 
 	def process( self, context, recogniseInfo ):
 		result = []
 		indent = recogniseInfo[1]
 		context.setCurrentBlockEnd(self.findBlockEnd(context, indent))
 		lines = context.currentFragment().split("\n")
-		for line in lines[1:]:
-			cut_line = context.parser.removeLeadingSpaces(line, indent)
-			result.append(cut_line)
+		lines = lines[1:-1]
+		prefix   = lines[0]
+		for line in lines:
+			prefix = self.getCommonPrefix(prefix, line)
+		for line in lines:
+			line = line[len(prefix):]
+			result.append(line)
 		text = "\n".join(result)
 		pre_node = context.document.createElementNS(None, self.name)
 		pre_node.appendChild(context.document.createTextNode(text))
@@ -838,8 +855,8 @@ class Table:
 		while y >= len(self._table): self._table.append([])
 		row = self._table[y]
 		while x >= len(row): row.append(["T", None])
-		self._cols = max(self._cols, x)
-		self._rows = max(self._rows, y)
+		self._cols = max(self._cols, x+1)
+		self._rows = max(self._rows, y+1)
 		return row[x]
 		
 	def setTitle( self, title ):
@@ -878,13 +895,18 @@ class Table:
 		# And now of the table
 		for row in self._table:
 			row_node = context.document.createElementNS(None, "Row")
+			i = 0
 			for cell_type, cell_text in row:
+				is_first = i == 0
+				is_last  = i == len(row) - 1
 				cell_node = context.document.createElementNS(None, "Cell")
 				if cell_type == "H":
 					cell_node.setAttributeNS(None, "type", "header")
 				# We create a temporary Content node that will stop the nodes
 				# from seeking a parent content
 				cell_content_node = context.document.createElementNS(None, "Content")
+				if is_last and len(row) != self._cols:
+					cell_node.setAttributeNS(None, "colspan", "%s" % (len(row) + 2 - i))
 				new_context = context.clone()
 				new_context.setDocumentText(cell_text)
 				new_context.currentNode = cell_content_node
@@ -893,6 +915,7 @@ class Table:
 				for child in cell_content_node.childNodes:
 					cell_node.appendChild(child)
 				row_node.appendChild(cell_node)
+				i += 1
 			content_node.appendChild(row_node)
 		table_node.appendChild(content_node)
 		return table_node
