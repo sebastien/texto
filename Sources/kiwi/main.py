@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   07-May-2007
+# Last mod.         :   17-Jul-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, StringIO
@@ -102,8 +102,8 @@ ENCODINGS = {
 	UTF16:UTF16, "utf16":UTF16,
 	MACROMAN:MACROMAN, "mac-roman":MACROMAN
 }
-	
-def run( arguments, input = None, noOutput=False ):
+
+def run( arguments, input=None, noOutput=False ):
 	"""Returns a couple (STATUS, VALUE), where status is 1 when OK, 0 when
 	informative, and -1 when error, and value is a string.
 	
@@ -286,11 +286,16 @@ def text2htmlbody( text, inputEncoding=None, outputEncoding=None ):
 	s.close()
 	return text
 
-if __name__ == "__main__":
+def runAsCommand():
 	status, result = run(sys.argv[1:])
 	if status == ERROR:
 		sys.stderr.write(result + "\n")
+		sys.exit(-1)
 	elif status == INFO:
 		sys.stdout.write(result + "\n")
+		sys.exit(0)
+
+if __name__ == "__main__":
+	runAsCommand()
 
 # EOF

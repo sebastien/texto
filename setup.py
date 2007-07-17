@@ -8,9 +8,8 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   10-Apr-2007
+# Last mod.         :   17-Jul-2007
 # -----------------------------------------------------------------------------
-
 
 import sys ; sys.path.insert(0, "Sources")
 import kiwi.main
@@ -46,6 +45,7 @@ setup(
     url         =  WEBSITE,
     download_url=  WEBSITE + "/%s-%s.tar.gz" % (NAME.lower(), VERSION) ,
     package_dir = { "": "Sources" },
+    package_data= { "kiwi": ["*.css"] },
     packages    = ["kiwi"],
     scripts     = ["Scripts/kiwi"],
     classifiers = [

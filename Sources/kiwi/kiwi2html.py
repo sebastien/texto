@@ -143,7 +143,7 @@ def convertSection( element ):
 	)
 
 def convertReferences( element ):
-	return process(element, """<div class="wikiReferences">$(Entry)</div>""")
+	return process(element, """<div class="kiwiReferences">$(Entry)</div>""")
 
 def convertEntry( element ):
 	return process(element, """<div class="entry"><div class="name"><a name="%s">%s</a></div><div class="content">$(*)</div></div>""" %
