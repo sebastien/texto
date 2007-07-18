@@ -166,10 +166,21 @@ def convertParagraph_cell( element ):
 	return process(element, """$(*)<br />""")
 
 def convertList( element ):
-	return process(element, """<ul%s>$(*)</ul>""" % (wattrs(element)))
+	is_todo = element.getAttributeNS(None, "type")
+	attrs = [""]
+	if is_todo == "todo":
+		attrs.append('class="todo"')
+	return process(element, """<ul%s%s>$(*)</ul>""" % (wattrs(element), " ".join(attrs)))
 
 def convertListItem( element ):
-	return process(element, """<li%s>$(*)</li>""" % (wattrs(element)))
+	attrs   = [""]
+	is_todo = element.getAttributeNS(None, "todo")
+	if is_todo:
+		if is_todo == "done":
+			attrs.append('class="todo done"')
+		else:
+			attrs.append('class="todo"')
+	return process(element, """<li%s%s>$(*)</li>""" % (wattrs(element), " ".join(attrs)))
 
 def convertTable( element ):
 	return process(element, """<table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table>""")

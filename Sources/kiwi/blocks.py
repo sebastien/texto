@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Encoding: iso-8859-1
-# vim: tw=80 ts=4 sw=4 fenc=latin-1 noet
+# vim: tw=80 ts=4 sw=4 noet
 # -----------------------------------------------------------------------------
 # Project           :   Kiwi
 # Module            :   Block parsers
@@ -24,6 +24,11 @@ BLOCK_ELEMENTS = ("Block", "ListItem", "Definition", "Content", "Chapter", "Sect
 
 STANDARD_LIST    = 1
 DEFINITION_LIST  = 2
+TODO_LIST        = 3
+
+STANDARD_ITEM    = 100
+TODO_ITEM        = 101
+TODO_DONE_ITEM   = 102
 
 #------------------------------------------------------------------------------
 #
@@ -597,6 +602,8 @@ class ListItemBlockParser(BlockParser):
 		if next_item_match:
 			current_item_text = current_item_text[:next_item_match.start()]
 
+
+
 		# We get the list item identation
 		indent = context.parser.getIndentation(
 			context.parser.charactersToSpaces(itemMatch.group()))
@@ -605,6 +612,7 @@ class ListItemBlockParser(BlockParser):
 		heading = RE_LIST_ITEM_HEADING.match(current_item_text)
 		heading_offset = 0
 		list_type   = STANDARD_LIST
+		item_type   = STANDARD_ITEM
 		if heading:
 			# We remove the heading from the item text
 			heading_offset = heading.end()
@@ -615,7 +623,17 @@ class ListItemBlockParser(BlockParser):
 			else:
 				list_type = DEFINITION_LIST
 				heading_end = heading.group().rfind("/")
-			
+
+		head = itemMatch.group(2)
+		if head:
+			head = head.upper()
+			if  head == "[ ]":
+				item_type = TODO_ITEM
+				list_type = TODO_LIST
+			elif head == "[X]":
+				item_type = TODO_DONE_ITEM
+				list_type = TODO_LIST
+
 		# The current_item_text is no longer used in the following code
 
 		# Step 2: Now that we have the item body, and that we know if there is
@@ -654,6 +672,10 @@ class ListItemBlockParser(BlockParser):
 		# We create the list item
 		list_item_node = context.document.createElementNS(None, "ListItem")
 		list_item_node.setAttributeNS(None, "_indent", str(indent))
+		if item_type == TODO_ITEM:
+			list_item_node.setAttributeNS(None, "todo", "true")
+		elif item_type == TODO_DONE_ITEM:
+			list_item_node.setAttributeNS(None, "todo", "done")
 		#list_item_node.setAttributeNS(None, "_start", str(start_offset))
 		if next_item_match:
 			list_item_node.setAttributeNS(None, "_end", str(context.getOffset() + next_item_match.start() -1))
@@ -690,6 +712,8 @@ class ListItemBlockParser(BlockParser):
 		# We set the type attribute of the list if necesseary
 		if list_type == DEFINITION_LIST:
 			list_node.setAttributeNS(None, "type", "definition")
+		if list_type == TODO_LIST:
+			list_node.setAttributeNS(None, "type", "todo")
 
 		# And recurse with other line items
 		if next_item_match:
