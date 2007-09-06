@@ -127,12 +127,21 @@ class Context:
 		negative)."""
 		self.sections.append((node, contentNode, depth))
 
-	def getParentSection( self, depth ):
+	def getParentSection( self, depth, indent ):
 		"""Gets the section that would be the parent section for the
 		given depth."""
-		s = filter(lambda s:s[2] < depth, self.sections)
-		if s: return s[-1][1]
-		else: return self.content
+		for i in range(len(self.sections)-1,-1,-1):
+			section = self.sections[i]
+			section_node = section[0]
+			section_content = section[1]
+			section_depth = section[2]
+			section_indent = int(section_node.getAttributeNS(None, "_indent"))
+			print section_depth, section_indent, "vs", depth, indent
+			if indent > section_indent:
+				return section_content 
+			elif section_indent <= indent and section_depth < depth:
+				return section_content
+		return self.content
 
 	def getDepthInSection( self, node ):
 		"""Returns the number of parent sections of the given node."""

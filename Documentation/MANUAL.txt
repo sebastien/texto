@@ -217,26 +217,52 @@
   an optional section number, which is constituted of digits separated by
   dots. Then follows an optional underline, like the following example shows:
 
-  >   1. I am Section
+  >   Section level 1
+  >   ===============
   >   
-  >   I am also a Section
-  >   ===================
+  >   Section level 2
+  >   ---------------
   >   
-  >   1.1 I am a nested section
-  >   =========================
+  >   1. Section level 3
+  >   ------------------
+  >   
+  >   1.2 Section level 4
 
-  The leading number is not required, but it does indicate the depth of the
-  section. Three criteria are taken in concern for identifying the section
-  position in the section hierarchy.
+  The leading number is not required when the section is underlined (using '==='
+  or '---'), but it does indicate the depth of the section ('1' means depth 1,
+  '1.1' means depth 2, '1.1.a' means depth 3, etc).
+
+  Section depths are computed using the following rules:
   
-  1)  The first criteria is the prefixing number which tells (by the number of
-      contained digits) if the section is a simple section, sub section etc.
-  2)  The second criteria is the indentation relatively to the preceding
-      section.
-  3)  The third criteria is the underlining of the section. A section
-      underlined with `=` will be of greater importance than a section underlined
-      with `-`, which is in turned of greater importance than a non-underlined
-      section.
+  1)  Sections underlined with '===' are have a lower depth than sections with
+      '---', which in turn have a lower depth sections without underlining.
+
+  2)  Sections with no number will have a lower depth than sections with 1
+      number ('1. Section'), which have a lower depth than sections with 2
+      numbers ('1.1 Section'), etc.
+
+  3)  Sections which are explicitly indented will have a depth which is at least
+      equal to their parent section.
+
+  Alternatively, you can also write sections by prefixing the title by a number
+  of '=' like that:
+
+  >   == Section level 1
+  >   === Section level 2
+  >   ==== Section level 3
+
+  this notation is designed for people who don't indent their text and sections
+  (if you are using Kiwi as markup language for a Web wiki, for instance). The
+  depth of the section is identified by counting the number of '=' characters,
+  where the first does not count.
+  
+      Note ________________________________________________________________
+
+      Kiwi section markup is very flexible, and allows you to use indentation,
+      numbers or different underlines to denote the depth of your sections.
+      Numbering is not important as the section numbering will be recalculated
+      anyway, so you can use 'X.X' instead of '1.2'. This will make your life
+      easier when typing large documents.
 
 
   3.6 Tables
@@ -324,7 +350,8 @@
   For the moment, here is the list of the available content mark up
   facilities:
 
-  == Inlines
+  ===================================================================
+  **Inlines**
   ===================================================================
   Emphasis || ``*emphasized*``           || *emphasized*
   -------------------------------------------------------------------
@@ -338,8 +365,7 @@
   -------------------------------------------------------------------
   Citation || <code>«a citation»</code>  || «a citation»
   ===================================================================
-
-  == Linking
+  **Linking**
   ===================================================================
   URL        || `<http://www.myurl.com/page>` || <http://www.myurl.com/page>
   -------------------------------------------------------------------
@@ -353,8 +379,7 @@
   -------------------------------------------------------------------
   Ref Entry  ||`    [REF:] My reference ...` || Will be associated to the above reference
   ===================================================================
-
-  == Misc characters
+  **Misc characters**
   ===================================================================
   Break       || `|`                    || Breaks the current paragraph
   -------------------------------------------------------------------
@@ -368,8 +393,7 @@
   -------------------------------------------------------------------
   Entities    ||    `&copy;`, `#&138;`  || &copy;, #&138;
   ===================================================================
-
-  == Escaping
+  **Escaping**
   ===================================================================
   Block       || `<[escaped _text_]>`   || <[escaped _text_]>
   --------------------------------------------------------------------

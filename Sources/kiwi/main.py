@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   17-Jul-2007
+# Last mod.         :   31-Aug-2007
 # -----------------------------------------------------------------------------
 
 import os, sys, StringIO
@@ -17,7 +17,7 @@ __doc__ = """Kiwi is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
 XML DOM."""
 
-__version__ = "0.8.2"
+__version__ = "0.8.3"
 __pychecker__ = "blacklist=cDomlette,cDomlettec"
 
 import re, string, operator, getopt, codecs
@@ -164,7 +164,7 @@ def run( arguments, input=None, noOutput=False ):
 		elif opt in ('-i', '--input-encoding'):
 			arg = string.lower(arg)
 			if arg in ENCODINGS.keys() and ENCODINGS[arg] in available_enc:
-				input_enc=ENCODINGS[arg]
+				input_enc=output_enc=ENCODINGS[arg]
 			else:
 				r  = "Kiwi error : Specified input encoding is not available, choose between:"
 				r += ENCODINGS_LIST

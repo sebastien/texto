@@ -9,7 +9,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   02-May-2007
+# Last mod.         :   07-Sep-2007
 # -----------------------------------------------------------------------------
 
 import re, string
@@ -45,6 +45,8 @@ RE_TITLES         = re.compile(u"%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MU
 
 SECTION_HEADING   = u"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
+SECTION_HEADING_ALT = u"^(\=+\s*).+$"
+RE_SECTION_HEADING_ALT= re.compile(SECTION_HEADING_ALT, re.LOCALE)
 SECTION_UNDERLINE = u"^\s*[\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
 
@@ -331,6 +333,7 @@ class TitleBlockParser(BlockParser):
 
 	def recognises( self, context ):
 		matches = []
+		if context.content.childNodes: return None
 		while not context.blockEndReached():
 			match = RE_TITLES.match(context.currentFragment())
 			if match!=None:
@@ -391,11 +394,16 @@ class SectionBlockParser(BlockParser):
 
 	def recognises( self, context ):
 		# We look for the number prefix
-		match = RE_SECTION_HEADING.match(context.currentFragment())
+		match     = RE_SECTION_HEADING.match(context.currentFragment())
 		# We return directly if there are at least two section numbers (2.3)
 		if match:
-			match = RE_SECTION_UNDERLINE.search(context.currentFragment())
-			if match: return (RE_SECTION_HEADING, match)
+			match_underline = RE_SECTION_UNDERLINE.search(context.currentFragment())
+			if match_underline: return (RE_SECTION_UNDERLINE, match_underline)
+			else: return (RE_SECTION_HEADING, match) 
+		# We return directly for a section prefixed by '=='
+		match_alt = RE_SECTION_HEADING_ALT.match(context.currentFragment())
+		if match_alt:
+			return (RE_SECTION_HEADING_ALT, match_alt)
 		# Or a separator followed by blank space
 		match = RE_SECTION_UNDERLINE.search(context.currentFragment())
 		if  match:
@@ -438,27 +446,38 @@ class SectionBlockParser(BlockParser):
 		#
 		# These sections will all be children of the previous section
 		section_weight = trail.endswith("==") and 2 or trail.endswith("--") and 1 or 0
+		#
 		# FIRST STEP - We detect section text bounds
-		block_start = context.blockStartOffset
-		block_end = context.blockEndOffset
+		#
+		block_start  = context.blockStartOffset
+		block_end    = context.blockEndOffset
 		section_type = "Section"
 		# We have an underlined section
 		if matched_type == RE_SECTION_UNDERLINE:
 			block_end = context.getOffset() + match.start()
+		if matched_type == RE_SECTION_HEADING_ALT:
+			block_start = context.getOffset() + match.start() + len(match.group(1))
+			block_end   = context.getOffset() + match.end()
+		
 		# We look for a number prefix
 		heading_text = context.fragment(block_start, block_end)
 		prefix_match = RE_SECTION_HEADING.match(heading_text)
 		dots_count   = 0
 		if prefix_match:
-			res  = prefix_match.group()
-			dots_count = len( filter(lambda x:x, res.split(".")) )
+			res         = prefix_match.group()
+			dots_count  = len( filter(lambda x:x, res.split(".")) )
 			block_start = context.getOffset() + prefix_match.end()
+		if matched_type == RE_SECTION_HEADING_ALT:
+			dots_count += len(match.group(1))
 		# We make sure that we end the section before the block delimiter
 		delim_match = RE_SECTION_UNDERLINE.search(context.currentFragment())
-		if delim_match: block_end = context.getOffset() + delim_match.start()
-		context.currentNode = context.getParentSection(dots_count-section_weight)
-		section_depth = context.getDepthInSection(context.currentNode) + 1
-		# THIRD STEP - We create the section
+		if delim_match:
+			block_end = context.getOffset() + delim_match.start()
+		context.currentNode = context.getParentSection(dots_count-section_weight, section_indent)
+		section_depth       = context.getDepthInSection(context.currentNode) + 1
+		#
+		# SECOND STEP - We create the section
+		#
 		section_node = context.document.createElementNS(None, section_type)
 		section_node.setAttributeNS(None, "_indent", str(section_indent ))
 		section_node.setAttributeNS(None, "_depth", str(section_depth))
@@ -752,7 +771,7 @@ class PreBlockParser( BlockParser ):
 			if line and not RE_PREFORMATTED.match(line):
 				return False
 		return True
-		
+
 	def process( self, context, recogniseInfo ):
 		text = ""
 		for line in context.currentFragment().split("\n"):

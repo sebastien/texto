@@ -178,9 +178,12 @@ def convertListItem( element ):
 	if is_todo:
 		if is_todo == "done":
 			attrs.append('class="todo done"')
+			return process(element, """<li%s%s><input type='checkbox' checked='true' readonly>$(*)</input></li>""" % (wattrs(element), " ".join(attrs)))
 		else:
 			attrs.append('class="todo"')
-	return process(element, """<li%s%s>$(*)</li>""" % (wattrs(element), " ".join(attrs)))
+			return process(element, """<li%s%s><input type='checkbox' readonly>$(*)</input></li>""" % (wattrs(element), " ".join(attrs)))
+	else:
+		return process(element, """<li%s%s>$(*)</li>""" % (wattrs(element), " ".join(attrs)))
 
 def convertTable( element ):
 	return process(element, """<table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table>""")
