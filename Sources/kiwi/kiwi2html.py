@@ -133,12 +133,42 @@ def convertHeader( element ):
 def convertHeading( element ):
 	return process(element, wspan(element, "$(*)"))
 
+def getSectionNumberPrefix(element):
+	if not element:
+		return ""
+	if not element.nodeName in ("Chapter", "Section"):
+		return ""
+	parent = element.parentNode
+	section_count = 1
+	for child in parent.childNodes:
+		if child == element:
+			break
+		if child.nodeName in ("Chapter", "Section"):
+			section_count += 1
+	parent_number = getSectionNumberPrefix(parent.parentNode)
+	if parent_number:
+		return "%s.%s" % (parent_number, section_count)
+	else:
+		return str(section_count)
+
+def formatSectionNumber(number):
+	number = str(number).split(".")
+	depth = 0
+	res   = []
+	for n in number:
+		if depth == len(number) - 1:
+			res.append('<span class="level%s">%s<span class="lastDot dot">.</span></span>' % (depth,n))
+		else:
+			res.append('<span class="level%s">%s<span class="dot">.</span></span>' % (depth,n))
+		depth += 1
+	return "".join(res)
+
 def convertSection( element ):
 	offset = element._processor.variables.get("LEVEL") or 0
 	level = int(element.getAttributeNS(None, "_depth")) + offset
 	return process(element,
 	  '<div class="section">'
-	  + '<h%d class="heading">$(Heading)</h%d>' % (level, level)
+	  + '<h%d class="heading"><span class="number">%s</span>$(Heading)</h%d>' % (level, formatSectionNumber(getSectionNumberPrefix(element)), level)
 	  + '<div class="level%d">$(Content:section)</div></div>' % (level)
 	)
 

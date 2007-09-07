@@ -136,7 +136,6 @@ class Context:
 			section_content = section[1]
 			section_depth = section[2]
 			section_indent = int(section_node.getAttributeNS(None, "_indent"))
-			print section_depth, section_indent, "vs", depth, indent
 			if indent > section_indent:
 				return section_content 
 			elif section_indent <= indent and section_depth < depth:

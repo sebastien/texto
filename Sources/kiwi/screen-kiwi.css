@@ -90,6 +90,19 @@ aimg {
 	padding-left: 10pt;
 }
 
+.kiwiContent .heading .number {
+	padding-right: 8pt;
+}
+
+.kiwiContent .heading .number .lastDot {
+	display: none;
+}
+
+
+.kiwiContent .heading .number .level0 .lastDot {
+	display: inline;
+}
+
 .kiwiContent h1 {
 	font-size: 1.8em;
 	font-weight: bold;
