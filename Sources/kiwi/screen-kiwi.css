@@ -4,7 +4,7 @@ body {
 	padding: 20pt;
 	padding-top: 10pt;
 	background: rgb(255,255,255);
-	font:  9.5pt/15pt "Helvetica Neue",Helvetica,sans-serif;
+	font:  10.5pt/15pt "Helvetica",Helvetica,sans-serif;
 	color: rgb(80,80,80);
 }
 
@@ -71,7 +71,7 @@ aimg {
 }
 
 .kiwiMeta {
-	width: 100%;
+	max-width: 700px;
 	padding: 5pt;
 	margin-bottom:  2em;
 	border-top:  1px solid rgb(150, 220, 238);
@@ -87,7 +87,7 @@ aimg {
 }
 
 .kiwiContent {
-	padding-left: 10pt;
+	max-width: 700px;
 }
 
 .kiwiContent .heading .number {
@@ -107,9 +107,8 @@ aimg {
 	font-size: 1.8em;
 	font-weight: bold;
 	margin-top: 1.5em;
-	margin-left: -10pt;
 	padding-bottom: 0.5em;
-	border-bottom:  2px solid rgb(150, 220, 238);
+	border-bottom:  1px dotted rgb(150, 220, 238);
 }
 
 .kiwiContent h2 {
