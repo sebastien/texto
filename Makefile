@@ -146,7 +146,7 @@ dist:
 	@rm -rf $(DISTRIBUTION)/$(PROJECT)-$(PROJECT_VERSION)
 
 man: Documentation/MANUAL.txt
-	kiwi -m -ilatin-1 Documentation/MANUAL.txt  MANUAL.html
+	kiwi -m -ilatin-1 Documentation/MANUAL.txt  Documentation/MANUAL.html
 
 doc: man
 	@echo "Generating $(PROJECT) documentation"

@@ -68,9 +68,6 @@ RE_PREFORMATTED   = re.compile(PREFORMATTED, re.LOCALE)
 CUSTOM_MARKUP = u"\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
 RE_CUSTOM_MARKUP = re.compile(CUSTOM_MARKUP, re.LOCALE|re.MULTILINE)
 
-INCLUDE_SIMTEX    = u"\s*\[\s*\$\s*:([^\]]+)\]"
-RE_INCLUDE_SIMTEX = re.compile(INCLUDE_SIMTEX, re.MULTILINE|re.LOCALE)
-
 META_TYPE        = u"\s*(\w+)\s*(\((\w+)\))?"
 RE_META_TYPE     = re.compile(META_TYPE, re.LOCALE|re.MULTILINE)
 
@@ -199,8 +196,8 @@ class ParagraphBlockParser(BlockParser):
 #------------------------------------------------------------------------------
 
 class TaggedBlockParser(BlockParser):
-	"""Parses a paragraph block. This parser always recognised the given block,
-	so it should not appear in the block parsers."""
+	"""Parses a tagged block. Notes are the common example of tagged
+	block."""
 
 	def __init__( self ):
 		BlockParser.__init__(self, "TaggedBlock")
