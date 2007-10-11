@@ -97,7 +97,7 @@ URL              = u"\<([A-z]+://[^\>]+)\>"
 RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
 LINK             = u"""\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
 RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
-TARGET           = u"\|([\w\s]+)\|"
+TARGET           = u"\|([\w\s]+(:[^\|]*)?)\|"
 RE_TARGET        = re.compile(TARGET, re.LOCALE)
 
 # Custom markup
@@ -411,9 +411,18 @@ class TargetInlineParser( InlineParser ):
 		assert match
 		# We detect wether the link is an URL or Ref link
 		target_node = context.document.createElementNS(None, "target")
-		target_node.setAttributeNS(None, "name", match.group(1).replace("  ", " ").strip().lower())
-		text_node   = context.document.createTextNode(match.group(1))
-		target_node.appendChild(text_node)
+		name_and_text = match.group(1).split(":", 1)
+		if len(name_and_text) == 1:
+			name = name_and_text[0]
+			text = None
+		else:
+ 			name = name_and_text[0]
+			text = name_and_text[1]
+			if not text: text = name
+		target_node.setAttributeNS(None, "name", name.replace("  ", " ").strip().lower())
+		if text:
+			text_node   = context.document.createTextNode(text)
+			target_node.appendChild(text_node)
 		context._targets.append(target_node)
 		node.appendChild(target_node)
 		return match.end()
