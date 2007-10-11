@@ -8,10 +8,10 @@
 
 import os, sys, re
 
-TEST_FILE  = re.compile("([A-Z][0-9]+)\-(\w+)\.kwi")
+TEST_FILE  = re.compile("(syntax)\-(.+)\.kwi")
 TEST_FILES = {}
 
-DIR  = os.path.dirname(os.path.abspath(__file__))
+DIR  = os.path.dirname(os.path.abspath(__file__) + "/results")
 KIWI = DIR + "/../Sources/kiwi/main.py"
 def do():
 	# We populate the test files hash table

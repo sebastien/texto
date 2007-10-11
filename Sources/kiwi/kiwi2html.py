@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Feb-2006
-# Last mod.         :   22-May-2007
+# Last mod.         :   29-Sep-2007
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -216,7 +216,7 @@ def convertListItem( element ):
 		return process(element, """<li%s%s>$(*)</li>""" % (wattrs(element), " ".join(attrs)))
 
 def convertTable( element ):
-	return process(element, """<table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table>""")
+	return process(element, """<div class="table"><table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table></div>""")
 
 def convertDefinition( element ):
 	return process(element, """<dl%s>$(*)</dl>""" % (wattrs(element)))
@@ -244,7 +244,7 @@ def convertBlock( element ):
 	css_class = ""
 	if title:
 		css_class=" class='ann%s'" % (element.getAttributeNS(None, "type").capitalize())
-		title = "<div class='title'>%s</div>"  % (title.capitalize())
+		title = "<div class='title'>%s</div>"  % (title)
 		div_type = "div"
 	elif not element.getAttributeNS(None, "type"):
 		div_type = "blockquote"
