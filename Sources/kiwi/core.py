@@ -87,6 +87,10 @@ class Context:
 		self.parser = None
 		self.markOffsets = markOffsets
 		self.sections = []
+		# These are convenience attributes used to make it easy for
+		# post-verification of the links (are they all resolved)
+		self._links   = []
+		self._targets = []
 
 	def _getElementsByTagName(self, node, name):
 		if node.nodeType == node.ELEMENT_NODE and \
@@ -366,6 +370,7 @@ class Parser:
 			EntityInlineParser(),
 			LinkInlineParser(),
 			PreInlineParser(),
+			TargetInlineParser(),
 			InlineParser("code",		RE_CODE_2),
 			InlineParser("code",		RE_CODE),
 			InlineParser("term",		RE_TERM,     normal),

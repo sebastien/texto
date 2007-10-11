@@ -11,8 +11,10 @@ import os, sys, re
 TEST_FILE  = re.compile("(syntax)\-(.+)\.kwi")
 TEST_FILES = {}
 
-DIR  = os.path.dirname(os.path.abspath(__file__) + "/results")
-KIWI = DIR + "/../Sources/kiwi/main.py"
+DIR  = os.path.dirname(os.path.abspath(__file__) ) + "/results"
+KIWI = os.path.abspath(DIR + "/../../Sources/kiwi/main.py")
+if not os.path.exists(DIR):
+    os.makedirs(DIR)
 def do():
 	# We populate the test files hash table
 	this_dir = os.path.abspath(os.path.dirname(__file__))

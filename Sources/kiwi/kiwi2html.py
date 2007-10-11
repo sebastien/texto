@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Feb-2006
-# Last mod.         :   29-Sep-2007
+# Last mod.         :   11-Oct-2007
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -250,14 +250,21 @@ def convertBlock( element ):
 		div_type = "blockquote"
 	return process(element, """<%s%s>%s<div class='content'%s>$(*)</div></%s>""" % (div_type, css_class, title, wattrs(element), div_type))
 
+def stringToTarget( text ):
+	return text.replace("  ", " ").strip().replace(" ", "-").upper()
+
 def convertlink( element ):
 	if element.getAttributeNS(None, "type") == "ref":
 		return process(element, """<a href="#%s">$(*)</a>""" %
-		(element.getAttributeNS(None, "target")))
+		(stringToTarget(element.getAttributeNS(None, "target"))))
 	else:
 		# TODO: Support title
 		return process(element, """<a href="%s">$(*)</a>""" %
-		(element.getAttributeNS(None, "target")))
+		(stringToTarget(element.getAttributeNS(None, "target"))))
+
+def converttarget( element ):
+	name = element.getAttributeNS(None, "name")
+	return process(element, """<a name="%s">$(*)</a>""" % (stringToTarget(name)))
 
 def convertMeta( element ):
 	return process(element, "<table class='kiwiMeta'>$(*)</table>")

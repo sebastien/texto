@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   21-Mar-2007
+# Last mod.         :   11-Oct-2007
 # -----------------------------------------------------------------------------
 
 import re
@@ -95,8 +95,10 @@ EMAIL            = u"\<([\w.\-_]+@[\w.\-_]+)\>"
 RE_EMAIL         = re.compile(EMAIL, re.LOCALE|re.MULTILINE)
 URL              = u"\<([A-z]+://[^\>]+)\>"
 RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
-LINK             = u"""\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])"""
+LINK             = u"""\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
 RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
+TARGET           = u"\|([\w\s]+)\|"
+RE_TARGET        = re.compile(TARGET, re.LOCALE)
 
 # Custom markup
 MARKUP_ATTR      = u"""\w+\s*=\s*('[^']*'|"[^"]*")"""
@@ -356,6 +358,16 @@ class LinkInlineParser( InlineParser ):
 	def __init__( self ):
 		InlineParser.__init__( self, "link", RE_LINK )
 
+	def recognises( self, context ):
+		result = InlineParser.recognises(self, context)
+		# We avoid conflict with the tasks list. This may not be
+		# always necessary, but it's safer to have it.
+		if result[1]:
+			r = result[1].group().strip()
+			if len(r) == 3 and r[0] == "[" and r[2]=="]":
+				return (None, None)
+		return result
+
 	def parse( self, context, node, match ):
 		assert match
 		# We detect wether the link is an URL or Ref link
@@ -367,9 +379,14 @@ class LinkInlineParser( InlineParser ):
 		else:
 			ref_url   = match.group(4)
 			ref_title = match.group(5)
-			link_node.setAttributeNS(None, "type", "url")
-			link_node.setAttributeNS(None, "target", ref_url)
-			if ref_title: link_node.setAttributeNS(None, "target", ref_title)
+			if not ref_url:
+				link_node.setAttributeNS(None, "type", "ref")
+				link_node.setAttributeNS(None, "target", "")
+			else:
+				link_node.setAttributeNS(None, "type", "url")
+				link_node.setAttributeNS(None, "target", ref_url)
+			if ref_title: link_node.setAttributeNS(None, "target")
+		context._links.append(link_node)
 		#Now we parse the content of the link
 		offsets = context.saveOffsets()
 		context.setCurrentBlock(context.getOffset() + match.start() + 1,
@@ -377,6 +394,28 @@ class LinkInlineParser( InlineParser ):
 		context.parser.parseBlock(context, link_node, _processText)
 		context.restoreOffsets(offsets)
 		node.appendChild(link_node)
+		return match.end()
+
+#------------------------------------------------------------------------------
+#
+#  Target parser
+#
+#------------------------------------------------------------------------------
+
+class TargetInlineParser( InlineParser ):
+
+	def __init__( self ):
+		InlineParser.__init__( self, "target", RE_TARGET )
+
+	def parse( self, context, node, match ):
+		assert match
+		# We detect wether the link is an URL or Ref link
+		target_node = context.document.createElementNS(None, "target")
+		target_node.setAttributeNS(None, "name", match.group(1).replace("  ", " ").strip().lower())
+		text_node   = context.document.createTextNode(match.group(1))
+		target_node.appendChild(text_node)
+		context._targets.append(target_node)
+		node.appendChild(target_node)
 		return match.end()
 
 #------------------------------------------------------------------------------
