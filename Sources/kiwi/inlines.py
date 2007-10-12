@@ -385,7 +385,6 @@ class LinkInlineParser( InlineParser ):
 			else:
 				link_node.setAttributeNS(None, "type", "url")
 				link_node.setAttributeNS(None, "target", ref_url)
-			if ref_title: link_node.setAttributeNS(None, "target")
 		context._links.append(link_node)
 		#Now we parse the content of the link
 		offsets = context.saveOffsets()

@@ -1,6 +1,6 @@
 == Kiwi User Manual
 -- Authors: Sébastien Pierre <sebastien@type-z.org>
--- Revision: 0.8.5
+-- Revision: 0.8.6
 
 1. Introduction
 ===============
@@ -335,8 +335,44 @@
   3.9 Links and bibliographic references
   --------------------------------------
 
-  todo
+  Kiwi supports internal (within document links) and external links (urls,
+  files, etc). Internal links are expressed like that:
 
+  >   Some text [the link][TARGET] ...
+
+  where 'TARGET' is a link to a _bilbiographic entry_, to a specific _target_,
+  or is a string that can identify without ambiguity a section.
+
+  For instance, if I wanted to reference the ''Document header and title''
+  section of this document, I would do:
+
+  >   [previous section][document header]
+
+  Additionally, it is possible to omit the 'TARGET'. In that case, the text of
+  the link itself will be used as the target. We could have expressed the
+  previous link like that:
+
+  >   here is a link to the [document header] section
+
+  If you want to define a specific _anchor_ for a link in your document, you can
+  simply use the following notation
+
+  >   |ANCHOR|Some text...
+
+  Anchors will not be displayed in the resulting document. If you'd like the
+  anchor to contain some text, you can do
+
+  >   |ANCHOR:Some text|
+
+  And then the anchor will span the text you indicate
+
+      Note ___________________________________________________________________
+      It is not possible to use Kiwi markup within an anchor text.
+
+  If you'd like the anchor name to be the same as the displayed text, you could
+  do:
+
+  >   |ANCHOR:|
 
 
 4. Syntax summary

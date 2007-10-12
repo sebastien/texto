@@ -232,7 +232,7 @@ def run( arguments, input=None, noOutput=False ):
 		try:
 			ifile = codecs.open(source,"r",input_enc)
 		except:
-			return (ERROR, "Unable to open input file.")
+			return (ERROR, "Unable to open input file: %s" % (input))
 
 	if noOutput: pass
 	elif output==None: ofile = sys.stdout

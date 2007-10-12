@@ -260,7 +260,7 @@ def convertlink( element ):
 	else:
 		# TODO: Support title
 		return process(element, """<a href="%s">$(*)</a>""" %
-		(stringToTarget(element.getAttributeNS(None, "target"))))
+		(element.getAttributeNS(None, "target")))
 
 def converttarget( element ):
 	name = element.getAttributeNS(None, "name")
