@@ -1,0 +1,5 @@
+|TARGET|An invisible target
+
+|TARGET:Some text| for a visible target
+
+|TARGET:| is the name of this target
