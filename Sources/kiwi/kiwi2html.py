@@ -167,7 +167,7 @@ def convertSection( element ):
 	offset = element._processor.variables.get("LEVEL") or 0
 	level = int(element.getAttributeNS(None, "_depth")) + offset
 	return process(element,
-	  '<div class="section">'
+	  '<div class="section" level="%d">' % (level)
 	  + '<h%d class="heading"><span class="number">%s</span>$(Heading)</h%d>' % (level, formatSectionNumber(getSectionNumberPrefix(element)), level)
 	  + '<div class="level%d">$(Content:section)</div></div>' % (level)
 	)
@@ -255,16 +255,16 @@ def stringToTarget( text ):
 
 def convertlink( element ):
 	if element.getAttributeNS(None, "type") == "ref":
-		return process(element, """<a href="#%s">$(*)</a>""" %
+		return process(element, """<a href="#%s" class="internal">$(*)</a>""" %
 		(stringToTarget(element.getAttributeNS(None, "target"))))
 	else:
 		# TODO: Support title
-		return process(element, """<a href="%s">$(*)</a>""" %
+		return process(element, """<a href="%s" class="external">$(*)</a>""" %
 		(element.getAttributeNS(None, "target")))
 
 def converttarget( element ):
 	name = element.getAttributeNS(None, "name")
-	return process(element, """<a name="%s">$(*)</a>""" % (stringToTarget(name)))
+	return process(element, """<a class="anchor" name="%s">$(*)</a>""" % (stringToTarget(name)))
 
 def convertMeta( element ):
 	return process(element, "<table class='kiwiMeta'>$(*)</table>")

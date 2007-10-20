@@ -381,7 +381,7 @@ class LinkInlineParser( InlineParser ):
 			ref_title = match.group(5)
 			if not ref_url:
 				link_node.setAttributeNS(None, "type", "ref")
-				link_node.setAttributeNS(None, "target", "")
+				link_node.setAttributeNS(None, "target", match.group(1))
 			else:
 				link_node.setAttributeNS(None, "type", "url")
 				link_node.setAttributeNS(None, "target", ref_url)
