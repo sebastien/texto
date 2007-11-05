@@ -20,9 +20,10 @@ VERSION     = kiwi.main.__version__
 WEBSITE     = "http://www.ivy.fr/" + NAME.lower()
 SUMMARY     = "Intuitive, flexible structured text to markup processor"
 DESCRIPTION = """\
-Kiwi is a structured text (markup) to XML/HTML processor. Very close in syntax
-to the Markdown markup, Kiwi however supports more elements (including tables),
-and has a more advanced XML/HTML integration.
+Kiwi is a structured text (markup) to XML/HTML processor, designed with
+embedding in mind. Very close in syntax to the Markdown markup, Kiwi however
+supports more elements (including tables), and has a more advanced XML/HTML
+integration.
 
 When using Kiwi, you can still write XML or HTML tags within your text, and use
 the markup syntax whenever you want. Kiwi is integrated into the Tahchee

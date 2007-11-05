@@ -8,6 +8,8 @@ Version 1.0::
 	[ ] Provide scripts to make PDF generation easier
 	[ ] Provide alternate stylesheet
 	[ ] Provide syntax highlighting for some editors
+	[ ] Automatic resolution of unresolved link
+	[ ] Report of broken links within the document
 
 Version 0.9::
 
@@ -18,8 +20,7 @@ Version 0.9::
 	[X] Markup: '[ ]' and '[X]' for to-do lists
 	[X] Markup: '|anchor|' for specifying anchors
 	[ ] Markup: 'Title:' line before a list to make a list header
-	[ ] Automatic resolution of unresolved link
-	[ ] Report of broken links within the document
+	[ ] Automatic numbering in CSS (see <http://www.w3.org/TR/REC-CSS2/generate.html#counters>)
 	[X] Proper 'setup.py' script
 
 Version 0.8::
