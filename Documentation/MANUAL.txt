@@ -17,7 +17,7 @@
   the structure of the document. Kiwi is one of the few markup engines that is
   designed with in this perspective from the ground.
 
-  Additionaly, Wiki can be used as a wiki/web markup engine, as it is quite
+  Additionally, Wiki can be used as a wiki/web markup engine, as it is quite
   close (but not exactly similar) to [Markdown][MARKDOWN]
 
   Kiwi comes with a nice command-line interface, can be embedded in
