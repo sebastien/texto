@@ -42,7 +42,7 @@ setup(
     author      = "Sebastien Pierre", author_email = "sebastien@type-z.org",
     description = SUMMARY, long_description = DESCRIPTION,
     license     = "Revised BSD License",
-    keywords    = "program representation, structural analysis, documentation",
+    keywords    = "text translation, markup, markdown, web",
     url         =  WEBSITE,
     download_url=  WEBSITE + "/%s-%s.tar.gz" % (NAME.lower(), VERSION) ,
     package_dir = { "": "Sources" },
