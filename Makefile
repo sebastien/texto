@@ -25,7 +25,7 @@
 #
 # Project name. Do not put spaces.
 PROJECT         = Kiwi
-PROJECT_VERSION = 0.8.0a
+PROJECT_VERSION = 0.8.6
 PROJECT_STATUS  = BETA
 
 DOCUMENTATION   = Documentation
@@ -50,6 +50,7 @@ MODULES = \
 	kiwi.formatting \
 	kiwi.templates \
 	kiwi.kiwi2html \
+	kiwi.kiwi2twiki \
 	kiwi.html2kiwi
 
 TEST_MAIN       = $(TESTS)/$(PROJECT)Test.py

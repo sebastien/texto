@@ -11,12 +11,11 @@
 # Last mod.         :   17-Jul-2007
 # -----------------------------------------------------------------------------
 
-import sys ; sys.path.insert(0, "Sources")
-import kiwi.main
+import sys
 from distutils.core import setup
 
 NAME        = "Kiwi"
-VERSION     = kiwi.main.__version__
+VERSION     = "0.8.6"
 WEBSITE     = "http://www.ivy.fr/" + NAME.lower()
 SUMMARY     = "Intuitive, flexible structured text to markup processor"
 DESCRIPTION = """\
