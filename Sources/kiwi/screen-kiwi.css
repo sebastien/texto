@@ -91,6 +91,7 @@ aimg {
 }
 
 .kiwiContent .heading .number {
+	display: none;
 	padding-right: 8pt;
 }
 

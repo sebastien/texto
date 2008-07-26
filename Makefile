@@ -51,7 +51,6 @@ MODULES = \
 	kiwi.templates \
 	kiwi.kiwi2html \
 	kiwi.kiwi2twiki \
-	kiwi.html2kiwi
 
 TEST_MAIN       = $(TESTS)/$(PROJECT)Test.py
 SOURCE_FILES    = $(shell find $(SOURCES) -name "*.py")
