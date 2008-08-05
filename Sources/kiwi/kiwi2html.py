@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Feb-2006
-# Last mod.         :   11-Oct-2007
+# Last mod.         :   05-Aug-2008
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -259,7 +259,7 @@ def convertlink( element ):
 		(stringToTarget(element.getAttributeNS(None, "target"))))
 	else:
 		# TODO: Support title
-		return process(element, """<a href="%s" class="external">$(*)</a>""" %
+		return process(element, """<a href="%s" class="external" target="_blank">$(*)</a>""" %
 		(element.getAttributeNS(None, "target")))
 
 def converttarget( element ):
