@@ -281,7 +281,7 @@ def convertemail( element ):
 	return """<a href="mailto:%s">%s</a>""" % (mail, mail)
 
 def converturl( element ):
-	return process(element, """<a href="$(*)">$(*)</a>""")
+	return process(element, """<a href="$(*)" target="_blank">$(*)</a>""")
 
 def converturl_header( element ):
 	return process(element, """<div class='url'>%s</div>""" % (
