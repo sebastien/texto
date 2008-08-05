@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   11-Oct-2007
+# Last mod.         :   05-Aug-2008
 # -----------------------------------------------------------------------------
 
 import re
@@ -95,6 +95,8 @@ EMAIL            = u"\<([\w.\-_]+@[\w.\-_]+)\>"
 RE_EMAIL         = re.compile(EMAIL, re.LOCALE|re.MULTILINE)
 URL              = u"\<([A-z]+://[^\>]+)\>"
 RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
+URL_2            = u"([A-z]+://[^\>]+)"
+RE_URL_2         = re.compile(URL_2, re.LOCALE|re.MULTILINE)
 LINK             = u"""\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
 RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
 TARGET           = u"\|([\w\s]+(:[^\|]*)?)\|"

@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   07-May-2007
+# Last mod.         :   05-Aug-2008
 # -----------------------------------------------------------------------------
 
 import os, sys
@@ -367,6 +367,7 @@ class Parser:
 			EscapedStringInlineParser(),
 			InlineParser("email",		RE_EMAIL),
 			InlineParser("url",			RE_URL),
+			InlineParser("url",			RE_URL_2),
 			EntityInlineParser(),
 			LinkInlineParser(),
 			PreInlineParser(),
