@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Feb-2006
-# Last mod.         :   05-Aug-2008
+# Last mod.         :   13-May-2009
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -87,7 +87,7 @@ def wdiv( element, text ):
 	given element has offset attributes."""
 	number = element_number(element)
 	if number == None: return text
-	return "<div id='KIWI%s' start='%s' end='%s'>%s</div>" % (
+	return "<div class='KIWI N%s' start='%s' end='%s'>%s</div>" % (
 		element.getAttributeNS(None, '_number'),
 		element.getAttributeNS(None, '_start'),
 		element.getAttributeNS(None, '_end'),
@@ -99,7 +99,7 @@ def wspan( element, text ):
 	given element has offset attributes."""
 	number = element_number(element)
 	if number == None: return text
-	return "<div id='KIWI%s' start='%s' end='%s'>%s</div>" % (
+	return "<div class='KIWI N%s' start='%s' end='%s'>%s</div>" % (
 		element.getAttributeNS(None, '_number'),
 		element.getAttributeNS(None, '_start'),
 		element.getAttributeNS(None, '_end'),
@@ -111,7 +111,7 @@ def wattrs( element ):
 	res = ""
 	number = element_number(element)
 	if number != None:
-		res = " id='KIWI%s' start='%s' end='%s'" % (
+		res = " class='KIWI N%s' start='%s' end='%s'" % (
 			element.getAttributeNS(None, '_number'),
 			element.getAttributeNS(None, '_start'),
 			element.getAttributeNS(None, '_end')
