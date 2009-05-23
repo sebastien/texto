@@ -9,7 +9,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   07-Sep-2007
+# Last mod.         :   23-May-2009
 # -----------------------------------------------------------------------------
 
 import re, string
@@ -806,7 +806,7 @@ class PreBlockParser2( BlockParser ):
 
 	def isStartLine( self, context, line ):
 		line_indent = context.parser.getIndentation(line)
-		if line.replace("\t", " ").strip() == "<<<":
+		if line.replace("\t", " ").strip() == "---":
 			return True, line_indent
 		else:
 			return None
@@ -815,7 +815,7 @@ class PreBlockParser2( BlockParser ):
 		line_indent = context.parser.getIndentation(line)
 		if line_indent != indent: return False
 		line = line.replace("\t", " ").strip()
-		return  line == ">>>"
+		return  line == "---"
 
 	def findBlockEnd( self, context, indent ):
 		# FIXME: Issue a warning if no end is found
