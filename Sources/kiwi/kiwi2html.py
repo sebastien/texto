@@ -259,7 +259,7 @@ def convertlink( element ):
 		(stringToTarget(element.getAttributeNS(None, "target"))))
 	else:
 		# TODO: Support title
-		return process(element, """<a href="%s" class="external" target="_blank">$(*)</a>""" %
+		return process(element, """<a href="%s" class="external">$(*)</a>""" %
 		(element.getAttributeNS(None, "target")))
 
 def converttarget( element ):
