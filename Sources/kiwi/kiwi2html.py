@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Feb-2006
-# Last mod.         :   13-May-2009
+# Last mod.         :   07-Oct-2009
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -238,9 +238,13 @@ def convertRow( element ):
 
 def convertCell( element ):
 	cell_attrs = ""
+	node_type  = element.getAttributeNS(None, "type")
 	if element.hasAttributeNS(None, "colspan"):
 		cell_attrs += " colspan='%s'" % (element.getAttributeNS(None, "colspan"))
-	return process(element, """<td%s%s>$(*:cell)</td>""" % (cell_attrs,wattrs(element)))
+	if node_type == "header":
+		return process(element, """<th%s%s>$(*:cell)</th>""" % (cell_attrs,wattrs(element)))
+	else:
+		return process(element, """<td%s%s>$(*:cell)</td>""" % (cell_attrs,wattrs(element)))
 
 def convertBlock( element ):
 	title = element.getAttributeNS(None,"title") or element.getAttributeNS(None, "type") or ""

@@ -9,7 +9,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   23-May-2009
+# Last mod.         :   07-Oct-2009
 # -----------------------------------------------------------------------------
 
 import re, string
@@ -893,6 +893,9 @@ class Table:
 	def dimension( self ):
 		return len(self._table[0]), len(self._table) 
 
+	def getRow( self, y):
+		return self._table[y]
+
 	def _ensureCell( self, x, y ):
 		"""Ensures that the cell at the given position exists and returns its
 		pair value."""
@@ -1030,6 +1033,17 @@ class TableBlockParser( BlockParser ):
 			# analysis of the separtor will tell you if the above cell is a
 			# header or a data cell
 			else:
+				# FIXME: This is wrong, see below
+				if separator.group(1)[0] == "=":
+					row_count = table.dimension()[1]
+					if row_count > 0:
+						for cell in table.getRow(row_count - 1):
+							cell[0] = "H"
+				if separator.group(1)[0] == "-":
+					row_count = table.dimension()[1]
+					if row_count > 0:
+						for cell in table.getRow(row_count - 1):
+							cell[0] = "T"
 				# FIXME: Should handle vertical tables also
 				# ==================================
 				# HEADER || DATA
@@ -1037,6 +1051,7 @@ class TableBlockParser( BlockParser ):
 				# ....
 				offset = 0
 				x      = 0
+				# FIXME: Here cells is always empty
 				for cell in cells:
 					if separator.group(1)[offset] == "=": table.headerCell(x,y)
 					else: table.dataCell(x,y)
