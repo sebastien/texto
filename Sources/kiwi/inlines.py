@@ -417,7 +417,7 @@ class TargetInlineParser( InlineParser ):
 			name = name_and_text[0]
 			text = None
 		else:
- 			name = name_and_text[0]
+			name = name_and_text[0]
 			text = name_and_text[1]
 			if not text: text = name
 		target_node.setAttributeNS(None, "name", name.replace("  ", " ").strip().lower())

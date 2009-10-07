@@ -261,7 +261,7 @@ def convertBlock( element ):
 	return process(element, """<%s%s>%s<div class='content'%s>$(*)</div></%s>""" % (div_type, css_class, title, wattrs(element), div_type))
 
 def stringToTarget( text ):
-	return text.replace("  ", " ").strip().replace(" ", "-").upper()
+	return text.replace("  ", " ").strip().replace(" ", "_")
 
 def convertlink( element ):
 	if element.getAttributeNS(None, "type") == "ref":
