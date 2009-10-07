@@ -196,11 +196,14 @@ def convertParagraph_cell( element ):
 	return process(element, """$(*)<br />""")
 
 def convertList( element ):
-	is_todo = element.getAttributeNS(None, "type")
+	list_type = element.getAttributeNS(None, "type")
 	attrs = [""]
-	if is_todo == "todo":
-		attrs.append('class="todo"')
-	return process(element, """<ul%s%s>$(*)</ul>""" % (wattrs(element), " ".join(attrs)))
+	if list_type:
+		attrs.append('class="%s"' % (list_type))
+	if list_type == "ordered":
+		return process(element, """<ol%s%s>$(*)</ul>""" % (wattrs(element), " ".join(attrs)))
+	else:
+		return process(element, """<ul%s%s>$(*)</ul>""" % (wattrs(element), " ".join(attrs)))
 
 def convertListItem( element ):
 	attrs   = [""]

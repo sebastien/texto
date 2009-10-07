@@ -25,6 +25,7 @@ BLOCK_ELEMENTS = ("Block", "ListItem", "Definition", "Content", "Chapter", "Sect
 STANDARD_LIST    = 1
 DEFINITION_LIST  = 2
 TODO_LIST        = 3
+ORDERED_LIST     = 4
 
 STANDARD_ITEM    = 100
 TODO_ITEM        = 101
@@ -61,6 +62,7 @@ LIST_HEADING      = u"(^\s*[^:{().<]*:)"
 RE_LIST_HEADING   = re.compile(LIST_HEADING, re.MULTILINE | re.LOCALE)
 LIST_ITEM_HEADING = u"^([^:]+(:\s*\n\s*|::\s*))|([^/\\\]+[/\\\]\s*\n\s*)"
 RE_LIST_ITEM_HEADING =  re.compile(LIST_ITEM_HEADING, re.MULTILINE|re.LOCALE)
+RE_NUMBER          = re.compile("\d+[\)\.]")
 
 PREFORMATTED      = u"^(\s*\>(\t|   ))(.*)$"
 RE_PREFORMATTED   = re.compile(PREFORMATTED, re.LOCALE)
@@ -618,8 +620,6 @@ class ListItemBlockParser(BlockParser):
 		if next_item_match:
 			current_item_text = current_item_text[:next_item_match.start()]
 
-
-
 		# We get the list item identation
 		indent = context.parser.getIndentation(
 			context.parser.charactersToSpaces(itemMatch.group()))
@@ -649,6 +649,8 @@ class ListItemBlockParser(BlockParser):
 			elif head == "[X]":
 				item_type = TODO_DONE_ITEM
 				list_type = TODO_LIST
+			elif RE_NUMBER.match(head):
+				list_type = ORDERED_LIST
 
 		# The current_item_text is no longer used in the following code
 
@@ -728,8 +730,10 @@ class ListItemBlockParser(BlockParser):
 		# We set the type attribute of the list if necesseary
 		if list_type == DEFINITION_LIST:
 			list_node.setAttributeNS(None, "type", "definition")
-		if list_type == TODO_LIST:
+		elif list_type == TODO_LIST:
 			list_node.setAttributeNS(None, "type", "todo")
+		elif list_type == ORDERED_LIST:
+			list_node.setAttributeNS(None, "type", "ordered")
 
 		# And recurse with other line items
 		if next_item_match:
