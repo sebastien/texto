@@ -87,7 +87,7 @@ def wdiv( element, text ):
 	given element has offset attributes."""
 	number = element_number(element)
 	if number == None: return text
-	return "<div class='KIWI N%s' start='%s' end='%s'>%s</div>" % (
+	return "<div class='KIWI N%s' ostart='%s' oend='%s'>%s</div>" % (
 		element.getAttributeNS(None, '_number'),
 		element.getAttributeNS(None, '_start'),
 		element.getAttributeNS(None, '_end'),
@@ -99,7 +99,7 @@ def wspan( element, text ):
 	given element has offset attributes."""
 	number = element_number(element)
 	if number == None: return text
-	return "<div class='KIWI N%s' start='%s' end='%s'>%s</div>" % (
+	return "<div class='KIWI N%s' ostart='%s' oend='%s'>%s</div>" % (
 		element.getAttributeNS(None, '_number'),
 		element.getAttributeNS(None, '_start'),
 		element.getAttributeNS(None, '_end'),
@@ -111,7 +111,7 @@ def wattrs( element ):
 	res = ""
 	number = element_number(element)
 	if number != None:
-		res = " class='KIWI N%s' start='%s' end='%s'" % (
+		res = " class='KIWI N%s' ostart='%s' oend='%s'" % (
 			element.getAttributeNS(None, '_number'),
 			element.getAttributeNS(None, '_start'),
 			element.getAttributeNS(None, '_end')
@@ -219,7 +219,10 @@ def convertListItem( element ):
 		return process(element, """<li%s%s>$(*)</li>""" % (wattrs(element), " ".join(attrs)))
 
 def convertTable( element ):
-	return process(element, """<div class="table"><table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table></div>""")
+	tid = element.getAttributeNS(None, "id")
+	if tid: tid = ' id="%s"' % (tid)
+	else:   tid = ""
+	return process(element, """<div class="table"%s><table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table></div>""" % (tid))
 
 def convertDefinition( element ):
 	return process(element, """<dl%s>$(*)</dl>""" % (wattrs(element)))

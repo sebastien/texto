@@ -889,6 +889,7 @@ class Table:
 		self._rows  = 0
 		self._cols  = 0
 		self._title = None
+		self._id    = None
 	
 	def dimension( self ):
 		return len(self._table[0]), len(self._table) 
@@ -909,6 +910,10 @@ class Table:
 	def setTitle( self, title ):
 		"""Sets the title for this table."""
 		self._title = title.strip()
+
+	def setID( self, id ):
+		"""Sets the id for this table."""
+		self._id = id.strip()
 
 	def appendCellContent( self, x, y, text ):
 		cell_type, cell_text = self._ensureCell(x,y)
@@ -933,6 +938,9 @@ class Table:
 		"""Renders the table as a Kiwi XML document node."""
 		table_node   = context.document.createElementNS(None, "Table")
 		content_node = context.document.createElementNS(None, "Content")
+		# We set the id
+		if self._id:
+			table_node.setAttributeNS(None, "id", self._id)
 		# We take care of the title
 		if self._title:
 			caption_node = context.document.createElementNS(None, "Caption")
@@ -1001,7 +1009,12 @@ class TableBlockParser( BlockParser ):
 		# We take care of the title
 		title_match = RE_TITLE.match(rows[0])
 		if title_match:
-			table.setTitle(title_match.group(2))
+			title_name = title_match.group(2).split("#",1)
+			title_id   = None
+			if len(title_name) == 2:
+				title_name, title_id = title_name
+			table.setTitle(title_name)
+			table.setID(title_id)
 			rows = rows[2:]
 		else:
 			rows = rows[1:]
@@ -1024,10 +1037,11 @@ class TableBlockParser( BlockParser ):
 					if cell and cell[0]  == "|": cell = cell[1:]
 					if cell and cell[-1] == "|": cell = cell[:-1]
 					table.appendCellContent(x,y,cell)
+					# FIXME: Weird rule
 					# The default cell type is the same as the above
 					# cell, if any.
-					if y>0 and table.isHeader(x,y-1):
-						table.headerCell(x,y)
+					#if y>0 and table.isHeader(x,y-1):
+					#	table.headerCell(x,y)
 					x += 1
 			# We move to the next row only when we encounter a separator. The
 			# analysis of the separtor will tell you if the above cell is a
@@ -1053,6 +1067,7 @@ class TableBlockParser( BlockParser ):
 				x      = 0
 				# FIXME: Here cells is always empty
 				for cell in cells:
+					assert None, "Should not be here"
 					if separator.group(1)[offset] == "=": table.headerCell(x,y)
 					else: table.dataCell(x,y)
 					offset += len(cell)
