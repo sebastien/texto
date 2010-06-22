@@ -2,7 +2,7 @@
 # Encoding: iso-8859-1
 # vim: tw=80 ts=4 sw=4 noet
 # -----------------------------------------------------------------------------
-# Project           :   Kiwi
+# Project           :   Texto
 # Module            :   Block parsers
 # -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
@@ -935,7 +935,7 @@ class Table:
 		return self._table[y][x][0] == "H"
 
 	def getNode( self, context, processText ):
-		"""Renders the table as a Kiwi XML document node."""
+		"""Renders the table as a Texto XML document node."""
 		table_node   = context.document.createElementNS(None, "Table")
 		content_node = context.document.createElementNS(None, "Content")
 		# We set the id
@@ -1013,8 +1013,11 @@ class TableBlockParser( BlockParser ):
 			title_id   = None
 			if len(title_name) == 2:
 				title_name, title_id = title_name
-			table.setTitle(title_name)
-			table.setID(title_id)
+				table.setTitle(title_name)
+				table.setID(title_id)
+			elif len(title_name) == 1:
+				title_name = title_name[0]
+				table.setTitle(title_name)
 			rows = rows[2:]
 		else:
 			rows = rows[1:]
@@ -1270,7 +1273,7 @@ class MetaBlockParser( BlockParser ):
 
 	def p_markup( self, context, content ):
 		"""Parses custom markup and registers the new parsers in the current
-		Kiwi parser"""
+		Texto parser"""
 		# TODO
 		match = 1
 		start = 0

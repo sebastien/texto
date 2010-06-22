@@ -2,7 +2,7 @@
 # Encoding: iso-8859-1
 # vim: tw=80 ts=4 sw=4 noet fenc=latin-1
 # -----------------------------------------------------------------------------
-# Project           :   Kiwi
+# Project           :   Texto
 # -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ class Processor:
 	def register( self, name2functions ):
 		"""Fills the EXPRESSION_TABLE which maps element names to processing
 		functions. This function is only useful when you implement your
-		templates in the same way as the `kiwi2html` module, ie. with processing
+		templates in the same way as the `texto2html` module, ie. with processing
 		functions like `convertXXX_VVV` where `XXX` stands for the element name,
 		and `_VVV` is the optional variant (selected by`$(element:variant)`).
 		

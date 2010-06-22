@@ -2,7 +2,7 @@
 # Encoding: iso-8859-1
 # vim: ts=4 sw=4 tw=80 noet
 # -----------------------------------------------------------------------------
-# Project           :   Kiwi
+# Project           :   Texto
 # -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ MUST_BE_START_OR_END = \
 #The regular expressions listed below are ordered conforming to their order
 #of insertion into the parser.
 
-# Kiwi core
+# Texto core
 
 COMMENT          = u"^\s*#.*$"
 RE_COMMENT       = re.compile(COMMENT, re.LOCALE | re.MULTILINE )
@@ -448,7 +448,7 @@ def Markup_attributes( match ):
 	return text
 
 class MarkupInlineParser( InlineParser ):
-	"""Parses Kiwi generic markup elements."""
+	"""Parses Texto generic markup elements."""
 
 	def __init__( self ):
 		InlineParser.__init__(self, None, RE_MARKUP)

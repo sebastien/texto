@@ -39,20 +39,20 @@ Kiwi is also:
 To get up and running with Kiwi, you will need a Python interpreter, as well as
 the `make` command (it is not required if you want to install Kiwi manually):
 
-	- Unpack the latest Kiwi tarball available at <http://www.ivy.fr/kiwi/kiwi-latest.tar.gz>
-	- Type `make install` to install Kiwi in `/usr/local/share/kiwi`
-	- The `kiwi` command should now be available to you
+	- Unpack the latest Kiwi tarball available at <http://www.ivy.fr/texto/texto-latest.tar.gz>
+	- Type `make install` to install Kiwi in `/usr/local/share/texto`
+	- The `texto` command should now be available to you
 
 If you wish to install Kiwi manually, simply:
 
-	- Move the `Sources/kiwi` directory somewhere in your `PYTHON_PATH` (this
+	- Move the `Sources/texto` directory somewhere in your `PYTHON_PATH` (this
 	  may be Python `site-packages` directory)
 	- Create a script that invokes
-	  > python -c "import sys,kiwi.main;kiwi.run(sys.argv[1:])"
+	  > python -c "import sys,texto.main;texto.run(sys.argv[1:])"
 
-Now, you can play with the `kiwi` command with any example provided in the `Tests`
-directory, to get a feel of what it is like. Note that `kiwi -p` produces a
-pretty-printed XML tree, and `kiwi -m` produces a (compacted) HTML file.
+Now, you can play with the `texto` command with any example provided in the `Tests`
+directory, to get a feel of what it is like. Note that `texto -p` produces a
+pretty-printed XML tree, and `texto -m` produces a (compacted) HTML file.
 
 3. Basics
 =========

@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Project           :   Kiwi
+# Project           :   Texto
 # Author            :   Sebastien Pierre
 # License           :   BSD License (revised)
 # -----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ TEST_FILE  = re.compile("(syntax)\-(.+)\.kwi")
 TEST_FILES = {}
 
 DIR  = os.path.dirname(os.path.abspath(__file__) ) + "/results"
-KIWI = os.path.abspath(DIR + "/../../Sources/kiwi/main.py")
+KIWI = os.path.abspath(DIR + "/../../Sources/texto/main.py")
 if not os.path.exists(DIR):
     os.makedirs(DIR)
 def do():
@@ -25,7 +25,7 @@ def do():
 		f.append((m.group(2), os.path.join(this_dir, path)))
 
 	index_f = file(DIR + "/index.html", "w")
-	index_f.write("<html><body><h1>Kiwi test suite</h1><table>")
+	index_f.write("<html><body><h1>Texto test suite</h1><table>")
 
 	# And now execute the tests
 	groups = TEST_FILES.keys() ; groups.sort()

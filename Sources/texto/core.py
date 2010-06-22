@@ -2,7 +2,7 @@
 # Encoding: iso-8859-1
 # vim: tw=80 ts=4 sw=4 noet
 # -----------------------------------------------------------------------------
-# Project           :   Kiwi
+# Project           :   Texto
 # -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # License           :   Revised BSD License
@@ -68,7 +68,7 @@ class Context:
 	  	starts.
 		- blockEndOffset: the offset in the text where the currently parsed block
 	  	ends.
-		- parser: a reference to the Kiwi parser instance using the context.
+		- parser: a reference to the Texto parser instance using the context.
 	"""
 
 	def __init__( self, documentText, markOffsets=False ):
@@ -312,7 +312,7 @@ class Context:
 
 #------------------------------------------------------------------------------
 #
-#  Kiwi parser
+#  Texto parser
 #
 #------------------------------------------------------------------------------
 
@@ -391,7 +391,7 @@ class Parser:
 		))
 
 	def _initialiseContextDocument(self, context):
-		"""Creates the XML document that will be populated by Kiwi
+		"""Creates the XML document that will be populated by Texto
 		parsing."""
 		document  = dom.createDocument(None,None,None)
 		root_node = document.createElementNS(None, "Document")
@@ -588,7 +588,7 @@ class Parser:
 			offsets = context.saveOffsets()
 			context.setCurrentBlock(markup_match.end(),context.documentTextLength)
 			# There may be no 2nd group, so we  have to check this. Old
-			# Kiwi documents may have [start:something] instead of
+			# Texto documents may have [start:something] instead of
 			# [start something]
 			markup_end = None
 			if markup_match.group(1):

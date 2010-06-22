@@ -2,18 +2,18 @@
 # Encoding: iso-8859-1
 # vim: tw=80 ts=4 sw=4 noet
 # -----------------------------------------------------------------------------
-# Project           :   Kiwi
+# Project           :   Texto
 # -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   26-Jul-2008
+# Last mod.         :   18-Jun-2010
 # -----------------------------------------------------------------------------
 
 import os, sys, StringIO
 
-__doc__ = """Kiwi is an advanced markup text processor, which can be used as
+__doc__ = """Texto is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
 XML DOM."""
 
@@ -30,12 +30,12 @@ import re, string, operator, getopt, codecs
 import xml.dom.minidom
 dom = xml.dom.minidom.getDOMImplementation()
 
-import core, kiwi2html, kiwi2lout, kiwi2twiki
+import core, texto2html, texto2lout, texto2twiki
 
 FORMATS = {
-	"html":kiwi2html,
-#	"lout":kiwi2lout,
-	"twiki":kiwi2twiki
+	"html":texto2html,
+#	"lout":texto2lout,
+	"twiki":texto2twiki
 }
 
 #------------------------------------------------------------------------------
@@ -44,14 +44,14 @@ FORMATS = {
 #
 #------------------------------------------------------------------------------
 
-USAGE = u"Kiwi v."+__version__+u""",
+USAGE = u"Texto v."+__version__+u""",
    A flexible tool for converting plain text markup to XML and HTML.
-   Kiwi can be used to easily generate documentation from plain files or to
+   Texto can be used to easily generate documentation from plain files or to
    convert exiting Wiki markup to other formats.
 
-   See <http://www.ivy.fr/kiwi>
+   See <http://www.ivy.fr/texto>
 
-Usage: kiwi [options] source [destination]
+Usage: texto [options] source [destination]
 
    source:
       The text file to be parsed (usually an .stx file, "-" for stdin)
@@ -67,7 +67,7 @@ Options:
    -f --offsets                  Add offsets information
    -p --pretty                   Pretty prints the output XML, this should only
                                  be used for viewing the output.
-   -m --html                     Outputs an HTML file corresponding to the Kiwi
+   -m --html                     Outputs an HTML file corresponding to the Texto
                                  document
       --no-style                 Does not include the default CSS in the HTML
       --body-only                Only returns the content of the <body< element
@@ -80,7 +80,7 @@ Options:
    
 Misc:
    -h,  --help                    prints this help.
-   -v,  --version                 prints the version of Kiwi.
+   -v,  --version                 prints the version of Texto.
 """
 
 # Error codes
@@ -177,7 +177,7 @@ def run( arguments, input=None, noOutput=False ):
 			if arg in ENCODINGS.keys() and ENCODINGS[arg] in available_enc:
 				input_enc=output_enc=ENCODINGS[arg]
 			else:
-				r  = "Kiwi error : Specified input encoding is not available, choose between:"
+				r  = "Texto error : Specified input encoding is not available, choose between:"
 				r += ENCODINGS_LIST
 				return (ERROR, r)
 		elif opt in ('-o', '--output-encoding'):
@@ -185,7 +185,7 @@ def run( arguments, input=None, noOutput=False ):
 			if arg in ENCODINGS.keys() and ENCODINGS[arg] in available_enc:
 				output_enc=ENCODINGS[arg]
 			else:
-				r  = "Kiwi error: Specified output encoding is not available, choose between:"
+				r  = "Texto error: Specified output encoding is not available, choose between:"
 				r += ENCODINGS_LIST
 				return (ERROR, r)
 		elif opt in ('-O', '--output-format'):
@@ -193,13 +193,13 @@ def run( arguments, input=None, noOutput=False ):
 			if arg in FORMATS.keys():
 				output_format=arg
 			else:
-				r  = "Kiwi error: Given format (%s) not supported. Choose one of:\n" % (arg)
+				r  = "Texto error: Given format (%s) not supported. Choose one of:\n" % (arg)
 				r += "\n  - ".join(FORMATS)
 				return (ERROR, r)
 		elif opt in ('-t', '--tab'):
 			TAB_SIZE = int(arg)
 			if TAB_SIZE<1:
-				return (ERROR, "Kiwi error: Specified tab value (%s) should be superior to 0." %\
+				return (ERROR, "Texto error: Specified tab value (%s) should be superior to 0." %\
 				(TAB_SIZE))
 		elif opt in ('--no-style', "--nostyle"):
 			no_style      = 1
@@ -232,7 +232,7 @@ def run( arguments, input=None, noOutput=False ):
 	output = None
 	if len(args)>1: output = args[1]
 
-	#sys.stderr.write("Kiwi started with input as %s and output as %s.\n"\
+	#sys.stderr.write("Texto started with input as %s and output as %s.\n"\
 	#% (input_enc, output_enc))
 	if input: base_dir = os.getcwd()
 	elif source=='-': base_dir = os.path.abspath(".")
@@ -275,7 +275,7 @@ def run( arguments, input=None, noOutput=False ):
 	if generate_html:
 		variables = {}
 		variables["LEVEL"] = level_offset
-		css_file = file(os.path.join(os.path.dirname(kiwi2html.__file__), "screen-kiwi.css"))
+		css_file = file(os.path.join(os.path.dirname(texto2html.__file__), "screen-texto.css"))
 		if not no_style:
 			variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (css_file.read())
 			variables["ENCODING"] = output_enc

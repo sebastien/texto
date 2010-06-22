@@ -2,7 +2,7 @@
 # Encoding: iso-8859-1
 # vim: tw=80 ts=4 sw=4 noet
 # -----------------------------------------------------------------------------
-# Project           :   Kiwi
+# Project           :   Texto
 # -----------------------------------------------------------------------------
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ class Processor(templates.Processor):
 		if bodyOnly:
 			for child in node.childNodes:
 				if child.nodeName == "Content":
-					return convertContent_bodyonly(child)
+					return convertDocument(node, bodyOnly=True)
 		else:
 			return convertDocument(node)
 
@@ -59,8 +59,15 @@ class Processor(templates.Processor):
 #
 #------------------------------------------------------------------------------
 
-def convertDocument(element):
-	return process(element, """\
+def convertDocument(element, bodyOnly=False):
+	if bodyOnly:
+		return process(element, """\
+$(Header:title)
+<div class="textoContent">$(Content)</div>
+$(References)
+""")
+	else:
+		return process(element, """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -70,7 +77,7 @@ $(Header)$(=HEADER)
 </head>
 <body>
 $(Header:title)
-<div class="kiwiContent">$(Content)</div>
+<div class="textoContent">$(Content)</div>
 $(References)
 </body>
 </html>""")
@@ -173,7 +180,7 @@ def convertSection( element ):
 	)
 
 def convertReferences( element ):
-	return process(element, """<div class="kiwiReferences">$(Entry)</div>""")
+	return process(element, """<div class="textoReferences">$(Entry)</div>""")
 
 def convertEntry( element ):
 	return process(element, """<div class="entry"><div class="name"><a name="%s">%s</a></div><div class="content">$(*)</div></div>""" %
@@ -277,7 +284,7 @@ def converttarget( element ):
 	return process(element, """<a class="anchor" name="%s">$(*)</a>""" % (stringToTarget(name)))
 
 def convertMeta( element ):
-	return process(element, "<table class='kiwiMeta'>$(*)</table>")
+	return process(element, "<table class='textoMeta'>$(*)</table>")
 
 def convertmeta( element ):
 	return process(element,

@@ -33,24 +33,24 @@ SOURCES         = Sources
 TESTS           = Tests
 RESOURCES       = Resources
 DISTRIBUTION    = Distribution
-API             = $(DOCUMENTATION)/kiwi-api.html
+API             = $(DOCUMENTATION)/texto-api.html
 DISTROCONTENT   = $(DOCUMENTATION) $(SOURCES) $(TESTS) $(RESOURCES) \
                   Makefile 
 
 # Project files_______________________________________________________________
 
-PACKAGE = kiwi
+PACKAGE = texto
 MAIN    = main.py
 MODULES = \
-	kiwi \
-	kiwi.main \
-	kiwi.core \
-	kiwi.blocks \
-	kiwi.inlines \
-	kiwi.formatting \
-	kiwi.templates \
-	kiwi.kiwi2html \
-	kiwi.kiwi2twiki \
+	texto \
+	texto.main \
+	texto.core \
+	texto.blocks \
+	texto.inlines \
+	texto.formatting \
+	texto.templates \
+	texto.texto2html \
+	texto.texto2twiki \
 
 TEST_MAIN       = $(TESTS)/$(PROJECT)Test.py
 SOURCE_FILES    = $(shell find $(SOURCES) -name "*.py")
@@ -146,7 +146,7 @@ dist:
 	@rm -rf $(DISTRIBUTION)/$(PROJECT)-$(PROJECT_VERSION)
 
 man: Documentation/MANUAL.txt
-	kiwi -m -ilatin-1 Documentation/MANUAL.txt  Documentation/MANUAL.html
+	texto -m -ilatin-1 Documentation/MANUAL.txt  Documentation/MANUAL.html
 
 doc: man
 	@echo "Generating $(PROJECT) documentation"

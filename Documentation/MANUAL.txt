@@ -1,11 +1,11 @@
-== Kiwi User Manual
+== Texto User Manual
 -- Authors: Sébastien Pierre <sebastien@type-z.org>
 -- Revision: 0.8.6
 
 1. Introduction
 ===============
 
-  Kiwi is yet-another-markup language which is designed to be used for writing
+  Texto is yet-another-markup language which is designed to be used for writing
   your documentation in an text editor such as Vi or Emacs.
 
   Most existing markups are designed to be used as wiki/web markup, with the
@@ -14,20 +14,20 @@
 
   When writing long documents (like tech notes, or manuals) in ASCII format, it
   is good to use as many visual cues (underlining, indentation) to express
-  the structure of the document. Kiwi is one of the few markup engines that is
+  the structure of the document. Texto is one of the few markup engines that is
   designed with in this perspective from the ground.
 
   Additionally, Wiki can be used as a wiki/web markup engine, as it is quite
   close (but not exactly similar) to [Markdown][MARKDOWN]
 
-  Kiwi comes with a nice command-line interface, can be embedded in
+  Texto comes with a nice command-line interface, can be embedded in
   applications, and is integrated into [Tahchee] and [SDoc] (which are other Ivy
   projects).
 
 2. Features
 ===========
 
-  Kiwi support syntactic shortcuts for the following elements of a documents:
+  Texto support syntactic shortcuts for the following elements of a documents:
 
     - Sections and paragraphs
     - Various types of lists, including definition lists
@@ -36,7 +36,7 @@
     - Quote, citation
     - Linking and references
 
-  Kiwi is also:
+  Texto is also:
 
     - Written in pure Python
     - Comes with full API documentation
@@ -45,28 +45,28 @@
 2. Quick start
 ==============
 
-  To get up and running with Kiwi, you will need a Python interpreter, as well as
-  the `make` command (it is not required if you want to install Kiwi manually):
+  To get up and running with Texto, you will need a Python interpreter, as well as
+  the `make` command (it is not required if you want to install Texto manually):
 
-    - Unpack the latest Kiwi tarball available at <http://www.ivy.fr/kiwi/kiwi-latest.tar.gz>
-    - Type `make install` to install Kiwi in `/usr/local/share/kiwi`
-    - The `kiwi` command should now be available to you
+    - Unpack the latest Texto tarball available at <http://www.ivy.fr/texto/texto-latest.tar.gz>
+    - Type `make install` to install Texto in `/usr/local/share/texto`
+    - The `texto` command should now be available to you
 
-  If you wish to install Kiwi manually, simply:
+  If you wish to install Texto manually, simply:
 
-    - Move the `Sources/kiwi` directory somewhere in your `PYTHON_PATH` (this
+    - Move the `Sources/texto` directory somewhere in your `PYTHON_PATH` (this
       may be Python `site-packages` directory)
     - Create a script that invokes
-      > python -c "import sys,kiwi.main;kiwi.main.run(sys.argv[1:])"
+      > python -c "import sys,texto.main;texto.main.run(sys.argv[1:])"
 
-  Now, you can play with the `kiwi` command with any example provided in the `Tests`
-  directory, to get a feel of what it is like. Note that `kiwi -p` produces a
-  pretty-printed XML tree, and `kiwi -m` produces a (compacted) HTML file.
+  Now, you can play with the `texto` command with any example provided in the `Tests`
+  directory, to get a feel of what it is like. Note that `texto -p` produces a
+  pretty-printed XML tree, and `texto -m` produces a (compacted) HTML file.
 
 3. Basics
 =========
 
-  The basic structure of a Kiwi document is the following
+  The basic structure of a Texto document is the following
 
   3.2 Paragraphs
   --------------
@@ -82,7 +82,7 @@
 
   You may want to insert !line breaks! within your paragraphs. In this case
   instead of separating the two parts of your paragraph by a blank line,
-  which would lead Kiwi to consider that your paragraph is in fact two
+  which would lead Texto to consider that your paragraph is in fact two
   paragraphs, you insert a *pipe* character on the blank line.
 
   Here is an example of a paragraph with a line break in it:
@@ -96,7 +96,7 @@
   3.3 Lists
   ---------
 
-  The other important structural elements are !lists!. Kiwi provides two
+  The other important structural elements are !lists!. Texto provides two
   types of lists: the *classic lists* and the *definition lists*. The
   *classic list* only lists items, whereas the *defintion list* offers a way
   to list terms and give a definition to them.
@@ -252,13 +252,13 @@
   >   ==== Section level 3
 
   this notation is designed for people who don't indent their text and sections
-  (if you are using Kiwi as markup language for a Web wiki, for instance). The
+  (if you are using Texto as markup language for a Web wiki, for instance). The
   depth of the section is identified by counting the number of '=' characters,
   where the first does not count.
   
       Note ________________________________________________________________
 
-      Kiwi section markup is very flexible, and allows you to use indentation,
+      Texto section markup is very flexible, and allows you to use indentation,
       numbers or different underlines to denote the depth of your sections.
       Numbering is not important as the section numbering will be recalculated
       anyway, so you can use 'X.X' instead of '1.2'. This will make your life
@@ -335,7 +335,7 @@
   3.9 Links and bibliographic references
   --------------------------------------
 
-  Kiwi supports internal (within document links) and external links (urls,
+  Texto supports internal (within document links) and external links (urls,
   files, etc). Internal links are expressed like that:
 
   >   Some text [the link][TARGET] ...
@@ -367,7 +367,7 @@
   And then the anchor will span the text you indicate
 
       Note ___________________________________________________________________
-      It is not possible to use Kiwi markup within an anchor text.
+      It is not possible to use Texto markup within an anchor text.
 
   If you'd like the anchor name to be the same as the displayed text, you could
   do:
@@ -379,7 +379,7 @@
 =================
 
   Now you are able to write basic text documents, but you may want to go
-  further. Kiwi provide way to mark up everything in your documents. Some
+  further. Texto provide way to mark up everything in your documents. Some
   ways to put this mark-up are simple and quick, some other ways are made
   possible using *custom tags*, which we will discover very soon.
 
@@ -438,27 +438,27 @@
 
   The different way of marking up listed above should be sufficient for most
   of your needs. However, if you have more particular needs, you can very
-  easily create your own syntax and extend Kiwi. This is the purpose of the
+  easily create your own syntax and extend Texto. This is the purpose of the
   next section.
 
-5. Hacking Kiwi
+5. Hacking Texto
 ===============
 
-  Kiwi is not only a standalone application, it is also a flexible text
+  Texto is not only a standalone application, it is also a flexible text
   parsing library that comes with a very easy to use templating system for XML
   documents.
 
-  Kiwi is actually embedded within [Tahchee](http://www.ivy.fr/tahchee) as a
+  Texto is actually embedded within [Tahchee](http://www.ivy.fr/tahchee) as a
   text to HTML plugin that makes it easy to write Web pages.
 
 Relation to Markdown and other text markups
 ===========================================
 
-  _Kiwi_ is actually very close to [Markdown][MARKDOWN] (a very well done text
+  _Texto_ is actually very close to [Markdown][MARKDOWN] (a very well done text
   markup), but it has a few noticeable differences: 
 
    - Code blocks must be prefixed by `>` characters (in Markdown, this is the
-     notation for blockquoted. We decided to use this in Kiwi because code blocks
+     notation for blockquoted. We decided to use this in Texto because code blocks
      usually contain blank lines, so we wanted to make explicit that the code
      block contained a block line.
 
@@ -467,7 +467,7 @@ Relation to Markdown and other text markups
      different formatting. So the notation for block quotes and code blocks are
      just the opposite of Markdown.
 
-   - Underscore notation represents a _term_ in Kiwi, while in Markdown it is the
+   - Underscore notation represents a _term_ in Texto, while in Markdown it is the
      same as using `*` (emphasis)
 
    - You can really insert your HTML markup anywhere, you have no limitations as
@@ -480,19 +480,19 @@ Relation to Markdown and other text markups
    - Footnotes
    - Detailed bilbiographic references
 
-  Kiwi markup was designed to be even more flexible, than markdown,
-  especially when using inline HTML. When writing HTML in Kiwi, the only
+  Texto markup was designed to be even more flexible, than markdown,
+  especially when using inline HTML. When writing HTML in Texto, the only
   requirement is to conform to an XML syntax, which means that every
   opened tag must be closed, otherwise a warning will be issued during the
   translation.
 
   [Asciidoc][ASCIIDOC] is another well supported and powerful markup to HTML
   (and PDF) processor, which is helpful in writing documentation. ASCIIDOC may
-  be more powerful than Kiwi for writing large or complex documents.
-  However, we believe that Kiwi is more adapted to common documentation
+  be more powerful than Texto for writing large or complex documents.
+  However, we believe that Texto is more adapted to common documentation
   requirements, and can be easily customized to meet specific requirements.
 
-  Kiwi has been in development for more than 5 years (it used to be named
+  Texto has been in development for more than 5 years (it used to be named
   SimTex) and has a mature architecture, which proved to be both flexible and
   fast. It was designed to be extensible and easily embeddable in Web
   applications for easy text to HTML conversion (which is always useful, even
@@ -501,4 +501,4 @@ Relation to Markdown and other text markups
   [MARKDOWN]: <http://daringfireball.net/projects/markdown/syntax>
   [ASCIIDOC]: <http://www.methods.co.nz/asciidoc/>
 
-# vim: ts=2 sw=2 tw=80 et fenc=latin-1 syn=kiwi
+# vim: ts=2 sw=2 tw=80 et fenc=latin-1 syn=texto
