@@ -7,7 +7,7 @@
 # Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Feb-2006
-# Last mod.         :   07-Oct-2009
+# Last mod.         :   22-Jun-2010
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -317,7 +317,7 @@ def convertstrong( element ):
 	return process(element, """<strong>$(*)</strong>""")
 
 def convertpre( element ):
-	return process(element, """<pre%s>$(*)</pre>""" % (wattrs(element)))
+	return process(element, """<pre%s>$(*)</pre>""" % (wattrs(element))).replace("\r\n","\n")
 
 def convertcode( element ):
 	return process(element, """<code>$(*)</code>""")
