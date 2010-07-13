@@ -351,7 +351,7 @@ class TitleBlockParser(BlockParser):
 			if match.group(1):
 				titleNode = context.ensureElement( context.header, "Title" )
 				# We get the content of the title
-				titleText = Upper(match.group(2) or match.group(4))
+				titleText = match.group(2) or match.group(4)
 				# We prefix with 'sub' or 'subsub' depending on the number of
 				# preceding titles
 				titleType  = u"sub" * len(filter(lambda n:n.nodeName.endswith("title"), titleNode.childNodes))

@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# Encoding: iso-8859-1
-# vim: tw=80 ts=4 sw=4 noet fenc=latin-1
 # -----------------------------------------------------------------------------
 # Project           :   Texto
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
+# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
 # -----------------------------------------------------------------------------
 # Creation date     :   06-Mar-2006
-# Last mod.         :   18-Oct-2006
+# Last mod.         :   13-Jul-2010
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
@@ -112,6 +110,10 @@ class Processor:
 			fname = element.nodeName
 			if selector: fname += ":" + selector
 			func  = self.expressionTable.get(fname)
+			# In case we have no custom processing function, we look for one
+			# without the variant
+			if not func:
+				func = self.expressionTable.get(fname.split(":")[0])
 			# There is a function for the element in the EXPRESSION TABLE
 			if func:
 				return func(element)
@@ -170,4 +172,4 @@ class Processor:
 		self.variables = variables
 		return self.processElement(xmlDocument.childNodes[0])
 
-# EOF
+# EOF - vim: tw=80 ts=4 sw=4 noet
