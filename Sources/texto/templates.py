@@ -62,12 +62,13 @@ class Processor:
 		You may prefer to use the `registerElementProcessor` instead if you want
 		to register a processor for an individual tag.
 		"""
-		self.expressionTable = {}
 		for name, function in name2functions.items():
 			if name.startswith("convert"):
 				ename = name[len("convert"):]
-				ename = ename.replace("_", ":")
-				self.expressionTable[ename] = function
+			else:
+				ename = name
+			ename = ename.replace("_", ":")
+			self.expressionTable[ename] = function
 
 	def registerElementProcessor( self, function, elementName, variant=None  ):
 		"""Registers the given function to process the given element name and

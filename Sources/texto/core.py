@@ -318,7 +318,7 @@ class Context:
 
 class Parser:
 
-	def __init__( self, baseDirectory, inputEncoding="utf8", outputEncoding="utf8" ):
+	def __init__( self, baseDirectory=".", inputEncoding="utf8", outputEncoding="utf8" ):
 		self.blockParsers  = []
 		self.inlineParsers = []
 		self.customParsers = {}

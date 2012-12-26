@@ -363,8 +363,8 @@ class TitleBlockParser(BlockParser):
 			elif match.group(3):
 				metaNode  = context.ensureElement( context.header, "Meta" )
 				# We get the header name
-				header_name = match.group(4).strip()
-				header_text = match.group(5).strip()
+				header_name = (match.group(4) or "").strip()
+				header_text = (match.group(5) or "").strip()
 				# We prepare the header node
 				node = context.document.createElementNS(None, "meta")
 				node.setAttributeNS(None, "name", header_name)

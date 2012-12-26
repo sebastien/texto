@@ -94,7 +94,7 @@ def wdiv( element, text ):
 	given element has offset attributes."""
 	number = element_number(element)
 	if number == None: return text
-	return "<div class='KIWI N%s' ostart='%s' oend='%s'>%s</div>" % (
+	return "<div class='TEXTO N%s' ostart='%s' oend='%s'>%s</div>" % (
 		element.getAttributeNS(None, '_number'),
 		element.getAttributeNS(None, '_start'),
 		element.getAttributeNS(None, '_end'),
@@ -106,7 +106,7 @@ def wspan( element, text ):
 	given element has offset attributes."""
 	number = element_number(element)
 	if number == None: return text
-	return "<div class='KIWI N%s' ostart='%s' oend='%s'>%s</div>" % (
+	return "<div class='TEXTO N%s' ostart='%s' oend='%s'>%s</div>" % (
 		element.getAttributeNS(None, '_number'),
 		element.getAttributeNS(None, '_start'),
 		element.getAttributeNS(None, '_end'),
@@ -118,7 +118,7 @@ def wattrs( element ):
 	res = ""
 	number = element_number(element)
 	if number != None:
-		res = " class='KIWI N%s' ostart='%s' oend='%s'" % (
+		res = " class='TEXTO N%s' ostart='%s' oend='%s'" % (
 			element.getAttributeNS(None, '_number'),
 			element.getAttributeNS(None, '_start'),
 			element.getAttributeNS(None, '_end')

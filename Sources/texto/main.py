@@ -261,7 +261,7 @@ def run( arguments, input=None, noOutput=False ):
 	try:
 		data = ifile.read()
 	except UnicodeDecodeError, e:
-		r  = "Impossible to decode input %s as %s\n" % (source, input_enc)
+		r  = "Unable to decode input %s as %s\n" % (source, input_enc)
 		r += "--> %s\n" % (e)
 		return (ERROR, r)
 
