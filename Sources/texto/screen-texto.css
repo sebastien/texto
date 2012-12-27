@@ -54,7 +54,7 @@ aimg {
 	color: rgb(177,208,223);
 }
 
-.textoContent {
+.content {
 	text-align: left;
 }
 
@@ -70,7 +70,7 @@ aimg {
 	margin-bottom: 0;
 }
 
-.textoMeta {
+table.meta {
 	max-width: 700px;
 	padding: 5pt;
 	margin-bottom:  2em;
@@ -78,33 +78,33 @@ aimg {
 	background-color: rgb(250,250,250);
 }
 
-.textoMeta tr td {
+table.meta tr td {
 	color: rgb(22, 130, 178);
 }
 
-.textoMeta tr td.name {
+table.meta tr td.name {
 	font-weight: bold;
 }
 
-.textoContent {
+.content {
 	max-width: 700px;
 }
 
-.textoContent .heading .number {
+.heading .number {
 	display: none;
 	padding-right: 8pt;
 }
 
-.textoContent .heading .number .lastDot {
+.heading .number .lastDot {
 	display: none;
 }
 
 
-.textoContent .heading .number .level0 .lastDot {
+.heading .number .level-0 .lastDot {
 	display: inline;
 }
 
-.textoContent h1 {
+h1 {
 	font-size: 1.8em;
 	font-weight: bold;
 	margin-top: 1.5em;
@@ -112,19 +112,19 @@ aimg {
 	border-bottom:  1px dotted rgb(150, 220, 238);
 }
 
-.textoContent h2 {
+h2 {
 	font-size: 1.4em;
 	font-weight: bold;
 	padding-bottom: 0.5em;
 	border-bottom:  1px dotted rgb(150, 220, 238);
 }
 
-.textoContent h3 {
+h3 {
 	font-size: 1.2em;
 	font-weight: normal;
 }
 
-.textoContent pre {
+pre {
 	padding: 5pt;
 	border:  1px solid rgb(150, 220, 238);
 	padding-left: 20pt;
@@ -133,48 +133,48 @@ aimg {
 	color: rgb(22,130,178);
 }
 
-.textoContent code {
+code {
 	font-size: 8pt;
 	background-color: rgb(240,240,250);
 }
 
-.textoContent dt {
+dt {
 	color: rgb(22,130,178);
 	font-weight: bold;
 }
 
-.textoContent dd {
+dd {
 	border-left:  1px solid rgb(150, 220, 238);
 	padding-left: 20pt;
 	margin-bottom: 2em;
 }
 
-.textoContent dd pre {
+dd pre {
 }
 
-.textoContent ul {
+ul {
 	padding-top: 0em;
 	margin-top: 0em;
 }
 
-.textoContent ul li {
+ul li {
 	padding-bottom: 0.2em;
 }
 
-.textoContent ul li.todo {
+ul li.todo {
 	list-style-type: square;
 }
 
-.textoContent ul li.todo.done {
+ul li.todo.done {
 	text-decoration: line-through;
 }
 
-.textoContent table {
+table {
 	border:  1px solid rgb(150, 220, 238);
 	padding: 0pt;
 }
 
-.textoContent table caption {
+table caption {
 	font-family: serif;
 	padding-top: 1em;
 	padding-bottom: 0.5em;
@@ -183,14 +183,14 @@ aimg {
 	color: rgb(22, 130, 178);
 }
 
-.textoContent table tbody {
+table tbody {
 }
 
-.textoContent table tr {
+table tr {
 	margin: 0;
 }
 
-.textoContent table tr td {
+table tr td {
 	margin: 0;
 	padding: 5pt;
 	font-size: 90%;
@@ -199,39 +199,39 @@ aimg {
 	border-bottom: 1px solid rgb(150, 220, 238);
 }
 
-.textoContent table tr td.lastRow {
+table tr td.lastRow {
 	border-bottom: none;
 }
 
-.textoContent table tr td.lastCol {
+table tr td.lastCol {
 	border-right: none;
 }
 
-.textoContent table tr.even td {
+table tr.even td {
 	background-color: #FEFEFE;
 
 }
 
-.textoContent table tr.odd td {
+table tr.odd td {
 	background-color: rgb(240,240,240);
 }
 
-.textoContent .term {
+.term {
 	color: rgb(22, 130, 178);
 	background: rgb(240, 250, 256);
 }
 
-.textoContent .quote {
+.quote {
 	font-style: italic;
 	color: rgb(120, 120, 120);
 }
 
-.textoContent .citation {
+.citation {
 	font-style: italic;
 	color: rgb(120, 120, 120);
 }
 
-.textoContent div[class^="ann"] {
+div[class^="ann"] {
 	margin-top: 5pt;
 	margin-bottom: 5pt;
 	padding: 5pt;
@@ -239,11 +239,11 @@ aimg {
 	color: rgb(100, 100, 100);
 }
 
-.textoContent div[class^="ann"] .title {
+div[class^="ann"] .title {
 	font-weight: bold;
 }
 
-.textoContent .annNote {
+.annNote {
 	border:  1px solid rgb(103,183,0);
 	margin-top: 5pt;
 	margin-bottom: 5pt;
@@ -254,12 +254,12 @@ aimg {
 	border:  1px solid #dedac3;
 }
 
-.textoContent .annNote .title {
+.annNote .title {
 	font-weight: bold;
 	display: none;
 }
 
-.textoReferences {
+.reference {
 	font:  8pt/12pt "Lucida Grande",Lucida,sans-serif;
 	margin-top: 10pt;
 	padding: 5pt;

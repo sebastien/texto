@@ -63,7 +63,7 @@ def convertDocument(element, bodyOnly=False):
 	if bodyOnly:
 		return process(element, """\
 $(Header:title)
-<div class="textoContent">$(Content)</div>
+$(Content)
 $(References)
 """)
 	else:
@@ -77,7 +77,7 @@ $(Header)$(=HEADER)
 </head>
 <body>
 $(Header:title)
-<div class="textoContent">$(Content)</div>
+$(Content)
 $(References)
 </body>
 </html>""")
@@ -164,9 +164,9 @@ def formatSectionNumber(number):
 	res   = []
 	for n in number:
 		if depth == len(number) - 1:
-			res.append('<span class="level%s">%s<span class="lastDot dot">.</span></span>' % (depth,n))
+			res.append('<span class="level-%s">%s<span class="lastDot dot">.</span></span>' % (depth,n))
 		else:
-			res.append('<span class="level%s">%s<span class="dot">.</span></span>' % (depth,n))
+			res.append('<span class="level-%s">%s<span class="dot">.</span></span>' % (depth,n))
 		depth += 1
 	return "".join(res)
 
@@ -174,21 +174,20 @@ def convertSection( element ):
 	offset = element._processor.variables.get("LEVEL") or 0
 	level = int(element.getAttributeNS(None, "_depth")) + offset
 	return process(element,
-	  '<div class="section" level="%d">' % (level)
-	  + '<h%d class="heading"><span class="number">%s</span>$(Heading)</h%d>' % (level, formatSectionNumber(getSectionNumberPrefix(element)), level)
-	  + '<div class="level%d">$(Content:section)</div></div>' % (level)
+	  '<div class="section level-%d" data-level="%d">' % (level, level)
+	  + '<div class="header"><h%d><span class="number">%s</span>$(Heading)</h%d></div>' % (level, formatSectionNumber(getSectionNumberPrefix(element)), level)
+	  + '<div class="body">$(Content:section)</div></div>'
 	)
 
 def convertReferences( element ):
-	return process(element, """<div class="textoReferences">$(Entry)</div>""")
+	return process(element, """<div class="references">$(Entry)</div>""")
 
 def convertEntry( element ):
 	return process(element, """<div class="entry"><div class="name"><a name="%s">%s</a></div><div class="content">$(*)</div></div>""" %
 	(element.getAttributeNS(None, "id"), element.getAttributeNS(None, "id")))
 
 def convertHeader_title( element ):
-	return process(element, """<div
-	class="title">$(Title/title:header)$(Title/subtitle:header)</div>$(Meta)""")
+	return process(element, """<div class="title">$(Title/title:header)$(Title/subtitle:header)</div>$(Meta)""")
 
 def converttitle_header( element ):
 	return process(element, """<h1%s>$(*)</h1>""" % (wattrs(element)))
@@ -284,7 +283,7 @@ def converttarget( element ):
 	return process(element, """<a class="anchor" name="%s">$(*)</a>""" % (stringToTarget(name)))
 
 def convertMeta( element ):
-	return process(element, "<table class='textoMeta'>$(*)</table>")
+	return process(element, "<table class='meta'>$(*)</table>")
 
 def convertmeta( element ):
 	return process(element,
