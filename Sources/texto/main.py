@@ -49,7 +49,7 @@ USAGE = u"Texto v."+__version__+u""",
    Texto can be used to easily generate documentation from plain files or to
    convert exiting Wiki markup to other formats.
 
-   See <http://www.ivy.fr/texto>
+   See <http://www.github.com/sebastien/texto>
 
 Usage: texto [options] source [destination]
 
@@ -72,9 +72,10 @@ Options:
       --no-style                 Does not include the default CSS in the HTML
       --body-only                Only returns the content of the <body< element
       --level=n                  If n>0, n will transform HTML h1 to h2, etc...
+   -s --stylesheet               Path or URL to the CSS stylesheet
    -O --output-format            Specifies and alternate output FORMAT
                                  (see below)
-								 
+
    The available encodings are   %s
    The available formats are     %s
    
@@ -125,10 +126,10 @@ def run( arguments, input=None, noOutput=False ):
 
 	# --We extract the arguments
 	try:
-		optlist, args = getopt.getopt(arguments, "hpmfO:vi:o:t:",\
+		optlist, args = getopt.getopt(arguments, "hpmfO:vi:o:t:s:",\
 		["input-encoding=", "output-encoding=", "output-format=",
 		"offsets", "help", "html", "tab=", "version",
-		"pretty", "no-style", "nostyle",
+		"pretty", "no-style", "nostyle", "stylesheet=",
 		"body-only", "bodyonly", "level="])
 	except:
 		args=[]
@@ -159,6 +160,7 @@ def run( arguments, input=None, noOutput=False ):
 	input_enc       = ASCII
 	output_enc      = ASCII
 	output_format   = "html"
+	stylesheet      = None
 	if LATIN1 in ENCODINGS:
 		input_enc  = LATIN1
 		output_enc = LATIN1
@@ -213,6 +215,8 @@ def run( arguments, input=None, noOutput=False ):
 		elif opt in ('-p', '--pretty'):
 			pretty_print  = 1
 			generate_html = 0
+		elif opt in ('-s', '--stylesheet'):
+			stylesheet    = arg
 		elif opt in ('-m', '--html'):
 			generate_html = 1
 			output_format = "html"
@@ -275,23 +279,22 @@ def run( arguments, input=None, noOutput=False ):
 	if generate_html:
 		variables = {}
 		variables["LEVEL"] = level_offset
-		css_file = file(os.path.join(os.path.dirname(texto2html.__file__), "screen-texto.css"))
+		css_path = stylesheet if stylesheet else os.path.join(os.path.dirname(texto2html.__file__), "screen-texto.css")
 		if not no_style:
-			variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (css_file.read())
-			variables["ENCODING"] = output_enc
-		css_file.close()
+			if os.path.exists(css_path):
+				with file(css_path) as f:
+					variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (f.read())
+			else:
+				variables["HEADER"] = "\n<link rel='stylesheet' type='text/css' href='%s' />" % (css_path)
+		variables["ENCODING"] = output_enc
 		result = FORMATS[output_format].processor.generate(xml_document, body_only, variables)
 		if result: result = result.encode(output_enc)
 		else: result = ""
 		if not noOutput: ofile.write(result)
 	elif pretty_print:
-		#Ft.Xml.Lib.Print.PrettyPrint(xml_document, ofile, output_enc)
-		#MiniDom:
 		result = xml_document.toprettyxml("  ").encode(output_enc)
 		if not noOutput: ofile.write(result)
 	else:
-		#Ft.Xml.Lib.Print.Print(xml_document, ofile, output_enc)
-		#MiniDom:
 		result = xml_document.toxml().encode(output_enc)
 		if not noOutput: ofile.write(result)
 	return (SUCCESS, result)
