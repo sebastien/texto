@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # Encoding: iso-8859-1
 # vim: tw=80 ts=4 sw=4 noet
 # -----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ RE_NUMBER          = re.compile("\d+[\)\.]")
 PREFORMATTED      = u"^(\s*\>(\t|   ))(.*)$"
 RE_PREFORMATTED   = re.compile(PREFORMATTED, re.LOCALE)
 
-CUSTOM_MARKUP = u"\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
+CUSTOM_MARKUP    = u"\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
 RE_CUSTOM_MARKUP = re.compile(CUSTOM_MARKUP, re.LOCALE|re.MULTILINE)
 
 META_TYPE        = u"\s*(\w+)\s*(\((\w+)\))?"
@@ -398,7 +398,7 @@ class SectionBlockParser(BlockParser):
 		if match:
 			match_underline = RE_SECTION_UNDERLINE.search(context.currentFragment())
 			if match_underline: return (RE_SECTION_UNDERLINE, match_underline)
-			else: return (RE_SECTION_HEADING, match) 
+			else: return (RE_SECTION_HEADING, match)
 		# We return directly for a section prefixed by '=='
 		match_alt = RE_SECTION_HEADING_ALT.match(context.currentFragment())
 		if match_alt:
@@ -432,7 +432,7 @@ class SectionBlockParser(BlockParser):
 		trail = match.group().strip()
 		# RULE:
 		# A section underlined with '==' weights more than a section
-		# underlined with '--', which weights more than a section 
+		# underlined with '--', which weights more than a section
 		# underline with nothing. This means that if you have
 		#
 		#  1. One
@@ -457,7 +457,7 @@ class SectionBlockParser(BlockParser):
 		if matched_type == RE_SECTION_HEADING_ALT:
 			block_start = context.getOffset() + match.start() + len(match.group(1))
 			block_end   = context.getOffset() + match.end()
-		
+
 		# We look for a number prefix
 		heading_text = context.fragment(block_start, block_end)
 		prefix_match = RE_SECTION_HEADING.match(heading_text)
@@ -623,7 +623,7 @@ class ListItemBlockParser(BlockParser):
 		# We get the list item identation
 		indent = context.parser.getIndentation(
 			context.parser.charactersToSpaces(itemMatch.group()))
-		
+
 		# We look for the optional list heading
 		heading = RE_LIST_ITEM_HEADING.match(current_item_text)
 		heading_offset = 0
@@ -790,7 +790,10 @@ class PreBlockParser( BlockParser ):
 
 class PreBlockParser2( BlockParser ):
 	"""Parses the content of a preformatted block which is delimited with
-	'<<<' and '>>>' characters."""
+	'```' and '```' characters."""
+
+	START_PATTERN = "```"
+	END_PATTERN   = "```"
 
 	def __init__( self ):
 		BlockParser.__init__(self, "pre")
@@ -810,7 +813,7 @@ class PreBlockParser2( BlockParser ):
 
 	def isStartLine( self, context, line ):
 		line_indent = context.parser.getIndentation(line)
-		if line.replace("\t", " ").strip() == "---":
+		if line.replace("\t", " ").strip() == self.START_PATTERN:
 			return True, line_indent
 		else:
 			return None
@@ -819,7 +822,7 @@ class PreBlockParser2( BlockParser ):
 		line_indent = context.parser.getIndentation(line)
 		if line_indent != indent: return False
 		line = line.replace("\t", " ").strip()
-		return  line == "---"
+		return line == self.END_PATTERN
 
 	def findBlockEnd( self, context, indent ):
 		# FIXME: Issue a warning if no end is found
@@ -881,7 +884,7 @@ class PreBlockParser2( BlockParser ):
 class Table:
 	"""The table class allows to easily create tables and then generate the
 	XML objects from them."""
-	
+
 	def __init__( self ):
 		# Table is an array of array of (char, string) where char is either
 		# 'H' for header, or 'T' for text.
@@ -890,9 +893,9 @@ class Table:
 		self._cols  = 0
 		self._title = None
 		self._id    = None
-	
+
 	def dimension( self ):
-		return len(self._table[0]), len(self._table) 
+		return len(self._table[0]), len(self._table)
 
 	def getRow( self, y):
 		return self._table[y]
@@ -906,7 +909,7 @@ class Table:
 		self._cols = max(self._cols, x+1)
 		self._rows = max(self._rows, y+1)
 		return row[x]
-		
+
 	def setTitle( self, title ):
 		"""Sets the title for this table."""
 		self._title = title.strip()
@@ -1148,7 +1151,7 @@ class MetaBlockParser( BlockParser ):
 	# Field parsers __________________________________________________________
 
 	def p_abstract( self, context, content ):
-		old_node = context.currentNode 
+		old_node = context.currentNode
 		abstract_node = context.document.createElementNS(None, "Abstract")
 		context.currentNode = abstract_node
 		context.parser.parseBlock(context, abstract_node, self.processText)
@@ -1156,7 +1159,7 @@ class MetaBlockParser( BlockParser ):
 		context.header.appendChild(abstract_node)
 
 	def p_ack( self, context, content ):
-		old_node = context.currentNode 
+		old_node = context.currentNode
 		ack_node = context.document.createElementNS(None, "Acknowledgement")
 		context.currentNode = ack_node
 		context.parser.parseBlock(context, ack_node, self.processText)
@@ -1179,12 +1182,12 @@ class MetaBlockParser( BlockParser ):
 			author_node.appendChild(text_node)
 			authors_node.appendChild(author_node)
 		context.header.appendChild(authors_node)
-	
+
 	def p_creation( self, context, content ):
 		creation_node = context.document.createElementNS(None, "creation")
 		if self._parseDateToNode( context, content, creation_node ):
 			context.header.appendChild(creation_node)
-	
+
 	def _parseDateToNode( self, context, content, node ):
 		content = content.strip()
 		date = content.split("-")
@@ -1264,7 +1267,7 @@ class MetaBlockParser( BlockParser ):
 		context.header.appendChild(lang_node)
 
 	def p_organisation( self, context, content ):
-		old_node = context.currentNode 
+		old_node = context.currentNode
 		org_node = context.document.createElementNS(None, "Organisation")
 		context.currentNode = org_node
 		context.parser.parseBlock(context, org_node, self.processText)
