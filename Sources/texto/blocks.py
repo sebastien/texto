@@ -349,32 +349,38 @@ class TitleBlockParser(BlockParser):
 		assert recogniseInfo
 		for match in recogniseInfo:
 			if match.group(1):
-				titleNode = context.ensureElement( context.header, "Title" )
-				# We get the content of the title
-				titleText = match.group(2) or match.group(4)
-				# We prefix with 'sub' or 'subsub' depending on the number of
-				# preceding titles
-				titleType  = u"sub" * len(filter(lambda n:n.nodeName.endswith("title"), titleNode.childNodes))
-				titleType += u"title"
-				#We add the node to the document tree
-				resultNode = context.ensureElement(titleNode, titleType)
-				titleNode.appendChild(resultNode)
-				resultNode.appendChild(context.document.createTextNode(self.processText(context, titleText)))
+				self.processRegularTitle(context, match)
 			elif match.group(3):
-				metaNode  = context.ensureElement( context.header, "Meta" )
-				# We get the header name
-				header_name = (match.group(4) or "").strip()
-				header_text = (match.group(5) or "").strip()
-				# We prepare the header node
-				node = context.document.createElementNS(None, "meta")
-				node.setAttributeNS(None, "name", header_name)
-				node.appendChild(context.document.createTextNode(self.processText(context,
-				header_text)))
-				# And we add it to the document header
-				metaNode.appendChild(node)
+				self.processMetaTitle(context, match)
 			else:
 				raise Exception("We should not be here ! " + match.group())
 		context.setOffset(context.blockEndOffset)
+
+	def processRegularTitle( self, context, match ):
+		titleNode = context.ensureElement( context.header, "Title" )
+		# We get the content of the title
+		titleText = match.group(2) or match.group(4)
+		# We prefix with 'sub' or 'subsub' depending on the number of
+		# preceding titles
+		titleType  = u"sub" * len(filter(lambda n:n.nodeName.endswith("title"), titleNode.childNodes))
+		titleType += u"title"
+		#We add the node to the document tree
+		resultNode = context.ensureElement(titleNode, titleType)
+		titleNode.appendChild(resultNode)
+		resultNode.appendChild(context.document.createTextNode(self.processText(context, titleText)))
+
+	def processMetaTitle( self, context, match ):
+		metaNode  = context.ensureElement( context.header, "Meta" )
+		# We get the header name
+		header_name = (match.group(4) or "").strip()
+		header_text = (match.group(5) or "").strip()
+		# We prepare the header node
+		node = context.document.createElementNS(None, "meta")
+		node.setAttributeNS(None, "name", header_name)
+		node.appendChild(context.document.createTextNode(self.processText(context,
+		header_text)))
+		# And we add it to the document header
+		metaNode.appendChild(node)
 
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text.strip())
@@ -1095,20 +1101,20 @@ class MetaBlockParser( BlockParser ):
 		#This is a binding from meta block section names to meta content
 		#parsers
 		self.field_parsers = {
-			u'abstract':		self.p_abstract,
+			u'abstract':			self.p_abstract,
 			u'acknowledgements':	self.p_ack,
-			u'author':		self.p_author,
-			u'authors':		self.p_author,
-			u'creation':		self.p_creation,
-			u'keywords':		self.p_keywords,
-			u'language':		self.p_language,
-			u'last-mod':		self.p_last_mod,
-			u'markup':		self.p_markup,
-			u'organisation':	self.p_organisation,
-			u'organization':	self.p_organisation,
-			u'revision':		self.p_revision,
-			u'type':		self.p_type,
-			u'reference':		self.p_reference
+			u'author':				self.p_author,
+			u'authors':				self.p_author,
+			u'creation':			self.p_creation,
+			u'keywords':			self.p_keywords,
+			u'language':			self.p_language,
+			u'last-mod':			self.p_last_mod,
+			u'markup':				self.p_markup,
+			u'organisation':		self.p_organisation,
+			u'organization':		self.p_organisation,
+			u'revision':			self.p_revision,
+			u'type':				self.p_type,
+			u'reference':			self.p_reference
 		}
 
 	def process( self, context, recogniseInfo ):

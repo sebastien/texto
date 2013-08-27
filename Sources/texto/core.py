@@ -86,6 +86,7 @@ class Context:
 		self._currentFragment = None
 		self.parser = None
 		self.markOffsets = markOffsets
+		self.meta     = {}
 		self.sections = []
 		# These are convenience attributes used to make it easy for
 		# post-verification of the links (are they all resolved)
@@ -118,7 +119,7 @@ class Context:
 		is useful for block parsers which want to ensure that their parent is a
 		specific node"""
 		if self.currentNode!=None:
-			while ( self.currentNode.nodeName not in parentNames 
+			while ( self.currentNode.nodeName not in parentNames
 				or not predicate(self.currentNode)
 				) and self.currentNode.nodeName!="Document":
 				if self.currentNode.parentNode:
@@ -141,7 +142,7 @@ class Context:
 			section_depth = section[2]
 			section_indent = int(section_node.getAttributeNS(None, "_indent"))
 			if indent > section_indent:
-				return section_content 
+				return section_content
 			elif section_indent <= indent and section_depth < depth:
 				return section_content
 		return self.content
@@ -213,7 +214,7 @@ class Context:
 		"""Returns true when the current offset has exceeded the current block
 		end offset"""
 		return self.getOffset() >= self.blockEndOffset
-	
+
 	def offsetInBlock( self, offset ):
 		"""Tells if the givne offset is in the current block."""
 		return self.blockStartOffset <= offset <= self.blockEndOffset
@@ -293,7 +294,7 @@ class Context:
 				minimumOffset = result[0]
 				matchedResult = result
 		return matchedResult
-		
+
 	def parseAttributes( self, text ):
 		"""Parses attributes expressed in the given text. Attributes have the
 		following form: ATTRIBUTE="VALUE" and are separated by spaces."""
@@ -345,9 +346,9 @@ class Parser:
 			TaggedBlockParser(),
 		))
 		self.defaultBlockParser = ParagraphBlockParser()
-	
+
 	def createCustomParsers( self ):
-		#self.customParsers["Meta"] = MetaBlockParser()
+		self.customParsers["Meta"] = MetaBlockParser()
 		self.customParsers["pre"]  = PreBlockParser()
 		#self.customParsers["table"]= TableBlockParser()
 		pass
@@ -448,7 +449,7 @@ class Parser:
 				context.rootNode.removeChild(node)
 		if offsets:
 			context.offsets = self._updateElementOffsets(context, offsets=[])
-		return context.document
+		return context
 
 	def parseContext( self, context ):
 		while not context.documentEndReached():
@@ -629,8 +630,8 @@ class Parser:
 		return start != None and end != None
 
 	def _nodeGetOffsets( self, node ):
-		start = node.getAttributeNS(None, "_start") 
-		end   = node.getAttributeNS(None, "_end") 
+		start = node.getAttributeNS(None, "_start")
+		end   = node.getAttributeNS(None, "_end")
 		if start == '': start = None
 		if end   == '': end   = None
 		if start != None: start = int(start)
@@ -705,14 +706,14 @@ class Parser:
 		"""Used by the _updateElementOffsets to ensure start and end offsets in
 		all children and descendants."""
 		#if start is None or end is None: return
-		child_nodes = list([n for n in element.childNodes if n.nodeType == n.ELEMENT_NODE]) 
+		child_nodes = list([n for n in element.childNodes if n.nodeType == n.ELEMENT_NODE])
 		self._nodeEnsureOffsets(element, start, end)
 		# At first, we set the bounds properly, so that the first child node
 		# start is this node start, and the last node end is this node end
 		if child_nodes:
 			self._nodeEnsureOffsets(child_nodes[0],  start=start)
 			self._nodeEnsureOffsets(child_nodes[-1], end=end)
-		# Now 
+		# Now
 		for child in child_nodes:
 			self._propagateElementOffsets(child, start=start)
 			if self._nodeGetOffsets(child)[1] != None:
@@ -783,7 +784,7 @@ class Parser:
 			res = indent[0]
 		elif len(lines) == 2:
 			res = indent[1]
-		else: 
+		else:
 			res = max(max(indent[0], indent[1]), indent[2])
 		return res
 

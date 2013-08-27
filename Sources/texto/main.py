@@ -78,7 +78,7 @@ Options:
 
    The available encodings are   %s
    The available formats are     %s
-   
+
 Misc:
    -h,  --help                    prints this help.
    -v,  --version                 prints the version of Texto.
@@ -116,7 +116,7 @@ ENCODINGS = {
 def run( arguments, input=None, noOutput=False ):
 	"""Returns a couple (STATUS, VALUE), where status is 1 when OK, 0 when
 	informative, and -1 when error, and value is a string.
-	
+
 	The given arguments can be either a string or an array, the input can be
 	None (it will be then taken from the arguments), or be a file-like object,
 	and the noOutput flag will not output the result on stdout or whatever file
@@ -273,7 +273,7 @@ def run( arguments, input=None, noOutput=False ):
 
 	if type(data) != unicode:
 		data = data.decode(input_enc)
-	xml_document = parser.parse(data, offsets=show_offsets)
+	xml_document = parser.parse(data, offsets=show_offsets).document
 
 	result = None
 	if generate_html:
