@@ -62,9 +62,11 @@ class Processor(templates.Processor):
 def convertDocument(element, bodyOnly=False):
 	if bodyOnly:
 		return process(element, """\
+<div class="document use-texto">
 $(Header:title)
 $(Content)
 $(References)
+</div>
 """)
 	else:
 		return process(element, """\
@@ -76,9 +78,11 @@ $(References)
 $(Header)$(=HEADER)
 </head>
 <body>
+<div class="use-texto document">
 $(Header:title)
 $(Content)
 $(References)
+</div>
 </body>
 </html>""")
 
@@ -129,7 +133,7 @@ def convertContent( element ):
 	return process(element, wdiv(element, """<div class='content'>$(*)</div>"""))
 
 def convertContent_bodyonly( element ):
-	return process(element, wdiv(element, """$(*)"""))
+	return process(element, wdiv(element, """<div class='use-texto'>$(*)</div>"""))
 
 def convertContent_table( element ):
 	return process(element, """<tbody%s>$(*)</tbody>""" % (wattrs(element)))
@@ -241,7 +245,7 @@ def convertCaption( element ):
 
 def convertRow( element ):
 	try: index = element.parentNode.childNodes.index(element) % 2 + 1
-	except: index = 0 
+	except: index = 0
 	classes = ( "", "even", "odd" )
 	return process(element, """<tr class='%s'%s>$(*)</tr>""" % (classes[index], wattrs(element)))
 
