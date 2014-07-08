@@ -126,8 +126,8 @@ def run( arguments, input=None, noOutput=False ):
 
 	# --We extract the arguments
 	try:
-		optlist, args = getopt.getopt(arguments, "hpmfO:vi:o:t:s:",\
-		["input-encoding=", "output-encoding=", "output-format=",
+		optlist, args = getopt.getopt(arguments, "ahpmfO:vi:o:t:s:",\
+		["append", "input-encoding=", "output-encoding=", "output-format=",
 		"offsets", "help", "html", "tab=", "version",
 		"pretty", "no-style", "nostyle", "stylesheet=",
 		"body-only", "bodyonly", "level="])
@@ -161,6 +161,7 @@ def run( arguments, input=None, noOutput=False ):
 	output_enc      = ASCII
 	output_format   = "html"
 	stylesheet      = None
+	append_list     = []
 	if LATIN1 in ENCODINGS:
 		input_enc  = LATIN1
 		output_enc = LATIN1
@@ -223,6 +224,8 @@ def run( arguments, input=None, noOutput=False ):
 			pretty_print  = 0
 		elif opt in ('-f', '--offsets'):
 			show_offsets = True
+		elif opt in ('-a', '--append'):
+			append_list.append(arg)
 		elif opt in ('--level'):
 			level_offset = min(10, max(0, int(arg)))
 
