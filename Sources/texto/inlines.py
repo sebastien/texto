@@ -65,7 +65,7 @@ STRONG           = u"\*\*([^*]+)\*\*"
 RE_STRONG        = re.compile(STRONG, re.LOCALE|re.MULTILINE)
 TERM             = u"\_([^_]+)_"
 RE_TERM          = re.compile(TERM, re.LOCALE|re.MULTILINE)
-QUOTED           = u"''(('?[^'])+)''"
+QUOTED           = u"\"(('?[^'])+)\""
 RE_QUOTED        = re.compile(QUOTED, re.LOCALE|re.MULTILINE)
 CITATION         = u"«([^»]+)»"
 RE_CITATION      = re.compile(CITATION,re.LOCALE|re.MULTILINE)
@@ -103,8 +103,8 @@ TARGET           = u"\|([\w\s]+(:[^\|]*)?)\|"
 RE_TARGET        = re.compile(TARGET, re.LOCALE)
 
 # Custom markup
-MARKUP_ATTR      = u"""\w+\s*=\s*('[^']*'|"[^"]*")"""
-MARKUP           = u"\<(\w+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
+MARKUP_ATTR      = u"""[\-_\d\w]+\s*=\s*('[^']*'|"[^"]*")"""
+MARKUP           = u"\<([\-_\d\w]+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
 RE_MARKUP        = re.compile(MARKUP, re.LOCALE|re.MULTILINE)
 
 def _processText( context, text ):
