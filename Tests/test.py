@@ -28,12 +28,12 @@ def do():
 	index_f.write("<html><body><h1>Texto test suite</h1><table>")
 
 	# And now execute the tests
-	groups = TEST_FILES.keys() ; groups.sort()
+	groups = list(TEST_FILES.keys()) ; groups.sort()
 	files  = []
 	for group in groups:
 		index_f.write("<tr><td colspan='3'><code>%s</code></td></tr>" % (group))
 		for test, test_path in TEST_FILES[group]:
-			print "%4s:%25s " % (group, test),
+			print("%4s:%25s " % (group, test), end=' ')
 			inp, out, err = os.popen3("python " + KIWI + " -m " + test_path)
 			dest_path = os.path.splitext(test_path)[0] + ".html"
 			f = open(dest_path, "w")
@@ -43,8 +43,8 @@ def do():
 			test, test_path, dest_path))
 			files.append(dest_path)
 			err =  err.read()
-			if err.strip() == "": print "[OK]"
-			else: print "[FAILED]", err
+			if err.strip() == "": print("[OK]")
+			else: print("[FAILED]", err)
 
 	index_f.write("</table></body></html>")
 	index_f.close()

@@ -11,7 +11,7 @@
 # Last mod.         :   18-Jun-2010
 # -----------------------------------------------------------------------------
 
-import os, sys, StringIO
+import os, sys, io
 
 __doc__ = """Texto is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
@@ -30,7 +30,7 @@ import re, string, operator, getopt, codecs
 import xml.dom.minidom
 dom = xml.dom.minidom.getDOMImplementation()
 
-import core, texto2html, texto2lout, texto2twiki
+from . import core, texto2html, texto2lout, texto2twiki
 
 FORMATS = {
 	"html":texto2html,
@@ -44,7 +44,7 @@ FORMATS = {
 #
 #------------------------------------------------------------------------------
 
-USAGE = u"Texto v."+__version__+u""",
+USAGE = "Texto v."+__version__+""",
    A flexible tool for converting plain text markup to XML and HTML.
    Texto can be used to easily generate documentation from plain files or to
    convert exiting Wiki markup to other formats.
@@ -147,7 +147,7 @@ def run( arguments, input=None, noOutput=False ):
 			pass
 	ENCODINGS_LIST=ENCODINGS_LIST[:-2]+"."
 
-	usage = USAGE % (ENCODINGS_LIST, ", ".join(FORMATS.keys()))
+	usage = USAGE % (ENCODINGS_LIST, ", ".join(list(FORMATS.keys())))
 
 	# We set attributes
 	pretty_print    = 0
@@ -177,7 +177,7 @@ def run( arguments, input=None, noOutput=False ):
 			return (INFO, __version__)
 		elif opt in ('-i', '--input-encoding'):
 			arg = string.lower(arg)
-			if arg in ENCODINGS.keys() and ENCODINGS[arg] in available_enc:
+			if arg in list(ENCODINGS.keys()) and ENCODINGS[arg] in available_enc:
 				input_enc=output_enc=ENCODINGS[arg]
 			else:
 				r  = "Texto error : Specified input encoding is not available, choose between:"
@@ -185,7 +185,7 @@ def run( arguments, input=None, noOutput=False ):
 				return (ERROR, r)
 		elif opt in ('-o', '--output-encoding'):
 			arg = string.lower(arg)
-			if arg in ENCODINGS.keys() and ENCODINGS[arg] in available_enc:
+			if arg in list(ENCODINGS.keys()) and ENCODINGS[arg] in available_enc:
 				output_enc=ENCODINGS[arg]
 			else:
 				r  = "Texto error: Specified output encoding is not available, choose between:"
@@ -193,7 +193,7 @@ def run( arguments, input=None, noOutput=False ):
 				return (ERROR, r)
 		elif opt in ('-O', '--output-format'):
 			arg = string.lower(arg)
-			if arg in FORMATS.keys():
+			if arg in list(FORMATS.keys()):
 				output_format=arg
 			else:
 				r  = "Texto error: Given format (%s) not supported. Choose one of:\n" % (arg)
@@ -267,14 +267,14 @@ def run( arguments, input=None, noOutput=False ):
 
 	try:
 		data = ifile.read()
-	except UnicodeDecodeError, e:
+	except UnicodeDecodeError as e:
 		r  = "Unable to decode input %s as %s\n" % (source, input_enc)
 		r += "--> %s\n" % (e)
 		return (ERROR, r)
 
 	if source!="-": ifile.close()
 
-	if type(data) != unicode:
+	if type(data) != str:
 		data = data.decode(input_enc)
 	xml_document = parser.parse(data, offsets=show_offsets).document
 
@@ -304,7 +304,7 @@ def run( arguments, input=None, noOutput=False ):
 
 def text2htmlbody( text, inputEncoding=None, outputEncoding=None ):
 	"""Converts the given text to HTML, returning only the body."""
-	s = StringIO.StringIO(text)
+	s = io.StringIO(text)
 	command = "-m --body-only"
 	if inputEncoding: command += " -i " + inputEncoding
 	if outputEncoding: command += " -o " + outputEncoding

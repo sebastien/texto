@@ -10,7 +10,7 @@
 
 import re, xml.dom
 import sys
-from formatting import *
+from .formatting import *
 
 RE_EXPRESSION    =re.compile("\$\(([^\)]+)\)")
 
@@ -62,7 +62,7 @@ class Processor:
 		You may prefer to use the `registerElementProcessor` instead if you want
 		to register a processor for an individual tag.
 		"""
-		for name, function in name2functions.items():
+		for name, function in list(name2functions.items()):
 			if name.startswith("convert"):
 				ename = name[len("convert"):]
 			else:

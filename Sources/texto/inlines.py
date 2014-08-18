@@ -36,75 +36,75 @@ MUST_BE_START_OR_END = \
 
 # Texto core
 
-COMMENT          = u"^\s*#.*$"
+COMMENT          = "^\s*#.*$"
 RE_COMMENT       = re.compile(COMMENT, re.LOCALE | re.MULTILINE )
 
-ESCAPED_START    = u"<\["
+ESCAPED_START    = "<\["
 RE_ESCAPED_START = re.compile(ESCAPED_START, re.LOCALE)
-ESCAPED_END      = u"\]>"
+ESCAPED_END      = "\]>"
 RE_ESCAPED_END   = re.compile(ESCAPED_END, re.LOCALE)
-ESCAPED_REPLACE  = u'\\"'
+ESCAPED_REPLACE  = '\\"'
 RE_ESCAPED_REPLACE=re.compile(ESCAPED_REPLACE, re.LOCALE)
 
-ESCAPED_STRING   = u'\\\\"([^"]+)"'
+ESCAPED_STRING   = '\\\\"([^"]+)"'
 RE_ESCAPED_STRING = re.compile(ESCAPED_STRING, re.MULTILINE|re.LOCALE)
 
 # Text style
 
-CODE             = u"`([^\`]+)`"
+CODE             = "`([^\`]+)`"
 RE_CODE          = re.compile(CODE, re.LOCALE|re.MULTILINE)
-CODE_2           = u"``((`?[^`])+)``"
+CODE_2           = "``((`?[^`])+)``"
 RE_CODE_2        = re.compile(CODE_2, re.LOCALE|re.MULTILINE)
-CODE_3           = u"'([^']+)'"
+CODE_3           = "'([^']+)'"
 RE_CODE_3        = re.compile(CODE_3, re.LOCALE|re.MULTILINE)
-PRE              = u"^((\s*\>(\t|   ))(.*)\n?)+"
+PRE              = "^((\s*\>(\t|   ))(.*)\n?)+"
 RE_PRE           = re.compile(PRE, re.LOCALE|re.MULTILINE)
-EMPHASIS         = u"\*([^*]+)\*"
+EMPHASIS         = "\*([^*]+)\*"
 RE_EMPHASIS      = re.compile(EMPHASIS, re.LOCALE|re.MULTILINE)
-STRONG           = u"\*\*([^*]+)\*\*"
+STRONG           = "\*\*([^*]+)\*\*"
 RE_STRONG        = re.compile(STRONG, re.LOCALE|re.MULTILINE)
-TERM             = u"\_([^_]+)_"
+TERM             = "\_([^_]+)_"
 RE_TERM          = re.compile(TERM, re.LOCALE|re.MULTILINE)
-QUOTED           = u"\"(('?[^'])+)\""
+QUOTED           = "\"(('?[^'])+)\""
 RE_QUOTED        = re.compile(QUOTED, re.LOCALE|re.MULTILINE)
-CITATION         = u"«([^»]+)»"
+CITATION         = "«([^»]+)»"
 RE_CITATION      = re.compile(CITATION,re.LOCALE|re.MULTILINE)
 
 # Special Characters
 
-BREAK            = u"\s*\n\s*\|\s*\n()"
+BREAK            = "\s*\n\s*\|\s*\n()"
 RE_BREAK         = re.compile(BREAK)
-SWALLOW_BREAK    = u"\s*\|\s*\n()"
+SWALLOW_BREAK    = "\s*\|\s*\n()"
 RE_SWALLOW_BREAK = re.compile(SWALLOW_BREAK)
-NEWLINE          = u"\s*\\\\n\s*()"
+NEWLINE          = "\s*\\\\n\s*()"
 RE_NEWLINE       = re.compile(NEWLINE)
-LONGDASH         = u" -- ()"
+LONGDASH         = " -- ()"
 RE_LONGDASH      = re.compile(LONGDASH)
-LONGLONGDASH     = u" --- ()"
+LONGLONGDASH     = " --- ()"
 RE_LONGLONGDASH      = re.compile(LONGLONGDASH)
-ARROW            = u"<-+>|-+->|<-+"
+ARROW            = "<-+>|-+->|<-+"
 RE_ARROW         = re.compile(ARROW,)
-DOTS             = u"\.\.\.()"
+DOTS             = "\.\.\.()"
 RE_DOTS          = re.compile(DOTS,)
-ENTITIES         = u"(&(\w+|#[0-9]+);)"
+ENTITIES         = "(&(\w+|#[0-9]+);)"
 RE_ENTITIES      = re.compile(ENTITIES,)
 
 # Linking content
 
-EMAIL            = u"\<([\w.\-_]+@[\w.\-_]+)\>"
+EMAIL            = "\<([\w.\-_]+@[\w.\-_]+)\>"
 RE_EMAIL         = re.compile(EMAIL, re.LOCALE|re.MULTILINE)
-URL              = u"\<([A-z]+://[^\>]+)\>"
+URL              = "\<([A-z]+://[^\>]+)\>"
 RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
-URL_2            = u"([A-z]+://[^\>]+)"
+URL_2            = "([A-z]+://[^\>]+)"
 RE_URL_2         = re.compile(URL_2, re.LOCALE|re.MULTILINE)
-LINK             = u"""\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
+LINK             = """\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
 RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
-TARGET           = u"\|([\w\s]+(:[^\|]*)?)\|"
+TARGET           = "\|([\w\s]+(:[^\|]*)?)\|"
 RE_TARGET        = re.compile(TARGET, re.LOCALE)
 
 # Custom markup
-MARKUP_ATTR      = u"""[\-_\d\w]+\s*=\s*('[^']*'|"[^"]*")"""
-MARKUP           = u"\<([\-_\d\w]+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
+MARKUP_ATTR      = """[\-_\d\w]+\s*=\s*('[^']*'|"[^"]*")"""
+MARKUP           = "\<([\-_\d\w]+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
 RE_MARKUP        = re.compile(MARKUP, re.LOCALE|re.MULTILINE)
 
 def _processText( context, text ):
@@ -138,7 +138,7 @@ class InlineParser:
 		has been found."""
 		self.name   = name
 		#Checks if regexp is a string or a precompiled regular expression
-		if type(regexp) in (type(u""), type("")):
+		if type(regexp) in (type(""), type("")):
 			self.regexp = re.compile(regexp, re.LOCALE|re.MULTILINE)
 		else:
 			self.regexp = regexp
@@ -151,7 +151,7 @@ class InlineParser:
 		'requiresLeadingSpace'."""
 		if match.start() == 0: return True
 		previous_char = context.currentFragment()[match.start()-1]
-		return previous_char in u' \t();:-!?'
+		return previous_char in ' \t();:-!?'
 
 	def recognises( self, context ):
 		"""Recognises this inlines in the given context, within the current
@@ -464,7 +464,7 @@ class MarkupInlineParser( InlineParser ):
 			markup_name = match.group(1)
 			markup_node = context.document.createElementNS(None, markup_name.strip())
 			markup_node.setAttributeNS(None, "_html", "true")
-			for key, value in context.parseAttributes(Markup_attributes(match)).items():
+			for key, value in list(context.parseAttributes(Markup_attributes(match)).items()):
 				markup_node.setAttributeNS(None, key, value)
 			node.appendChild(markup_node)
 			return match.end()
@@ -496,7 +496,7 @@ class MarkupInlineParser( InlineParser ):
 					markup_node.setAttributeNS(None, "_html", "true")
 					node.appendChild(markup_node)
 					# We add the attributes to this tag
-					for key, value in context.parseAttributes(Markup_attributes(match)).items():
+					for key, value in list(context.parseAttributes(Markup_attributes(match)).items()):
 						markup_node.setAttributeNS(None, key, value)
 					# FIXME: This should not be necessary
 					old_node = context.currentNode

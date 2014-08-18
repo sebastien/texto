@@ -18,11 +18,14 @@
 #
 
 import re, textwrap, xml.dom
-from templates import Processor
+from .templates import Processor
 
 # Text to HTML: http://bhaak.dyndns.org/vilistextum/screenshots.html
 # From <http://www.boddie.org.uk/python/HTML.html>
-from xml.dom.ext.reader import HtmlLib
+try:
+	from html.parser import HTMLParser
+except ImportError:
+	from html.parser import HTMLParser
 
 # We create the processor, register the rules and define the process variable
 processor      = Processor()
@@ -68,20 +71,21 @@ def convertH2(element):
 
 
 name2functions = {}
-for symbol in filter(lambda x:x.startswith("convert"), dir()):
+for symbol in [x for x in dir() if x.startswith("convert")]:
 	name2functions[symbol] = eval(symbol)
 processor.register(name2functions)
 process = processor.process
 
 def convertDocument( text ):
-	reader = HtmlLib.Reader()
-	doc    = reader.fromString(text)
+	import BeautifulSoup
+	# FUCK ME! This does not work
+	doc = BeautifulSoup.BeautifulSoup(text)
 	return processor.generate(doc)
 
 if __name__ == "__main__":
 	import sys
 	fd = file(sys.argv[1], 'rt')
-	print convertDocument(fd.read())
+	print(convertDocument(fd.read()))
 	fd.close()
 
 # EOF

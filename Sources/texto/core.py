@@ -22,8 +22,8 @@ import re, string, operator, getopt, codecs
 import xml.dom.minidom
 dom = xml.dom.minidom.getDOMImplementation()
 
-from inlines import *
-from blocks  import *
+from .inlines import *
+from .blocks  import *
 
 #------------------------------------------------------------------------------
 #
@@ -40,10 +40,10 @@ TAB_SIZE = 4
 #
 #------------------------------------------------------------------------------
 
-RE_BLOCK_SEPARATOR = re.compile(u"[ \t\r]*\n[ \t\r]*\n", re.MULTILINE | re.LOCALE)
-RE_SPACES = re.compile(u"[\s\n]+", re.LOCALE|re.MULTILINE)
+RE_BLOCK_SEPARATOR = re.compile("[ \t\r]*\n[ \t\r]*\n", re.MULTILINE | re.LOCALE)
+RE_SPACES = re.compile("[\s\n]+", re.LOCALE|re.MULTILINE)
 RE_TABS = re.compile("\t+")
-ATTRIBUTE = u"""([\w\d_][\-_\d\w]*)\s*=\s*('[^']*'|"[^"]*")"""
+ATTRIBUTE = """([\w\d_][\-_\d\w]*)\s*=\s*('[^']*'|"[^"]*")"""
 RE_ATTRIBUTE = re.compile(ATTRIBUTE, re.LOCALE|re.MULTILINE)
 
 #------------------------------------------------------------------------------
@@ -159,8 +159,8 @@ class Context:
 	def setDocumentText( self, text ):
 		"""Sets the text of the current document. This should only be called
 		at context initialisation."""
-		if not type(text) == type(u""):
-			text = unicode(text)
+		if not type(text) == type(""):
+			text = str(text)
 		self.documentText = text
 		self.documentTextLength = len(text)
 		self.blockEndOffset = self.documentTextLength
@@ -415,7 +415,7 @@ class Parser:
 		text   = context.documentText[:context.getOffset()]
 		line   = len(text.split("\n"))
 		offset = context.getOffset() - text.rfind("\n") - 1
-		message = unicode(message % (line, offset) + "\n")
+		message = str(message % (line, offset) + "\n")
 		sys.stderr.write(message.encode("iso-8859-1"))
 
 	def warning( self, message, context ):
@@ -436,7 +436,7 @@ class Parser:
 		also have an `offsets` attribute that will contain a list of (start,
 		end) offset tuples for each element."""
 		# Text MUST be unicode
-		assert type(text) == type(u"")
+		assert type(text) == type("")
 		context = Context(text, markOffsets=offsets)
 		self._initialiseContextDocument(context)
 		context.parser = self
@@ -734,7 +734,7 @@ class Parser:
 		"""Treats tabs eols and multiples spaces as single space, plus removes
 		leading and trailing spaces."""
 		# We do not strip the text because white spaces are important
-		return RE_SPACES.sub(u" ",text)
+		return RE_SPACES.sub(" ",text)
 
 	def expandTabs( self, text, cut=0 ):
 		"""Expands the tabs in the given text, cutting the n first characters
@@ -776,8 +776,8 @@ class Parser:
 		of spaces or tabs that lead the first three lines.
 
 		Tabs have the value given by the *TAB_SIZE* variable."""
-		lines = filter(lambda x:len(x)>0, string.split(text, '\n', 4))
-		indent = map(self.countLeadingSpaces, lines)
+		lines = [x for x in text.split("\n", 4) if len(x)>0]
+		indent = list(map(self.countLeadingSpaces, lines))
 		if len(lines) == 0:
 			res = 0
 		elif len(lines) == 1:
@@ -794,9 +794,9 @@ class Parser:
 		A tab will have the value given by the TAB_SIZE global."""
 		count = 0
 		for char in text:
-			if char==u"\t":
+			if char=="\t":
 				count += TAB_SIZE-operator.mod(count,TAB_SIZE)
-			elif char==u" ":
+			elif char==" ":
 				count+=1
 			else:
 				return count
@@ -808,9 +808,9 @@ class Parser:
 		for char in text:
 			if not maximum is None and count >= maximum:
 				return text[i:]
-			if char==u"\t":
+			if char=="\t":
 				count += TAB_SIZE-operator.mod(count,TAB_SIZE)
-			elif char==u" ":
+			elif char==" ":
 				count+=1
 			else:
 				return text[i:]
@@ -821,7 +821,7 @@ class Parser:
 	def charactersToSpaces( self, text):
 		"""Returns a string where all characters are converted to spaces.
 		Newlines and tabs are preserved"""
-		new_text = u""
+		new_text = ""
 		for char in text:
 			if char in ("\t", "\n", " "):
 				new_text += char

@@ -13,7 +13,7 @@
 # -----------------------------------------------------------------------------
 
 import re, string
-from formatting import *
+from .formatting import *
 
 __doc__       = """Write module doc here"""
 __pychecker__ = "unusednames=recogniseInfo,content"
@@ -37,47 +37,47 @@ TODO_DONE_ITEM   = 102
 #
 #------------------------------------------------------------------------------
 
-RE_BLANK          = re.compile(u"\s*", re.LOCALE|re.MULTILINE)
+RE_BLANK          = re.compile("\s*", re.LOCALE|re.MULTILINE)
 
-TITLE             = u"^\s*(==)([^=].+)$"
+TITLE             = "^\s*(==)([^=].+)$"
 RE_TITLE          = re.compile(TITLE, re.LOCALE|re.MULTILINE)
-TITLE_HEADER      = u"^\s*(--)([^\:]+):(.+)?$"
-RE_TITLES         = re.compile(u"%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MULTILINE)
+TITLE_HEADER      = "^\s*(--)([^\:]+):(.+)?$"
+RE_TITLES         = re.compile("%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MULTILINE)
 
-SECTION_HEADING   = u"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
+SECTION_HEADING   = "^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
-SECTION_HEADING_ALT = u"^(\=+\s*).+$"
+SECTION_HEADING_ALT = "^(\=+\s*).+$"
 RE_SECTION_HEADING_ALT= re.compile(SECTION_HEADING_ALT, re.LOCALE)
-SECTION_UNDERLINE = u"^\s*[\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
+SECTION_UNDERLINE = "^\s*[\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
 
-DEFINITION_ITEM   = u"^(\s*(\:[^\:]|[^\:])+)\:\:+\s*(\n+\s*|\s*\|\s*\n)*"
+DEFINITION_ITEM   = "^(\s*(\:[^\:]|[^\:])+)\:\:+\s*(\n+\s*|\s*\|\s*\n)*"
 RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.LOCALE|re.MULTILINE)
 
-TAGGED_BLOCK      = u"^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
+TAGGED_BLOCK      = "^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
 RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE | re.LOCALE)
-LIST_ITEM         = u"^(\s*)(-|\*\)|[0-9A-z][\)/]|\[[ \-\~xX]\])\s*"
+LIST_ITEM         = "^(\s*)(-|\*\)|[0-9A-z][\)/]|\[[ \-\~xX]\])\s*"
 RE_LIST_ITEM      = re.compile(LIST_ITEM, re.MULTILINE | re.LOCALE)
-LIST_HEADING      = u"(^\s*[^:{().<]*:)"
+LIST_HEADING      = "(^\s*[^:{().<]*:)"
 RE_LIST_HEADING   = re.compile(LIST_HEADING, re.MULTILINE | re.LOCALE)
-LIST_ITEM_HEADING = u"^([^:]+(:\s*\n\s*|::\s*))|([^/\\\]+[/\\\]\s*\n\s*)"
+LIST_ITEM_HEADING = "^([^:]+(:\s*\n\s*|::\s*))|([^/\\\]+[/\\\]\s*\n\s*)"
 RE_LIST_ITEM_HEADING =  re.compile(LIST_ITEM_HEADING, re.MULTILINE|re.LOCALE)
 RE_NUMBER          = re.compile("\d+[\)\.]")
 
-PREFORMATTED      = u"^(\s*\>(\t|   ))(.*)$"
+PREFORMATTED      = "^(\s*\>(\t|   ))(.*)$"
 RE_PREFORMATTED   = re.compile(PREFORMATTED, re.LOCALE)
 
-CUSTOM_MARKUP    = u"\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
+CUSTOM_MARKUP    = "\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
 RE_CUSTOM_MARKUP = re.compile(CUSTOM_MARKUP, re.LOCALE|re.MULTILINE)
 
-META_TYPE        = u"\s*(\w+)\s*(\((\w+)\))?"
+META_TYPE        = "\s*(\w+)\s*(\((\w+)\))?"
 RE_META_TYPE     = re.compile(META_TYPE, re.LOCALE|re.MULTILINE)
 
-META_FIELD = u'(^|\n)\s*([\w\-]+)\s*:\s*'
+META_FIELD = '(^|\n)\s*([\w\-]+)\s*:\s*'
 RE_META_FIELD= re.compile(META_FIELD, re.LOCALE)
 RE_META_AUTHOR_EMAIL = re.compile("\<([^>]+)\>", re.LOCALE)
 
-REFERENCE_ENTRY    = u"\s+\[([^\]]+)]:"
+REFERENCE_ENTRY    = "\s+\[([^\]]+)]:"
 RE_REFERENCE_ENTRY = re.compile(REFERENCE_ENTRY, re.LOCALE|re.MULTILINE)
 
 TABLE_ROW_SEPARATOR    = "^\s*([\-\+]+|[\=\+]+)\s*$"
@@ -205,7 +205,7 @@ class TaggedBlockParser(BlockParser):
 		BlockParser.__init__(self, "TaggedBlock")
 
 	def recognises( self, context ):
-		lines = filter(lambda l:l.strip(), context.currentFragment().split("\n"))
+		lines = [l for l in context.currentFragment().split("\n") if l.strip()]
 		if not lines: return
 		return RE_TAGGED_BLOCK.match(lines[0])
 
@@ -302,7 +302,7 @@ class MarkupBlockParser(BlockParser):
 					result_node = dummy_node.childNodes[0]
 					# We take care of the attributes
 					for key, value \
-					in context.parseAttributes(match.group(2)).items():
+					in list(context.parseAttributes(match.group(2)).items()):
 						result_node.setAttributeNS(None, key, value)
 					return result_node
 				# Otherwise this means that the block is empty
@@ -362,8 +362,8 @@ class TitleBlockParser(BlockParser):
 		titleText = match.group(2) or match.group(4)
 		# We prefix with 'sub' or 'subsub' depending on the number of
 		# preceding titles
-		titleType  = u"sub" * len(filter(lambda n:n.nodeName.endswith("title"), titleNode.childNodes))
-		titleType += u"title"
+		titleType  = "sub" * len([n for n in titleNode.childNodes if n.nodeName.endswith("title")])
+		titleType += "title"
 		#We add the node to the document tree
 		resultNode = context.ensureElement(titleNode, titleType)
 		titleNode.appendChild(resultNode)
@@ -470,7 +470,7 @@ class SectionBlockParser(BlockParser):
 		dots_count   = 0
 		if prefix_match:
 			res         = prefix_match.group()
-			dots_count  = len( filter(lambda x:x, res.split(".")) )
+			dots_count  = len( [x for x in res.split(".") if x] )
 			block_start = context.getOffset() + prefix_match.end()
 		if matched_type == RE_SECTION_HEADING_ALT:
 			dots_count += len(match.group(1))
@@ -1101,20 +1101,20 @@ class MetaBlockParser( BlockParser ):
 		#This is a binding from meta block section names to meta content
 		#parsers
 		self.field_parsers = {
-			u'abstract':			self.p_abstract,
-			u'acknowledgements':	self.p_ack,
-			u'author':				self.p_author,
-			u'authors':				self.p_author,
-			u'creation':			self.p_creation,
-			u'keywords':			self.p_keywords,
-			u'language':			self.p_language,
-			u'last-mod':			self.p_last_mod,
-			u'markup':				self.p_markup,
-			u'organisation':		self.p_organisation,
-			u'organization':		self.p_organisation,
-			u'revision':			self.p_revision,
-			u'type':				self.p_type,
-			u'reference':			self.p_reference
+			'abstract':			self.p_abstract,
+			'acknowledgements':	self.p_ack,
+			'author':				self.p_author,
+			'authors':				self.p_author,
+			'creation':			self.p_creation,
+			'keywords':			self.p_keywords,
+			'language':			self.p_language,
+			'last-mod':			self.p_last_mod,
+			'markup':				self.p_markup,
+			'organisation':		self.p_organisation,
+			'organization':		self.p_organisation,
+			'revision':			self.p_revision,
+			'type':				self.p_type,
+			'reference':			self.p_reference
 		}
 
 	def process( self, context, recogniseInfo ):
@@ -1176,7 +1176,7 @@ class MetaBlockParser( BlockParser ):
 		authors_node = context.document.createElementNS(None, "Authors")
 		text = self._flatify(content).strip()
 		# Cuts the trailing dot if present
-		if text[-1]==u'.': text=text[:-1]
+		if text[-1]=='.': text=text[:-1]
 		for author in text.split(','):
 			author_node = context.document.createElementNS(None, "person")
 			# We take care of email
@@ -1209,7 +1209,7 @@ class MetaBlockParser( BlockParser ):
 				context)
 				context.parser.tip("Should be YYYY-MM-DD", context)
 				return False
-		date = map(lambda x:int(x), date)
+		date = [int(x) for x in date]
 		if date[1] < 1 or date[1] > 12:
 			context.parser.warning("Bad month number: " + str(date[1]),
 			context)
@@ -1225,7 +1225,7 @@ class MetaBlockParser( BlockParser ):
 		keywords_node = context.document.createElementNS(None, "Keywords")
 		text = self._flatify(content).strip()
 		# Cuts the trailing dot if present
-		if text[-1]==u'.': text=text[:-1]
+		if text[-1]=='.': text=text[:-1]
 		for keyword in text.split(','):
 			keyword_node = context.document.createElementNS(None, "keyword")
 			text_node   = context.document.createTextNode(keyword.strip())
@@ -1266,7 +1266,7 @@ class MetaBlockParser( BlockParser ):
 		lang_node = context.document.createElementNS(None, "language")
 		#We assign the language code
 		if len(lang)>=2 and lang.upper()[0:2] in LANGUAGE_CODES:
-			lang_code = unicode(lang.upper()[0:2])
+			lang_code = str(lang.upper()[0:2])
 		else:
 			lang_code = "UK"
 		lang_node.setAttributeNS(None, "code", lang_code)
@@ -1297,7 +1297,7 @@ class MetaBlockParser( BlockParser ):
 				if option == None:
 					self.parser.txt_parsers.append(InlineParser(self.parser,
 					element, regexp))
-				elif option.lower() == u"empty":
+				elif option.lower() == "empty":
 					self.parser.txt_parsers.append(EmptyInlineParser(self.parser,
 					element, regexp))
 				else:
@@ -1306,8 +1306,8 @@ class MetaBlockParser( BlockParser ):
 				start = match.end()
 
 	def _flatify( self, text ):
-		new_text = u""
-		for line in text.split(): new_text += line+u" "
+		new_text = ""
+		for line in text.split(): new_text += line+" "
 		return new_text
 
 	def processText( self, context, text ):

@@ -12,8 +12,8 @@
 
 import re, xml.dom
 import sys
-from formatting import *
-import templates
+from .formatting import *
+from . import templates
 
 #------------------------------------------------------------------------------
 #
@@ -168,7 +168,7 @@ def convertentity( element ):
 # We create the processor, register the rules and define the process variable
 processor      = templates.Processor()
 name2functions = {}
-for symbol in filter(lambda x:x.startswith("convert"), dir()):
+for symbol in [x for x in dir() if x.startswith("convert")]:
 	name2functions[symbol] = eval(symbol)
 processor.register(name2functions)
 process = processor.process
