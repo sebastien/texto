@@ -30,7 +30,7 @@ import re, string, operator, getopt, codecs
 import xml.dom.minidom
 dom = xml.dom.minidom.getDOMImplementation()
 
-from . import core, texto2html, texto2lout, texto2twiki
+from texto import core, texto2html, texto2lout, texto2twiki
 
 FORMATS = {
 	"html":texto2html,
@@ -274,7 +274,7 @@ def run( arguments, input=None, noOutput=False ):
 
 	if source!="-": ifile.close()
 
-	if type(data) != str:
+	if type(data) != unicode:
 		data = data.decode(input_enc)
 	xml_document = parser.parse(data, offsets=show_offsets).document
 

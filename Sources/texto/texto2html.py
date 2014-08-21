@@ -263,12 +263,11 @@ def convertBlock( element ):
 	title = element.getAttributeNS(None,"title") or element.getAttributeNS(None, "type") or ""
 	css_class = ""
 	if title:
-		css_class=" class='ann%s'" % (element.getAttributeNS(None, "type").capitalize())
-		title = "<div class='title'>%s</div>"  % (title)
+		css_class=" class='tagged-block %s'" % (element.getAttributeNS(None, "type").lower())
 		div_type = "div"
 	elif not element.getAttributeNS(None, "type"):
 		div_type = "blockquote"
-	return process(element, """<%s%s>%s<div class='content'%s>$(*)</div></%s>""" % (div_type, css_class, title, wattrs(element), div_type))
+	return process(element, """<%s%s%s>$(*)</%s>""" % (div_type, css_class, wattrs(element), div_type))
 
 def stringToTarget( text ):
 	return text.replace("  ", " ").strip().replace(" ", "_")

@@ -25,6 +25,32 @@ dom = xml.dom.minidom.getDOMImplementation()
 from .inlines import *
 from .blocks  import *
 
+IS_PYTHON3 = sys.version_info[0] > 2
+
+if IS_PYTHON3:
+	# Python3 only defines str
+	unicode = str
+	long    = int
+else:
+	unicode = unicode
+
+def ensureString( t, encoding="utf8" ):
+	if IS_PYTHON3:
+		return t if isinstance(t, str) else str(t, encoding)
+	else:
+		return t
+
+def ensureUnicode( t, encoding="utf8" ):
+	if IS_PYTHON3:
+		return t if isinstance(t, str) else str(t, encoding)
+	else:
+		return t if isinstance(t, unicode) else t.decode(encoding)
+
+def ensureBytes( t, encoding="utf8" ):
+	if IS_PYTHON3:
+		return t if isinstance(t, bytes) else bytes(t, encoding)
+	else:
+		return t
 #------------------------------------------------------------------------------
 #
 #  Globals
@@ -159,8 +185,7 @@ class Context:
 	def setDocumentText( self, text ):
 		"""Sets the text of the current document. This should only be called
 		at context initialisation."""
-		if not type(text) == type(""):
-			text = str(text)
+		text = ensureUnicode(text)
 		self.documentText = text
 		self.documentTextLength = len(text)
 		self.blockEndOffset = self.documentTextLength
@@ -436,7 +461,7 @@ class Parser:
 		also have an `offsets` attribute that will contain a list of (start,
 		end) offset tuples for each element."""
 		# Text MUST be unicode
-		assert type(text) == type("")
+		assert type(text) in (str, unicode)
 		context = Context(text, markOffsets=offsets)
 		self._initialiseContextDocument(context)
 		context.parser = self
