@@ -97,9 +97,9 @@ URL              = "\<([A-z]+://[^\>]+)\>"
 RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
 URL_2            = "([A-z]+://[^\>]+)"
 RE_URL_2         = re.compile(URL_2, re.LOCALE|re.MULTILINE)
-LINK             = """\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
+LINK             = """\[([^\\#]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
 RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
-TARGET           = "\|([\w\s]+(:[^\|]*)?)\|"
+TARGET           = "\[\#([\w\s]+(:[^\]]*)?)\]"
 RE_TARGET        = re.compile(TARGET, re.LOCALE)
 
 # Custom markup

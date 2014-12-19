@@ -62,11 +62,9 @@ class Processor(templates.Processor):
 def convertDocument(element, bodyOnly=False):
 	if bodyOnly:
 		return process(element, """\
-<div class="document use-texto">
 $(Header:title)
 $(Content)
 $(References)
-</div>
 """)
 	else:
 		return process(element, """\
@@ -127,13 +125,17 @@ def wattrs( element ):
 			element.getAttributeNS(None, '_start'),
 			element.getAttributeNS(None, '_end')
 		)
+	if element.attributes:
+		for k, v in element.attributes.items():
+			if not k.startswith("_"):
+				res += " %s='%s'" % (k, v)
 	return res
 
 def convertContent( element ):
-	return process(element, wdiv(element, """<div class='content'>$(*)</div>"""))
+	return process(element, wdiv(element, """$(*)"""))
 
 def convertContent_bodyonly( element ):
-	return process(element, wdiv(element, """<div class='use-texto'>$(*)</div>"""))
+	return process(element, wdiv(element, """$(*)"""))
 
 def convertContent_table( element ):
 	return process(element, """<tbody%s>$(*)</tbody>""" % (wattrs(element)))
@@ -163,23 +165,14 @@ def getSectionNumberPrefix(element):
 		return str(section_count)
 
 def formatSectionNumber(number):
-	number = str(number).split(".")
-	depth = 0
-	res   = []
-	for n in number:
-		if depth == len(number) - 1:
-			res.append('<span class="level-%s">%s<span class="lastDot dot">.</span></span>' % (depth,n))
-		else:
-			res.append('<span class="level-%s">%s<span class="dot">.</span></span>' % (depth,n))
-		depth += 1
-	return "".join(res)
+	return str(number)
 
 def convertSection( element ):
 	offset = element._processor.variables.get("LEVEL") or 0
 	level = int(element.getAttributeNS(None, "_depth")) + offset
 	return process(element,
 	  '<div class="section level-%d" data-level="%d">' % (level, level)
-	  + '<div class="header"><h%d><span class="number">%s</span>$(Heading)</h%d></div>' % (level, formatSectionNumber(getSectionNumberPrefix(element)), level)
+	  + '<div class="header"><h%d><a class="number" name="S%s"></a>$(Heading)</h%d></div>' % (level, formatSectionNumber(getSectionNumberPrefix(element)), level)
 	  + '<div class="body">$(Content:section)</div></div>'
 	)
 
@@ -319,7 +312,8 @@ def convertstrong( element ):
 	return process(element, """<strong>$(*)</strong>""")
 
 def convertpre( element ):
-	return process(element, """<pre%s>$(*)</pre>""" % (wattrs(element))).replace("\r\n","\n")
+	lang = ""
+	return process(element, """<pre%s><code%s>$(*)</code></pre>""" % (wattrs(element), lang)).replace("\r\n","\n")
 
 def convertcode( element ):
 	return process(element, """<code>$(*)</code>""")

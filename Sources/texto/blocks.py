@@ -798,7 +798,7 @@ class PreBlockParser2( BlockParser ):
 	"""Parses the content of a preformatted block which is delimited with
 	'```' and '```' characters."""
 
-	START_PATTERN = "```"
+	START_PATTERN = re.compile("^\s*```(\w+)?$")
 	END_PATTERN   = "```"
 
 	def __init__( self ):
@@ -807,7 +807,8 @@ class PreBlockParser2( BlockParser ):
 	def recognises( self, context ):
 		head_lines =  context.currentFragment().split("\n")
 		if not head_lines: return False
-		if self.isStartLine(context, head_lines[0]):
+		res = self.isStartLine(context, head_lines[0])
+		if res:
 			indent = context.parser.getIndentation(head_lines[0])
 			for line in head_lines[1:]:
 				if not line.replace("\t", " ").strip(): continue
@@ -815,12 +816,13 @@ class PreBlockParser2( BlockParser ):
 					return False
 		else:
 			return False
-		return True, indent
+		return True, indent, res[2]
 
 	def isStartLine( self, context, line ):
-		line_indent = context.parser.getIndentation(line)
-		if line.replace("\t", " ").strip() == self.START_PATTERN:
-			return True, line_indent
+		match       = self.START_PATTERN.match(line)
+		if match:
+			line_indent = context.parser.getIndentation(line)
+			return True, line_indent, match.group(1)
 		else:
 			return None
 
@@ -865,6 +867,7 @@ class PreBlockParser2( BlockParser ):
 	def process( self, context, recogniseInfo ):
 		result = []
 		indent = recogniseInfo[1]
+		lang   = recogniseInfo[2]
 		context.setCurrentBlockEnd(self.findBlockEnd(context, indent))
 		lines = context.currentFragment().split("\n")
 		lines = lines[1:-1]
@@ -877,6 +880,7 @@ class PreBlockParser2( BlockParser ):
 		text = "\n".join(result)
 		pre_node = context.document.createElementNS(None, self.name)
 		pre_node.appendChild(context.document.createTextNode(text))
+		if lang: pre_node.setAttributeNS(None, "data-lang", lang)
 		pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
 		pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
 		context.currentNode.appendChild(pre_node)
