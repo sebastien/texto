@@ -53,8 +53,6 @@ RE_ESCAPED_STRING = re.compile(ESCAPED_STRING, re.MULTILINE|re.LOCALE)
 
 CODE             = "`([^\`]+)`"
 RE_CODE          = re.compile(CODE, re.LOCALE|re.MULTILINE)
-CODE_2           = "``((`?[^`])+)``"
-RE_CODE_2        = re.compile(CODE_2, re.LOCALE|re.MULTILINE)
 CODE_3           = "'([^']+)'"
 RE_CODE_3        = re.compile(CODE_3, re.LOCALE|re.MULTILINE)
 PRE              = "^((\s*\>(\t|   ))(.*)\n?)+"

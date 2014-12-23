@@ -806,17 +806,14 @@ class PreBlockParser2( BlockParser ):
 
 	def recognises( self, context ):
 		head_lines =  context.currentFragment().split("\n")
+		while not head_lines[0].strip():head_lines = head_lines[1:]
 		if not head_lines: return False
 		res = self.isStartLine(context, head_lines[0])
 		if res:
 			indent = context.parser.getIndentation(head_lines[0])
-			for line in head_lines[1:]:
-				if not line.replace("\t", " ").strip(): continue
-				if context.parser.getIndentation(line) < indent:
-					return False
+			return True, indent, res[2]
 		else:
 			return False
-		return True, indent, res[2]
 
 	def isStartLine( self, context, line ):
 		match       = self.START_PATTERN.match(line)
@@ -870,6 +867,7 @@ class PreBlockParser2( BlockParser ):
 		lang   = recogniseInfo[2]
 		context.setCurrentBlockEnd(self.findBlockEnd(context, indent))
 		lines = context.currentFragment().split("\n")
+		while not lines[0]:lines = lines[1:]
 		lines = lines[1:-1]
 		prefix   = lines[0]
 		for line in lines:
