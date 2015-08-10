@@ -375,7 +375,6 @@ class Parser:
 	def createCustomParsers( self ):
 		self.customParsers["Meta"] = MetaBlockParser()
 		self.customParsers["pre"]  = PreBlockParser()
-		self.customParsers["pre"]  = PreBlockParser()
 		#self.customParsers["table"]= TableBlockParser()
 		pass
 
@@ -399,6 +398,7 @@ class Parser:
 			LinkInlineParser(),
 			PreInlineParser(),
 			TargetInlineParser(),
+			#InlineParser("code",		RE_CODE_2),
 			InlineParser("code",		RE_CODE),
 			InlineParser("term",		RE_TERM,     normal),
 			InlineParser("strong",		RE_STRONG,   normal),
