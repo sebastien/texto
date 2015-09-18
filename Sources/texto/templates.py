@@ -58,7 +58,7 @@ class Processor:
 		templates in the same way as the `texto2html` module, ie. with processing
 		functions like `convertXXX_VVV` where `XXX` stands for the element name,
 		and `_VVV` is the optional variant (selected by`$(element:variant)`).
-		
+
 		You may prefer to use the `registerElementProcessor` instead if you want
 		to register a processor for an individual tag.
 		"""
@@ -73,7 +73,7 @@ class Processor:
 	def registerElementProcessor( self, function, elementName, variant=None  ):
 		"""Registers the given function to process the given element name and
 		the given optional variant.
-		
+
 		Note that this will replace any previsously registered processor for the
 		element and variant."""
 		if variant: elementName += ":" + variant
@@ -96,6 +96,9 @@ class Processor:
 				if name != "*" and not child.nodeType == xml.dom.Node.ELEMENT_NODE: continue
 				if name == "*" or child.tagName == name: s.extend(self.resolveSet(child, names[1:]))
 		return s
+
+	def apply( self, element ):
+		return self.processElement(element)
 
 	def processElement( self, element, selector=None ):
 		"""Processes the given element according to the EXPRESSION_TABLE, using the

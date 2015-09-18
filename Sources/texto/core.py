@@ -344,15 +344,22 @@ class Context:
 
 class Parser:
 
-	def __init__( self, baseDirectory=".", inputEncoding="utf8", outputEncoding="utf8" ):
+	def __init__( self, baseDirectory=".", inputEncoding="utf8", outputEncoding="utf8", inlineParsers=None, blockParsers=None, customParsers=None):
 		self.blockParsers  = []
 		self.inlineParsers = []
 		self.customParsers = {}
 		self.baseDirectory = baseDirectory
 		self.inputEncoding = inputEncoding
 		self.outputEncoding = outputEncoding
-		self.createBlockParsers()
-		self.createInlineParsers()
+		self.defaultBlockParser = ParagraphBlockParser()
+		if blockParsers is not None:
+			self.blockParsers.extend(blockParsers)
+		else:
+			self.createBlockParsers()
+		if inlineParsers is not None:
+			self.inlineParsers.extend(inlineParsers)
+		else:
+			self.createInlineParsers()
 		self.createCustomParsers()
 
 	def createBlockParsers( self ):
@@ -370,7 +377,6 @@ class Parser:
 			ReferenceEntryBlockParser(),
 			TaggedBlockParser(),
 		))
-		self.defaultBlockParser = ParagraphBlockParser()
 
 	def createCustomParsers( self ):
 		self.customParsers["Meta"] = MetaBlockParser()
@@ -507,7 +513,6 @@ class Parser:
 			assert block_start_offset < block_end_offset <= next_block_start_offset
 			# We first look for a block parser that recognises the current
 			# context
-			assert len(self.blockParsers)>0
 			for blockParser in self.blockParsers:
 				context.setOffset(block_start_offset)
 				recognised = blockParser.recognises(context)
