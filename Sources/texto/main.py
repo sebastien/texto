@@ -8,7 +8,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   18-Jun-2010
+# Last mod.         :   15-Dec-2015
 # -----------------------------------------------------------------------------
 
 import os, sys, io
@@ -162,13 +162,12 @@ def run( arguments, input=None, noOutput=False ):
 	output_format   = "html"
 	stylesheet      = None
 	append_list     = []
-	if LATIN1 in ENCODINGS:
-		input_enc  = LATIN1
-		output_enc = LATIN1
-	elif UTF8 in ENCODINGS:
+	if UTF8 in ENCODINGS:
 		input_enc  = UTF8
 		output_enc = UTF8
-
+	elif LATIN1 in ENCODINGS:
+		input_enc  = LATIN1
+		output_enc = LATIN1
 	# We parse the options
 	for opt, arg in optlist:
 		if opt in ('-h', '--help'):
