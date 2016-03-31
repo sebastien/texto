@@ -51,6 +51,12 @@ class Processor:
 	def __init__( self, module=None ):
 		self.expressionTable = {}
 		self.variables       = {}
+		self.introspect()
+
+	def introspect( self ):
+		"""Registers any function that starts with `on` as a processor
+		for the node with the given name."""
+		return self.register(dict((_[3:],getattr(self,_)) for _ in dir(self) if _.startswith("on_")))
 
 	def register( self, name2functions ):
 		"""Fills the EXPRESSION_TABLE which maps element names to processing

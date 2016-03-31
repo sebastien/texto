@@ -101,8 +101,8 @@ ERROR_TITLE_TOO_DEEPLY_NESTED = "Title too deeply nested"
 
 class BlockParser:
 
-	def __init__( self, name ):
-		self.name = name
+	def __init__( self, name=None):
+		self.name = name or self.__class__.__name__.rsplit(".",1)[-1]
 
 	def recognises( self, context ):
 		"""Tells wether the given block is recognised or not. This returns

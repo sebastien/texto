@@ -586,8 +586,7 @@ class Parser:
 		into account possible custom block objects."""
 		#FIXME: Should check if the found block separator is contained in a
 		#custom block or not.
-		block_match = RE_BLOCK_SEPARATOR.search(context.documentText,
-		context.getOffset())
+		block_match = RE_BLOCK_SEPARATOR.search(context.documentText, context.getOffset())
 		if block_match:
 			local_offset = context.getOffset()
 			# We look for a markup inline between the current offset and the
