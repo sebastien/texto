@@ -869,12 +869,13 @@ class PreBlockParser2( BlockParser ):
 		lines = context.currentFragment().split("\n")
 		while not lines[0]:lines = lines[1:]
 		lines = lines[1:-1]
-		prefix   = lines[0]
-		for line in lines:
-			prefix = self.getCommonPrefix(prefix, line)
-		for line in lines:
-			line = line[len(prefix):]
-			result.append(line)
+		if lines:
+			prefix   = lines[0]
+			for line in lines:
+				prefix = self.getCommonPrefix(prefix, line)
+			for line in lines:
+				line = line[len(prefix):]
+				result.append(line)
 		text = "\n".join(result)
 		pre_node = context.document.createElementNS(None, self.name)
 		pre_node.appendChild(context.document.createTextNode(text))
