@@ -301,10 +301,11 @@ def run( arguments, input=None, noOutput=False ):
 		if not noOutput: ofile.write(result)
 	return (SUCCESS, result)
 
-def text2htmlbody( text, inputEncoding=None, outputEncoding=None ):
+def text2htmlbody( text, inputEncoding=None, outputEncoding=None, offsets=True ):
 	"""Converts the given text to HTML, returning only the body."""
 	s = io.StringIO(text)
 	command = "-m --body-only"
+	if offsets: command += " -f"
 	if inputEncoding: command += " -i " + inputEncoding
 	if outputEncoding: command += " -o " + outputEncoding
 	_, text = run(command + " --", s, noOutput=True)
