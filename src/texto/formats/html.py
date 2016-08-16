@@ -41,16 +41,6 @@ class Processor(Processor):
 		else:
 			return super(self.__class__,self).defaultProcessElement(element,selector)
 
-	def generate( self, xmlDocument, bodyOnly=False, variables={} ):
-		node = xmlDocument.getElementsByTagName("Document")[0]
-		self.variables = variables
-		if bodyOnly:
-			for child in node.childNodes:
-				if child.nodeName == "Content":
-					return self.on_Document(node, bodyOnly=True)
-		else:
-			return self.on_Document(node)
-
 	def on_Document( self, element, bodyOnly=False):
 		if bodyOnly:
 			return self.process(element, """\
@@ -122,6 +112,10 @@ class Processor(Processor):
 				if not k.startswith("_"):
 					res += " %s='%s'" % (k, v)
 		return res
+
+
+	def processTextNode( self, element, seelctor, isSelectorOptional=False ):
+		return escapeHTML(element.data)
 
 	def getSectionNumberPrefix(self, element):
 		if not element:
@@ -223,7 +217,7 @@ class Processor(Processor):
 	def on_Definition_( self, element ):
 		return self.process(element, """<dl%s>$(*)</dl>""" % (self._wattrs(element)))
 
-	def on_Definition_Item( self, element ):
+	def on_DefinitionItem( self, element ):
 		return self.process(element, """<dt>$(Title)</dt><dd>$(Content)</dd>""")
 
 	def on_Caption_( self, element ):

@@ -1,0 +1,12 @@
+Markdown-style preformatted text with annotations
+
+```c{3-4,7}|nobrackets
+// @type ParsingContext
+typedef struct ParsingContext
+	struct Grammar*              grammar      // The grammar used to parse
+	struct Iterator*             iterator     // Iterator on the input data
+	struct ParsingOffset* offsets             // The parsing offsets, starting at 0
+	struct ParsingOffset* current             // The current parsing offset
+ParsingContext
+```
+

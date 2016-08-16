@@ -5,10 +5,10 @@
 # Author            : Sebastien Pierre           <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
 # Creation date     : 06-Mar-2006
-# Last mod.         :16-Aug-2016
+# Last mod.         : 16-Aug-2016
 # -----------------------------------------------------------------------------
 
-import sys, os, glob, re, xml.dom
+import sys, os, glob, re, imp, xml.dom
 
 RE_EXPRESSION    =re.compile("\$\(([^\)]+)\)")
 
@@ -49,7 +49,11 @@ class Processor(object):
 	def __init__( self, module=None ):
 		self.expressionTable = {}
 		self.variables       = {}
-		self.introspect()
+		self.introspect ()
+		if module:
+			symbols   = [_ for _ in dir(module) if _.startswith("convert")]
+			functions = dict((_,getattr(module,_)) for _ in symbols)
+			self.register(functions)
 
 	def introspect( self ):
 		"""Registers any function that starts with `on` as a processor
@@ -112,26 +116,32 @@ class Processor(object):
 			selector = selector[:-1]
 			selector_optional = True
 		if element.nodeType == xml.dom.Node.TEXT_NODE:
-			return escapeHTML(element.data)
+			return self.processTextNode(element, selector, selector_optional)
 		elif element.nodeType == xml.dom.Node.ELEMENT_NODE:
-			element._processor = self
-			fname = element.nodeName
-			if selector: fname += ":" + selector
-			func  = self.expressionTable.get(fname)
-			# In case we have no custom processing function, we look for one
-			# without the variant
-			if not func:
-				func = self.expressionTable.get(fname.split(":")[0])
-			# There is a function for the element in the EXPRESSION TABLE
-			if func:
-				return func(element)
-			elif selector_optional:
-				self.processElement(element)
-			# Otherwise we simply expand its text
-			else:
-				return self.defaultProcessElement(element, selector)
+			return self.processElementNode(element, selector, selector_optional)
 		else:
 			return ""
+
+	def processElementNode( self, element, selector, isSelectorOptional=False ):
+		element._processor = self
+		fname = element.nodeName
+		if selector: fname += ":" + selector
+		func  = self.expressionTable.get(fname)
+		# In case we have no custom processing function, we look for one
+		# without the variant
+		if not func:
+			func = self.expressionTable.get(fname.split(":")[0])
+		# There is a function for the element in the EXPRESSION TABLE
+		if func:
+			return func(element)
+		elif isSelectorOptional:
+			self.processElement(element)
+		# Otherwise we simply expand its text
+		else:
+			return self.defaultProcessElement(element, selector)
+
+	def processTextNode( self, element, selector, isSelectorOptional=False ):
+		return element.data
 
 	def defaultProcessElement( self, element, selector ):
 		"""Default function for processing elements. This returns the text."""
@@ -177,7 +187,14 @@ class Processor(object):
 		return r
 
 	def generate( self, xmlDocument, bodyOnly=False, variables={} ):
+		node = xmlDocument.getElementsByTagName("Document")[0]
 		self.variables = variables
+		if bodyOnly:
+			for child in node.childNodes:
+				if child.nodeName == "Content":
+					return self.processElement(node)
+		else:
+			return self.processElement(node)
 
 #------------------------------------------------------------------------------
 #
@@ -199,7 +216,9 @@ def get():
 		name = os.path.basename(path).rsplit(".",1)[0]
 		if name != "__init__":
 			fullname  = "texto.formats." + name
-			submodule =  __import__(fullname)
+			# NOTE: __import__ does not work
+			# submodule =  __import__(fullname)
+			submodule = imp.load_source(fullname, path)
 			formats[name] = submodule
 	return formats
 

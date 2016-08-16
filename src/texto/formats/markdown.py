@@ -56,16 +56,16 @@ def convertList( element ):
 def convertListItem( element ):
 	attrs   = [""]
 	is_todo = element.getAttributeNS(None, "todo")
-	return process(element, """   * $(*)\n""")
+	return process(element, """[ ] $(*)\n""")
 
 def convertTable( element ):
 	return process(element, """$(Content:table)\n\n""")
 
 def convertDefinition( element ):
-	return process(element, """$(*)\n\n""")
+	return process(element, """<dfn>$(*)</dfn>\n\n""")
 
 def convertDefinitionItem( element ):
-	return process(element, """$(Title)\n\t::$(Content)\n""")
+	return process(element, """<dt>$(Title)<dt>\n\t<dd>$(Content)</dd>\n""")
 
 def convertRow( element ):
 	try: index = element.parentNode.childNodes.index(element) % 2 + 1
@@ -127,7 +127,12 @@ def convertstrong( element ):
 	return process(element, """__$(*)__""")
 
 def convertpre( element ):
-	return process(element, """```\n$(*)\n```\n\n""")
+	prefix = ""
+	if element.hasAttribute("data-lang"):
+		prefix += element.getAttribute("data-lang")
+	if element.hasAttribute("data-ranges"):
+		prefix += "{" + element.getAttribute("data-ranges") + "}"
+	return process(element, """```{0}\n$(*)\n```\n\n""".format(prefix))
 
 def convertcode( element ):
 	return process(element, """`$(*)`""")
@@ -163,11 +168,7 @@ def convertentity( element ):
 	return "&%s;" % (element.getAttributeNS( None, "num"))
 
 # We create the processor, register the rules and define the process variable
-processor      = Processor()
-name2functions = {}
-for symbol in [x for x in dir() if x.startswith("convert")]:
-	name2functions[symbol] = eval(symbol)
-processor.register(name2functions)
-process = processor.process
+processor  = Processor(sys.modules[__name__])
+process    = processor.process
 
 # EOF - vim: tw=80 ts=4 sw=4 noet

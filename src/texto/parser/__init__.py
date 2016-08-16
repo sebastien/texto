@@ -10,9 +10,10 @@
 # Last mod.         :   16-Aug-2016
 # -----------------------------------------------------------------------------
 
-import os, sys, re, string, operator, getopt, codecs
+import os, sys, re, string, operator, getopt, xml.dom.minidom
 from  .inlines import *
 from  .blocks  import *
+dom  = xml.dom.minidom.getDOMImplementation()
 
 IS_PYTHON3 = sys.version_info[0] > 2
 

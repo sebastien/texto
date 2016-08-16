@@ -10,17 +10,17 @@
 	Abstract: SimTex is a structured text to XML processor that eases the
 	process of writing XML textual documents. SimTex offers a rich set of
 	non-intrusive markup to express the structure and semantics of your
-	documents, and generates an XML document that conforms to the OrchidÈeNoire
+	documents, and generates an XML document that conforms to the Orchid√©eNoire
 	XML application.
 
-	Authors:  SÈbastien Pierre<sebastien.pierre@gmail.com>
+	Authors:  S√©bastien Pierre<sebastien.pierre@gmail.com>
 	Revision: 0.6.5
 	Language: EN
 
 	Creation: 2001-09-12
 	Last-mod: 2004-12-26
 
-	Keywords: Text processing, OrchidÈe Noire, structured document, XML.
+	Keywords: Text processing, Orchid√©e Noire, structured document, XML.
 	Type:     Book (small)
 
 [end Meta]
@@ -554,10 +554,10 @@
 		|     Software      || Description
 		|    ===============||===============================================
 		|     SimTex        || A structured text processor which generates
-		|                   || XML files conforming to the OrchidÈeNoire
+		|                   || XML files conforming to the Orchid√©eNoire
 		|                   || DTD.           
 		|    ---------------||-----------------------------------------------
-		|     OrchidÈeNoire || An XML DTD for rich text documents, similar
+		|     Orchid√©eNoire || An XML DTD for rich text documents, similar
 		|                   || to DocBook. It comes with a complete tool
 		|                   || chain and customizable stylesheets to generate
 		|                   || HTML, PostScript and PDF.
@@ -579,7 +579,7 @@
 	elements that can be used to express all the richness of a document
 	content.
 
-	The OrchidÈeNoire XML application identifies the following groups as part
+	The Orchid√©eNoire XML application identifies the following groups as part
 	of the document content:
 
 	#NOTE: This was copied from the ON application text
@@ -605,7 +605,7 @@
 		  such as images, sounds or video, they allow to embed media within
 		  the document.
 
-	SimTex does not define specific markup for all of the OrchidÈeNoire
+	SimTex does not define specific markup for all of the Orchid√©eNoire
 	elements, but tries to offer shorthands for most of them.
 
 	Textual content elements
@@ -902,10 +902,10 @@
 		You can use custom tags when you want to create a block or inline that
 		has no markup in SimTex, or when it is inconvenient to use SimTex
 		markup (eg. tables). Custom tags are directly translated to XML, so you
-		can add any block or inline defined in the {$ON:OrchidÈeNoire} schema,
-		which means that you simply have to read the OrchidÈeNoire
+		can add any block or inline defined in the {$ON:Orchid√©eNoire} schema,
+		which means that you simply have to read the Orchid√©eNoire
 		documentation to have an idea of what custom tags can be used, and how
-		they will be rendered by OrchidÈeNoire in your output documents.
+		they will be rendered by Orchid√©eNoire in your output documents.
 
 	Escaping SimTex markup
 	======================
@@ -958,7 +958,7 @@
 	|
 	|[start Meta]
 	|
-	| Author:   SÈbastien Pierre<sebastien.pierre@gmail.com>
+	| Author:   S√©bastien Pierre<sebastien.pierre@gmail.com>
 	| Revision: 1.0.0
 	| Keywords: SimTex, meta information.
 	|
@@ -1007,7 +1007,7 @@
 	  and optionally ending with a point. Email adresses can follow the author
 	  name, provided they are enclosed in `<' and `>'.
 	  |
-	  Example: `Author: SÈbastien Pierre<sebastien.pierre@gmail.com>'
+	  Example: `Author: S√©bastien Pierre<sebastien.pierre@gmail.com>'
 	  |
 	  Example: `Authors: Will Self, Poppy Z. Brite.'
 	- `Creation'/
@@ -1029,27 +1029,27 @@
 	   sequence of numbers or letters (`1.0', `1.1.a', etc)
 	- 'Type'/
 	   Defines the document type. This field can take values defined in the
-	   OrchidÈeNoire DTD, such as 'article', 'technical', 'book', etc. Each
+	   Orchid√©eNoire DTD, such as 'article', 'technical', 'book', etc. Each
 	   type can be followed by a subtype enclosed in parens such as `(small)'
 	   indicating a variant of the selected type. Please refer to the
-	   OrchidÈeNoire manual for more information on this.
+	   Orchid√©eNoire manual for more information on this.
 	
 	Use meta-information as often as you can, as it will guarantee that your
 	documents gets properly indexed and referenced in your information system.
 
-	2. OrchidÈeNoire markup                                        {ONMARKUP}
+	2. Orchid√©eNoire markup                                        {ONMARKUP}
 	-----------------------
 	
-	SimTex was designed as a text front-end for the {$ON:OrchidÈeNoire}
-	document processing toolchain. 'OrchideÈNoire' defines a set of XML elements
+	SimTex was designed as a text front-end for the {$ON:Orchid√©eNoire}
+	document processing toolchain. 'Orchide√©Noire' defines a set of XML elements
 	which are declared in its DTD. With SimTex custom markup system, you can
-	directly include OrchidÈeNoire elements which do not have a shorthand
+	directly include Orchid√©eNoire elements which do not have a shorthand
 	in SimTex.
 	
-	To use an OrchidÈeNoire element inside a SimTex document, simply use the
+	To use an Orchid√©eNoire element inside a SimTex document, simply use the
 	custom markups:
 	
-	[start Example:title="OrchidÈeNoire elements in SimTex"]
+	[start Example:title="Orchid√©eNoire elements in SimTex"]
 	[start pre]
 	|
 	| [start Example:title="Here is the title of my example"]
@@ -1060,8 +1060,8 @@
 	[end Example]
 	
 	In the above example, we used the `pre' and `Example' elements of the
-	OrchidÈeNoire DTD. If you want to have the full list of available elements,
-	you should have a look at the OrchidÈeNoire DTD, however, here is a quick
+	Orchid√©eNoire DTD. If you want to have the full list of available elements,
+	you should have a look at the Orchid√©eNoire DTD, however, here is a quick
 	list of most common ones:
 	
 	- `Example'/
@@ -1083,12 +1083,12 @@
 	[start pre]
 	|
 	|	.. SIMTEX:title="SimTex Reference Manual"
-	|	author="SÈbastien Pierre", date="2004"
+	|	author="S√©bastien Pierre", date="2004"
 	|	type="manual"
 	|	url="http://projects.type-z.org/simtex/reference.pdf"
 	|
-	|	.. ON:title="OrchidÈeNoire Reference Manual"
-	|	author="SÈbastien Pierre", date="2004"
+	|	.. ON:title="Orchid√©eNoire Reference Manual"
+	|	author="S√©bastien Pierre", date="2004"
 	|	type="manual"
 	|	url="http://projects.type-z.org/on/reference.pdf"
 	|
@@ -1173,8 +1173,8 @@
 
 
 
-..	ON:title="OrchidÈeNoire -- a structured, rich text XML application"
-	author="SÈbastien Pierre"
+..	ON:title="Orchid√©eNoire -- a structured, rich text XML application"
+	author="S√©bastien Pierre"
 	type="manual"
 	date="2003"
 	url="http://projects.type-z.org/on"

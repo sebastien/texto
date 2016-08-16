@@ -19,18 +19,17 @@ XML DOM."""
 __pychecker__ = "blacklist=cDomlette,cDomlettec"
 
 import re, string, operator, getopt, codecs
-import xml.dom.minidom
 
-from  texto import parser, formats
+from  texto import parser, formats, VERSION
 FORMATS = formats.get()
 
 #------------------------------------------------------------------------------
 #
-#  Command-line interface
+# COMMAND-LINE INTERFACE
 #
 #------------------------------------------------------------------------------
 
-USAGE = "Texto v."+__version__+""",
+USAGE = "Texto v."+VERSION+""",
    A flexible tool for converting plain text markup to XML and HTML.
    Texto can be used to easily generate documentation from plain files or to
    convert exiting Wiki markup to other formats.
@@ -162,7 +161,7 @@ def run( arguments, input=None, noOutput=False ):
 		if opt in ('-h', '--help'):
 			return (INFO, usage.encode(LATIN1))
 		elif opt in ('-v', '--version'):
-			return (INFO, __version__)
+			return (INFO, VERSION)
 		elif opt in ('-i', '--input-encoding'):
 			arg = string.lower(arg)
 			if arg in list(ENCODINGS.keys()) and ENCODINGS[arg] in available_enc:
@@ -284,15 +283,16 @@ def run( arguments, input=None, noOutput=False ):
 	if generate_html:
 		variables = {}
 		variables["LEVEL"] = level_offset
-		css_path = stylesheet if stylesheet else os.path.join(os.path.dirname(texto2html.__file__), "screen-texto.css")
-		if not no_style:
+		css_path = None
+		if not no_style and css_path:
 			if os.path.exists(css_path):
 				with file(css_path) as f:
 					variables["HEADER"] = "\n<style><!-- \n%s --></style>" % (f.read())
 			else:
 				variables["HEADER"] = "\n<link rel='stylesheet' type='text/css' href='%s' />" % (css_path)
 		variables["ENCODING"] = output_enc
-		result = FORMATS[output_format].processor.generate(xml_document, body_only, variables)
+		processor = FORMATS[output_format].processor
+		result = processor.generate(xml_document, body_only, variables)
 		if result: result = result.encode(output_enc)
 		else: result = ""
 		if not noOutput: ofile.write(result)

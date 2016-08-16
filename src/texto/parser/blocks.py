@@ -64,6 +64,9 @@ RE_NUMBER          = re.compile("\d+[\)\.]")
 PREFORMATTED      = "^(\s*\>(\t|   ))(.*)$"
 RE_PREFORMATTED   = re.compile(PREFORMATTED, re.LOCALE)
 
+PREFORMATTED_2_START = re.compile("^(\s*)```((\w+)?(\{(.+)\})?(\|([\w\d\-_]+))?)\s*$")
+PREFORMATTED_2_END   = re.compile("^\s*```\s*$")
+
 CUSTOM_MARKUP    = "\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
 RE_CUSTOM_MARKUP = re.compile(CUSTOM_MARKUP, re.LOCALE|re.MULTILINE)
 
@@ -795,8 +798,8 @@ class PreBlockParser2( BlockParser ):
 	"""Parses the content of a preformatted block which is delimited with
 	'```' and '```' characters."""
 
-	START_PATTERN = re.compile("^\s*```(\w+)?$")
-	END_PATTERN   = "```"
+	START_PATTERN = PREFORMATTED_2_START
+	END_PATTERN   = PREFORMATTED_2_END
 
 	def __init__( self ):
 		BlockParser.__init__(self, "pre")
@@ -805,26 +808,19 @@ class PreBlockParser2( BlockParser ):
 		head_lines =  context.currentFragment().split("\n")
 		while not head_lines[0].strip():head_lines = head_lines[1:]
 		if not head_lines: return False
-		res = self.isStartLine(context, head_lines[0])
-		if res:
-			indent = context.parser.getIndentation(head_lines[0])
-			return True, indent, res[2]
+		match = self.isStartLine(context, head_lines[0])
+		if match:
+			return True, context.parser.getIndentation(head_lines[0]), match
 		else:
 			return False
 
 	def isStartLine( self, context, line ):
-		match       = self.START_PATTERN.match(line)
-		if match:
-			line_indent = context.parser.getIndentation(line)
-			return True, line_indent, match.group(1)
-		else:
-			return None
+		return self.START_PATTERN.match(line)
 
 	def isEndLine( self, context, line, indent ):
 		line_indent = context.parser.getIndentation(line)
 		if line_indent != indent: return False
-		line = line.replace("\t", " ").strip()
-		return line == self.END_PATTERN
+		return self.END_PATTERN.match(line)
 
 	def findBlockEnd( self, context, indent ):
 		# FIXME: Issue a warning if no end is found
@@ -858,10 +854,14 @@ class PreBlockParser2( BlockParser ):
 			assert linea[:limit] == lineb[:limit]
 			return linea[:limit]
 
-	def process( self, context, recogniseInfo ):
+	def process( self, context, recognised ):
 		result = []
-		indent = recogniseInfo[1]
-		lang   = recogniseInfo[2]
+		_, indent, match = recognised
+		# We extract the lang{range}|process structure.
+		lang    = match.group(3)
+		ranges  = match.group(5)
+		process = match.group(7)
+		# We find the block end
 		context.setCurrentBlockEnd(self.findBlockEnd(context, indent))
 		lines = context.currentFragment().split("\n")
 		while not lines[0]:lines = lines[1:]
@@ -876,7 +876,9 @@ class PreBlockParser2( BlockParser ):
 		text = "\n".join(result)
 		pre_node = context.document.createElementNS(None, self.name)
 		pre_node.appendChild(context.document.createTextNode(text))
-		if lang: pre_node.setAttributeNS(None, "data-lang", lang)
+		if lang:   pre_node.setAttributeNS(None, "data-lang", lang)
+		if ranges: pre_node.setAttributeNS(None, "data-ranges", ranges)
+		if process: pre_node.setAttributeNS(None, "data-process", process)
 		pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
 		pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
 		context.currentNode.appendChild(pre_node)
