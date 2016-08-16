@@ -61,11 +61,11 @@ def convertListItem( element ):
 def convertTable( element ):
 	return process(element, """$(Content:table)\n\n""")
 
-def convertDefinition( element ):
-	return process(element, """<dfn>$(*)</dfn>\n\n""")
+def convertDefinitionList( element ):
+	return process(element, """<dl>\n\n$(*)\n</dl>\n\n""")
 
 def convertDefinitionItem( element ):
-	return process(element, """<dt>$(Title)<dt>\n\t<dd>$(Content)</dd>\n""")
+	return process(element, """<dt>$(Title)<dt>\n<dd>$(Content)</dd>\n\n""")
 
 def convertRow( element ):
 	try: index = element.parentNode.childNodes.index(element) % 2 + 1
@@ -92,7 +92,7 @@ def convertBlock( element ):
 	return process(element, """<%s%s>%s<div class='content'%s>$(*)</div></%s>""" % (div_type, css_class, title, "", div_type))
 
 def convertMeta( element ):
-	return process(element, """--\n$(*)--\n\n""")
+	return process(element, """---\n$(*)---\n\n""")
 
 def convertmeta( element ):
 	return "{0}: {1}\n".format(element.getAttribute("name"), element.getAttribute("value"))

@@ -61,7 +61,7 @@ def convertListItem( element ):
 def convertTable( element ):
 	return process(element, """$(Content:table)\n\n""")
 
-def convertDefinition( element ):
+def convertDefinitionList( element ):
 	return process(element, """$(*)\n\n""")
 
 def convertDefinitionItem( element ):

@@ -520,13 +520,13 @@ class DefinitionBlockParser(BlockParser):
 	"""Parses a definition markup element."""
 
 	def __init__( self ):
-		BlockParser.__init__(self, "Definition")
+		BlockParser.__init__(self, "DefinitionList")
 
 	def recognises( self, context ):
 		return RE_DEFINITION_ITEM.match(context.currentFragment())
 
 	def _getParentDefinition( self, node ):
-		while node and node.nodeName != "Definition":
+		while node and node.nodeName != "DefinitionList":
 			node = node.parentNode
 		return node
 
@@ -544,7 +544,7 @@ class DefinitionBlockParser(BlockParser):
 				parent_node = parent_node.parentNode
 				if parent_node.nodeName not in BLOCK_ELEMENTS: continue
 			context.currentNode = parent_node
-			definition_node = context.document.createElementNS(None, "Definition")
+			definition_node = context.document.createElementNS(None, "DefinitionList")
 			definition_node.setAttributeNS(None, "_indent", str(_indent))
 			context.currentNode.appendChild(definition_node)
 			parent_node = definition_node

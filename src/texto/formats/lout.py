@@ -110,7 +110,7 @@ def convertListItem( element ):
 def convertTable( element ):
 	return process(element, """<table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table>""")
 
-def convertDefinition( element ):
+def convertDefinitionList( element ):
 	return process(element, """<dl%s>$(*)</dl>""" % (wattrs(element)))
 
 def convertDefinitionItem( element ):
