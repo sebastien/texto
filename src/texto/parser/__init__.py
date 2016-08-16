@@ -326,6 +326,20 @@ class Context:
 			text = text[match.end():].strip()
 		return attributes
 
+	def node(self, node, *children, **attributes):
+		if type(node) in (unicode, str):
+			node = self.document.createElementNS(None, node)
+		for _ in children:
+			if type(_) in (unicode, str):
+				_ = self.document.createTextNode(_)
+			node.appendChild(_)
+		for k,v in attributes.items(): node.setAttributeNS(None, k, v)
+		return node
+
+	def addNode( self, node, *children, **attributes ):
+		self.currentNode.appendChild(self.node(node, *children, **attributes))
+		return node
+
 #------------------------------------------------------------------------------
 #
 # TEXTO PARSER
@@ -358,6 +372,7 @@ class Parser:
 			MarkupBlockParser(),
 			PreBlockParser(),
 			PreBlockParser2(),
+			MetaBlockParser(),
 			TableBlockParser(),
 			ReferenceEntryBlockParser(),
 			TitleBlockParser(),
@@ -369,7 +384,6 @@ class Parser:
 		))
 
 	def createCustomParsers( self ):
-		self.customParsers["Meta"] = MetaBlockParser()
 		self.customParsers["pre"]  = PreBlockParser()
 		#self.customParsers["table"]= TableBlockParser()
 		pass

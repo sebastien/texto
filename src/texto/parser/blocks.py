@@ -70,6 +70,9 @@ PREFORMATTED_2_END   = re.compile("^\s*```\s*$")
 CUSTOM_MARKUP    = "\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
 RE_CUSTOM_MARKUP = re.compile(CUSTOM_MARKUP, re.LOCALE|re.MULTILINE)
 
+RE_META_START    = re.compile("^(\s*)--\s*$")
+RE_META_END      = re.compile("^(\s*)--\s*$")
+
 META_TYPE        = "\s*(\w+)\s*(\((\w+)\))?"
 RE_META_TYPE     = re.compile(META_TYPE, re.LOCALE|re.MULTILINE)
 
@@ -762,7 +765,7 @@ class ListItemBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-# PRE BLOCK PARSER
+# PRE BLOCK PARSER (ORIGINAL TEXTO)
 #
 #------------------------------------------------------------------------------
 
@@ -793,6 +796,12 @@ class PreBlockParser( BlockParser ):
 		pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
 		pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
 		context.currentNode.appendChild(pre_node)
+
+#------------------------------------------------------------------------------
+#
+# PRE BLOCK PARSER (MARKDOWN)
+#
+#------------------------------------------------------------------------------
 
 class PreBlockParser2( BlockParser ):
 	"""Parses the content of a preformatted block which is delimited with
@@ -1098,225 +1107,35 @@ class TableBlockParser( BlockParser ):
 class MetaBlockParser( BlockParser ):
 	"""Parses the content of a Meta block"""
 
+	START_PATTERN = RE_META_START
+	END_PATTERN   = RE_META_END
+
 	def __init__( self ):
 		BlockParser.__init__(self, "Meta")
-		#This is a binding from meta block section names to meta content
-		#parsers
-		self.field_parsers = {
-			'abstract':			self.p_abstract,
-			'acknowledgements':	self.p_ack,
-			'author':			self.p_author,
-			'authors':			self.p_author,
-			'creation':			self.p_creation,
-			'keywords':			self.p_keywords,
-			'language':			self.p_language,
-			'last-mod':			self.p_last_mod,
-			'markup':			self.p_markup,
-			'organisation':		self.p_organisation,
-			'organization':		self.p_organisation,
-			'revision':			self.p_revision,
-			'type':				self.p_type,
-			'reference':		self.p_reference
-		}
+
+	def recognises( self, context ):
+		head_lines =  context.currentFragment().split("\n")
+		while not head_lines[0].strip():head_lines = head_lines[1:]
+		if not head_lines: return False
+		match = self.START_PATTERN.match(head_lines[0])
+		if match:
+			return True, context.parser.getIndentation(head_lines[0]), match
+		else:
+			return False
 
 	def process( self, context, recogniseInfo ):
-		# Parses a particular field, with the given content
-		def parse_field( field ):
-			field = field.lower()
-			if self.field_parsers.get(field):
-				self.field_parsers.get(field)(context, context.currentFragment())
-			else:
-				context.parser.warning("Unknown Meta field: " + last_field,
-				context)
-
-		match  = True
-		offset = 0
-		last_field = None
-		# Iterates through the fields
-		while match != None:
-			match = RE_META_FIELD.search(context.currentFragment(), offset)
-			if match:
-				if last_field != None:
-					offsets = context.saveOffsets()
-					# We set the current fragment to be the field value
-					context.setCurrentBlock( context.getOffset() + offset,
-					context.getOffset() + match.start() )
-					parse_field(last_field)
-					context.restoreOffsets(offsets)
-				last_field = match.group(2)
-				offset = match.end()
-
-		# And parse the last field
-		if last_field != None:
-			offsets = context.saveOffsets()
-			context.setCurrentBlock( context.getOffset() + offset,
-			context.blockEndOffset )
-			parse_field(last_field)
-			context.restoreOffsets(offsets)
-		else:
-			context.parser.warning("Empty Meta block.", context)
-
-	# Field parsers __________________________________________________________
-
-	def p_abstract( self, context, content ):
-		old_node = context.currentNode
-		abstract_node = context.document.createElementNS(None, "Abstract")
-		context.currentNode = abstract_node
-		context.parser.parseBlock(context, abstract_node, self.processText)
-		context.currentNode  = old_node
-		context.header.appendChild(abstract_node)
-
-	def p_ack( self, context, content ):
-		old_node = context.currentNode
-		ack_node = context.document.createElementNS(None, "Acknowledgement")
-		context.currentNode = ack_node
-		context.parser.parseBlock(context, ack_node, self.processText)
-		context.currentNode  = old_node
-		context.header.appendChild(ack_node)
-
-	def p_author( self, context, content ):
-		authors_node = context.document.createElementNS(None, "Authors")
-		text = self._flatify(content).strip()
-		# Cuts the trailing dot if present
-		if text[-1]=='.': text=text[:-1]
-		for author in text.split(','):
-			author_node = context.document.createElementNS(None, "person")
-			# We take care of email
-			email_match = RE_META_AUTHOR_EMAIL.search(author)
-			if email_match:
-				author = author[:email_match.start()]
-				author_node.setAttributeNS(None, "email", email_match.group(1))
-			text_node   = context.document.createTextNode(author.strip())
-			author_node.appendChild(text_node)
-			authors_node.appendChild(author_node)
-		context.header.appendChild(authors_node)
-
-	def p_creation( self, context, content ):
-		creation_node = context.document.createElementNS(None, "creation")
-		if self._parseDateToNode( context, content, creation_node ):
-			context.header.appendChild(creation_node)
-
-	def _parseDateToNode( self, context, content, node ):
-		content = content.strip()
-		date = content.split("-")
-		for elem in date:
-			format = None
-			try:
-				format = "%0" + str(len(elem)) + "d"
-				format = format % (int(elem))
-			except:
-				pass
-			if len(date)!=3 or format != elem:
-				context.parser.error("Malformed date meta field: " + content,
-				context)
-				context.parser.tip("Should be YYYY-MM-DD", context)
-				return False
-		date = [int(x) for x in date]
-		if date[1] < 1 or date[1] > 12:
-			context.parser.warning("Bad month number: " + str(date[1]),
-			context)
-		if date[2] < 1 or date[2] > 31:
-			context.parser.warning("Bad day number: " + str(date[2]),
-			context)
-		node.setAttributeNS(None, "year",  str(date[0]))
-		node.setAttributeNS(None, "month", str(date[1]))
-		node.setAttributeNS(None, "day",   str(date[2]))
-		return True
-
-	def p_keywords( self, context, content ):
-		keywords_node = context.document.createElementNS(None, "Keywords")
-		text = self._flatify(content).strip()
-		# Cuts the trailing dot if present
-		if text[-1]=='.': text=text[:-1]
-		for keyword in text.split(','):
-			keyword_node = context.document.createElementNS(None, "keyword")
-			text_node   = context.document.createTextNode(keyword.strip())
-			keyword_node.appendChild(text_node)
-			keywords_node.appendChild(keyword_node)
-		context.header.appendChild(keywords_node)
-
-	def p_last_mod( self, context, content ):
-		lastmod_node = context.document.createElementNS(None, "modification")
-		if self._parseDateToNode( context, content, lastmod_node ):
-			context.header.appendChild(lastmod_node)
-
-	def p_revision( self, context, content ):
-		revision_node = context.document.createElementNS(None, "revision")
-		text_node   = context.document.createTextNode(content.strip())
-		revision_node.appendChild(text_node)
-		context.header.appendChild(revision_node)
-
-	def p_type( self, context, content ):
-		match = RE_META_TYPE.match(content)
-		if match:
-			style_node = context.document.createElementNS(None, "type")
-			style_node.setAttributeNS(None, "name", match.group(1).lower())
-			if match.group(3):
-				style_node.setAttributeNS(None, "style", match.group(3).lower())
-			context.header.appendChild(style_node)
-		else:
-			context.parser.warning("Malformed meta type field: " + content,
-			context)
-
-	def p_reference( self, context, content ):
-		ref_node = context.document.createElementNS(None, "reference")
-		ref_node.setAttributeNS(None, "id", content)
-		context.header.appendChild(ref_node)
-
-	def p_language( self, context, content ):
-		lang = content.strip()[0:2].upper()
-		lang_node = context.document.createElementNS(None, "language")
-		#We assign the language code
-		if len(lang)>=2 and lang.upper()[0:2] in LANGUAGE_CODES:
-			lang_code = str(lang.upper()[0:2])
-		else:
-			lang_code = "UK"
-		lang_node.setAttributeNS(None, "code", lang_code)
-		context.header.appendChild(lang_node)
-
-	def p_organisation( self, context, content ):
-		old_node = context.currentNode
-		org_node = context.document.createElementNS(None, "Organisation")
-		context.currentNode = org_node
-		context.parser.parseBlock(context, org_node, self.processText)
-		context.currentNode  = old_node
-		context.header.appendChild(org_node)
-
-	def p_markup( self, context, content ):
-		"""Parses custom markup and registers the new parsers in the current
-		Texto parser"""
-		# TODO
-		match = 1
-		start = 0
-		end   = len(content)
-		custom_markup = RE_CUSTOM_MARKUP
-		while match!=None and start<end:
-			match = custom_markup.search(content,start)
-			if match:
-				regexp  = match.group(1)
-				element = match.group(2)
-				option  = match.group(4)
-				if option == None:
-					self.parser.txt_parsers.append(InlineParser(self.parser,
-					element, regexp))
-				elif option.lower() == "empty":
-					self.parser.txt_parsers.append(EmptyInlineParser(self.parser,
-					element, regexp))
-				else:
-					#FIXME: OUTPUT ERROR FOR UNKNOWN OPTION
-					pass
-				start = match.end()
-
-	def _flatify( self, text ):
-		new_text = ""
-		for line in text.split(): new_text += line+" "
-		return new_text
-
-	def processText( self, context, text ):
-		assert text
-		text = context.parser.expandTabs(text)
-		text =  context.parser.normaliseText(text)
-		return text
+		text = ""
+		_, indent, match = recogniseInfo
+		lines = context.currentFragment().split("\n")[1:-1]
+		rows  = [context.node("meta",
+			name  = line.split(":",1)[0].strip(),
+			value = line.split(":",1)[-1].strip()
+		) for line in lines if line.strip()]
+		return context.addNode("Meta",
+			*rows,
+			_start = str(context.getOffset()),
+			_end   = str(context.blockEndOffset)
+		)
 
 #------------------------------------------------------------------------------
 #

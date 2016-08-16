@@ -22,6 +22,7 @@ import re, string, operator, getopt, codecs
 
 from  texto import parser, formats, VERSION
 FORMATS = formats.get()
+FORMATS["xml"] = True
 
 #------------------------------------------------------------------------------
 #
@@ -47,21 +48,14 @@ Options:
 
    -i --input-encoding           Allows to specify the input encoding
    -o --output-encoding          Allows to specify the output encoding
-   -t --tab                      The value for tabs (tabs equal N sapces).
-                                 Set to 4 by default.
+   -t --tab                      The space value for tabs (default=4).
    -f --offsets                  Add offsets information
-   -p --pretty                   Pretty prints the output XML, this should only
-                                 be used for viewing the output.
-   -m --html                     Outputs an HTML file corresponding to the Texto
-                                 document
-      --no-style                 Does not include the default CSS in the HTML
-      --body-only                Only returns the content of the <body< element
-      --level=n                  If n>0, n will transform HTML h1 to h2, etc...
    -s --stylesheet               Path or URL to the CSS stylesheet
    -O --output-format            Specifies and alternate output FORMAT
-                                 (see below)
    -x --extension                Specifies a comma-separated lis of python
                                  modules to load as extension to the parser.
+      --body-only                Only returns the content of the <body< element
+      --level=n                  If n>0, n will transform HTML h1 to h2, etc...
 
    The available encodings are   %s
    The available formats are     %s
@@ -116,7 +110,7 @@ def run( arguments, input=None, noOutput=False ):
 		optlist, args = getopt.getopt(arguments, "ahpmfO:vi:o:t:s:x:",\
 		["append", "input-encoding=", "output-encoding=", "output-format=",
 		"offsets", "help", "html", "tab=", "version",
-		"pretty", "no-style", "nostyle", "stylesheet=", "extension=",
+		"stylesheet=", "extension=",
 		"body-only", "bodyonly", "level="])
 	except:
 		args=[]
@@ -137,10 +131,8 @@ def run( arguments, input=None, noOutput=False ):
 	usage = USAGE % (ENCODINGS_LIST, ", ".join(list(FORMATS.keys())))
 
 	# We set attributes
-	pretty_print    = 0
 	show_offsets    = False
 	validate_output = 0
-	generate_html   = 1
 	no_style        = 0
 	body_only       = 0
 	level_offset    = 0
@@ -150,6 +142,7 @@ def run( arguments, input=None, noOutput=False ):
 	stylesheet      = None
 	append_list     = []
 	extensions      = []
+	# FIXME: Why be so restrictive?
 	if UTF8 in ENCODINGS:
 		input_enc  = UTF8
 		output_enc = UTF8
@@ -191,26 +184,13 @@ def run( arguments, input=None, noOutput=False ):
 			if TAB_SIZE<1:
 				return (ERROR, "Texto error: Specified tab value (%s) should be superior to 0." %\
 				(TAB_SIZE))
-		elif opt in ('--no-style', "--nostyle"):
-			no_style      = 1
-			generate_html = 1
-			pretty_print  = 0
 		elif opt in ('--body-only', "--bodyonly"):
 			no_style      = 1
 			body_only     = 1
-			generate_html = 1
-			pretty_print  = 0
-		elif opt in ('-p', '--pretty'):
-			pretty_print  = 1
-			generate_html = 0
 		elif opt in ('-s', '--stylesheet'):
 			stylesheet    = arg
 		elif opt in ('-x', '--extension'):
 			extensions += [_.strip() for _ in arg.split(",")]
-		elif opt in ('-m', '--html'):
-			generate_html = 1
-			output_format = "html"
-			pretty_print  = 0
 		elif opt in ('-f', '--offsets'):
 			show_offsets = True
 		elif opt in ('-a', '--append'):
@@ -280,7 +260,11 @@ def run( arguments, input=None, noOutput=False ):
 	xml_document = texto_parser.parse(data, offsets=show_offsets).document
 
 	result = None
-	if generate_html:
+	if output_format == "xml":
+		result = xml_document.toprettyxml("  ").encode(output_enc)
+		#result = xml_document.toxml().encode(output_enc)
+		if not noOutput: ofile.write(result)
+	else:
 		variables = {}
 		variables["LEVEL"] = level_offset
 		css_path = None
@@ -295,12 +279,6 @@ def run( arguments, input=None, noOutput=False ):
 		result = processor.generate(xml_document, body_only, variables)
 		if result: result = result.encode(output_enc)
 		else: result = ""
-		if not noOutput: ofile.write(result)
-	elif pretty_print:
-		result = xml_document.toprettyxml("  ").encode(output_enc)
-		if not noOutput: ofile.write(result)
-	else:
-		result = xml_document.toxml().encode(output_enc)
 		if not noOutput: ofile.write(result)
 	return (SUCCESS, result)
 

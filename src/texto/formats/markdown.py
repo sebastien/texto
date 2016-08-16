@@ -91,6 +91,12 @@ def convertBlock( element ):
 		div_type = "blockquote"
 	return process(element, """<%s%s>%s<div class='content'%s>$(*)</div></%s>""" % (div_type, css_class, title, "", div_type))
 
+def convertMeta( element ):
+	return process(element, """--\n$(*)--\n\n""")
+
+def convertmeta( element ):
+	return "{0}: {1}\n".format(element.getAttribute("name"), element.getAttribute("value"))
+
 def stringToTarget( text ):
 	return text.replace("  ", " ").strip().replace(" ", "-").upper()
 
