@@ -1,29 +1,18 @@
 #!/usr/bin/env python
-# Encoding: iso-8859-1
-# vim: tw=80 ts=4 sw=4 noet
+# Encoding: utf8
 # -----------------------------------------------------------------------------
 # Project           :   Texto
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# Author            :   Sebastien Pierre           <sebastien.pierre@gmail.com>
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   05-Aug-2008
+# Last mod.         :   16-Aug-2016
 # -----------------------------------------------------------------------------
 
-import os, sys
-
-import re, string, operator, getopt, codecs
-
-# We use 4Suite domlette
-#import Ft.Xml.Domlette
-#dom = Ft.Xml.Domlette.implementation
-# We use minidom implementation
-import xml.dom.minidom
-dom = xml.dom.minidom.getDOMImplementation()
-
-from .inlines import *
-from .blocks  import *
+import os, sys, re, string, operator, getopt, codecs
+from  .inlines import *
+from  .blocks  import *
 
 IS_PYTHON3 = sys.version_info[0] > 2
 
@@ -53,7 +42,7 @@ def ensureBytes( t, encoding="utf8" ):
 		return t
 #------------------------------------------------------------------------------
 #
-#  Globals
+# GLOBALS
 #
 #------------------------------------------------------------------------------
 
@@ -62,7 +51,7 @@ TAB_SIZE = 4
 
 #------------------------------------------------------------------------------
 #
-#  Regular expressions
+# REGULAR EXPRESSIONS
 #
 #------------------------------------------------------------------------------
 
@@ -74,7 +63,7 @@ RE_ATTRIBUTE = re.compile(ATTRIBUTE, re.LOCALE|re.MULTILINE)
 
 #------------------------------------------------------------------------------
 #
-#  Parsing context
+# PARSING CONTEXT
 #
 #------------------------------------------------------------------------------
 
@@ -338,7 +327,7 @@ class Context:
 
 #------------------------------------------------------------------------------
 #
-#  Texto parser
+# TEXTO PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -858,4 +847,4 @@ class Parser:
 				new_text += " "
 		return new_text
 
-# EOF
+# EOF - vim: tw=80 ts=4 sw=4 noet

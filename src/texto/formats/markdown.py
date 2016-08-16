@@ -1,23 +1,20 @@
 #!/usr/bin/env python
-# Encoding: iso-8859-1
-# vim: tw=80 ts=4 sw=4 noet
+# Encoding: utf8
 # -----------------------------------------------------------------------------
-# Project           :   Texto
+# Project           : Texto
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# Author            : Sebastien Pierre             <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
-# Creation date     :   19-Nov-2007
-# Last mod.         :   19-Nov-2007
+# Creation date     : 19-Nov-2007
+# Last mod.         : 16-Aug-2016
 # -----------------------------------------------------------------------------
 
-import re, xml.dom
-import sys
-from .formatting import *
-from . import templates
+import re, sys, xml.dom
+from texto.formats import Processor, escapeHTML
 
 #------------------------------------------------------------------------------
 #
-#  Actual element processing
+# ACTUAL ELEMENT PROCESSING
 #
 #------------------------------------------------------------------------------
 
@@ -29,14 +26,14 @@ $(References)
 """)
 
 def convertHeader( element ):
-	return process(element, "---+ $(Title/title)\n---++ $(Title/subtitle)\n" )
+	return process(element, "# $(Title/title)\n## $(Title/subtitle)\n" )
 
 def convertHeading( element ):
 	return process(element, "$(*)")
 
 def convertSection( element ):
 	level = int(element.getAttributeNS(None, "_depth"))
-	prefix = "---+" + "+" * level
+	prefix = "#" + "#" * level
 	return process(element,
 		prefix + " $(Heading)\n\n"
 		+ "$(Content:section)"
@@ -68,11 +65,11 @@ def convertDefinition( element ):
 	return process(element, """$(*)\n\n""")
 
 def convertDefinitionItem( element ):
-	return process(element, """   $ $(Title) : $(Content)\n""")
+	return process(element, """$(Title)\n\t::$(Content)\n""")
 
 def convertRow( element ):
 	try: index = element.parentNode.childNodes.index(element) % 2 + 1
-	except: index = 0 
+	except: index = 0
 	classes = ( "", "even", "odd" )
 	return process(element, """$(*) |\n""")
 
@@ -99,41 +96,41 @@ def stringToTarget( text ):
 
 def convertlink( element ):
 	if element.getAttributeNS(None, "type") == "ref":
-		return process(element, """[[#%s][$(*)]]""" %
+		return process(element, """[$(*)][#%s]""" %
 		(stringToTarget(element.getAttributeNS(None, "target"))))
 	else:
 		# TODO: Support title
-		return process(element, """[[%s][$(*)]]""" %
+		return process(element, """[$(*)](%s)""" %
 		(element.getAttributeNS(None, "target")))
 
 def converttarget( element ):
 	name = element.getAttributeNS(None, "name")
-	return process(element, """#%s $(*)""" % (stringToTarget(name)))
+	return process(element, """<a name='%s'>$(*)""" % (stringToTarget(name)))
 
 
 def convertemail( element ):
 	mail = ""
 	for c in  process(element, """$(*)"""):
 		mail += c
-	return """[[mailto:%s][%s]]""" % (mail, mail)
+	return """[%s]<mailto:%s>""" % (mail, mail)
 
 def converturl( element ):
-	return process(element, """[[$(*)][(*)]]""")
+	return process(element, """<$(*)>""")
 
 def convertterm( element ):
 	return process(element, """*$(*)*""")
 
 def convertquote( element ):
-	return process(element, """''_$(*)_''""")
+	return process(element, """''$(*)''""")
 
 def convertstrong( element ):
 	return process(element, """__$(*)__""")
 
 def convertpre( element ):
-	return process(element, """<verbatim>\n$(*)\n</verbatim>\n\n""")
-	
+	return process(element, """```\n$(*)\n```\n\n""")
+
 def convertcode( element ):
-	return process(element, """=$(*)=""")
+	return process(element, """`$(*)`""")
 
 def convertemphasis( element ):
 	return process(element, """_$(*)_""")
@@ -147,14 +144,14 @@ def convertnewline( element ):
 def convertarrow( element ):
 	arrow = element.getAttributeNS(None, "type")
 	if   arrow == "left":
-		return "<--"
+		return "←"
 	elif arrow == "right":
-		return "-->"
+		return "→"
 	else:
-		return "<-->"
+		return "←→"
 
 def convertdots( element ):
-	return "..."
+	return "‥"
 
 def convertendash( element ):
 	return " -- "
@@ -166,11 +163,11 @@ def convertentity( element ):
 	return "&%s;" % (element.getAttributeNS( None, "num"))
 
 # We create the processor, register the rules and define the process variable
-processor      = templates.Processor()
+processor      = Processor()
 name2functions = {}
 for symbol in [x for x in dir() if x.startswith("convert")]:
 	name2functions[symbol] = eval(symbol)
 processor.register(name2functions)
 process = processor.process
 
-# EOF
+# EOF - vim: tw=80 ts=4 sw=4 noet

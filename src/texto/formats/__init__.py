@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # -----------------------------------------------------------------------------
-# Project           :   Texto
+# Project           : Texto
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# Author            : Sebastien Pierre           <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
-# Creation date     :   06-Mar-2006
-# Last mod.         :   13-Jul-2010
+# Creation date     : 06-Mar-2006
+# Last mod.         :16-Aug-2016
 # -----------------------------------------------------------------------------
 
-import re, xml.dom
-import sys
-from .formatting import *
+import sys, os, glob, re, xml.dom
 
 RE_EXPRESSION    =re.compile("\$\(([^\)]+)\)")
 
@@ -40,11 +38,11 @@ will be expanded by procesing the set of nodes indicated by the XXX expression.
 
 #------------------------------------------------------------------------------
 #
-#  Processing functions
+#  PROCESSOR
 #
 #------------------------------------------------------------------------------
 
-class Processor:
+class Processor(object):
 	"""The processor is the core of the template engine. You give it a Python
 	module with "convert*" functions, and it will process it."""
 
@@ -180,6 +178,29 @@ class Processor:
 
 	def generate( self, xmlDocument, bodyOnly=False, variables={} ):
 		self.variables = variables
-		return self.processElement(xmlDocument.childNodes[0])
+
+#------------------------------------------------------------------------------
+#
+#  FUNCTIONS
+#
+#------------------------------------------------------------------------------
+
+def escapeHTML( text ):
+	"""Escapes &, < and > into corresponding HTML entities."""
+	text = text.replace("&", "&amp;")
+	text = text.replace(">", "&gt;")
+	text = text.replace("<", "&lt;")
+	return text
+
+def get():
+	"""Returns a map of formats and the corresponding formatters."""
+	formats = {}
+	for path in glob.glob(os.path.dirname(__file__) + "/*.py"):
+		name = os.path.basename(path).rsplit(".",1)[0]
+		if name != "__init__":
+			fullname  = "texto.formats." + name
+			submodule =  __import__(fullname)
+			formats[name] = submodule
+	return formats
 
 # EOF - vim: tw=80 ts=4 sw=4 noet

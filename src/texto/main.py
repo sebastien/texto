@@ -1,42 +1,28 @@
 #!/usr/bin/env python
-# Encoding: iso-8859-1
-# vim: tw=80 ts=4 sw=4 noet
+# Encoding: utf8
 # -----------------------------------------------------------------------------
 # Project           :   Texto
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# Author            :   Sebastien Pierre           <sebastien.pierre@gmail.com>
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   15-Dec-2015
+# Last mod.         :   16-Aug-2016
 # -----------------------------------------------------------------------------
 
-import os, sys, io
+import os, sys, io, imp
 
 __doc__ = """Texto is an advanced markup text processor, which can be used as
 an embedded processor in any application. It is fast, extensible and outputs an
 XML DOM."""
 
-__version__ = "0.8.6"
 __pychecker__ = "blacklist=cDomlette,cDomlettec"
 
 import re, string, operator, getopt, codecs
-
-# NOTE: I disabled 4Suite support, as minidom is good as it is right now
-# We use 4Suite domlette
-#import Ft.Xml.Domlette
-#dom = Ft.Xml.Domlette.implementation
-# We use minidom implementation
 import xml.dom.minidom
-dom = xml.dom.minidom.getDOMImplementation()
 
-from texto import core, texto2html, texto2lout, texto2twiki
-
-FORMATS = {
-	"html":texto2html,
-#	"lout":texto2lout,
-	"twiki":texto2twiki
-}
+from  texto import parser, formats
+FORMATS = formats.get()
 
 #------------------------------------------------------------------------------
 #
@@ -75,6 +61,8 @@ Options:
    -s --stylesheet               Path or URL to the CSS stylesheet
    -O --output-format            Specifies and alternate output FORMAT
                                  (see below)
+   -x --extension                Specifies a comma-separated lis of python
+                                 modules to load as extension to the parser.
 
    The available encodings are   %s
    The available formats are     %s
@@ -126,10 +114,10 @@ def run( arguments, input=None, noOutput=False ):
 
 	# --We extract the arguments
 	try:
-		optlist, args = getopt.getopt(arguments, "ahpmfO:vi:o:t:s:",\
+		optlist, args = getopt.getopt(arguments, "ahpmfO:vi:o:t:s:x:",\
 		["append", "input-encoding=", "output-encoding=", "output-format=",
 		"offsets", "help", "html", "tab=", "version",
-		"pretty", "no-style", "nostyle", "stylesheet=",
+		"pretty", "no-style", "nostyle", "stylesheet=", "extension=",
 		"body-only", "bodyonly", "level="])
 	except:
 		args=[]
@@ -162,6 +150,7 @@ def run( arguments, input=None, noOutput=False ):
 	output_format   = "html"
 	stylesheet      = None
 	append_list     = []
+	extensions      = []
 	if UTF8 in ENCODINGS:
 		input_enc  = UTF8
 		output_enc = UTF8
@@ -217,6 +206,8 @@ def run( arguments, input=None, noOutput=False ):
 			generate_html = 0
 		elif opt in ('-s', '--stylesheet'):
 			stylesheet    = arg
+		elif opt in ('-x', '--extension'):
+			extensions += [_.strip() for _ in arg.split(",")]
 		elif opt in ('-m', '--html'):
 			generate_html = 1
 			output_format = "html"
@@ -244,7 +235,19 @@ def run( arguments, input=None, noOutput=False ):
 	elif source=='-': base_dir = os.path.abspath(".")
 	else: base_dir = os.path.abspath(os.path.dirname(source))
 
-	parser = core.Parser(base_dir, input_enc, output_enc)
+	# We instanciate the parser
+	texto_parser = parser.Parser(base_dir, input_enc, output_enc)
+
+	# We load the extensions
+	for ext in extensions:
+		# TODO: http://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path#67692
+		if os.path.exists(ext):
+			name = os.path.basename(ext).rsplit(".", 1)[0]
+			module = imp.load_source(name, ext)
+		else:
+			module = __import__(ext)
+		assert module.on_texto_parser, "Module {0} is expected to define `on_texto_parser`".format(ext)
+		texto_parser = module.on_texto_parser(texto_parser) or texto_parser
 
 	if source == output and not noOutput:
 		return(ERROR, "Cannot overwrite the source file.")
@@ -275,7 +278,7 @@ def run( arguments, input=None, noOutput=False ):
 
 	if type(data) != unicode:
 		data = data.decode(input_enc)
-	xml_document = parser.parse(data, offsets=show_offsets).document
+	xml_document = texto_parser.parse(data, offsets=show_offsets).document
 
 	result = None
 	if generate_html:
@@ -324,4 +327,4 @@ def runAsCommand():
 if __name__ == "__main__":
 	runAsCommand()
 
-# EOF
+# EOF - vim: tw=80 ts=4 sw=4 noet

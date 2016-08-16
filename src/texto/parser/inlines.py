@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-# Encoding: iso-8859-1
-# vim: ts=4 sw=4 tw=80 noet
+# Encoding: utf8
 # -----------------------------------------------------------------------------
 # Project           :   Texto
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre (SPE)           <sebastien@type-z.org>
+# Author            :   Sebastien Pierre           <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   05-Aug-2008
+# Last mod.         :   16-Aug-2016
 # -----------------------------------------------------------------------------
 
 import re
@@ -16,7 +15,7 @@ __pychecker__ = "unusednames=y"
 
 #------------------------------------------------------------------------------
 #
-#  Error messages
+#  ERROR MESSAGES
 #
 #------------------------------------------------------------------------------
 
@@ -27,7 +26,7 @@ MUST_BE_START_OR_END = \
 
 #------------------------------------------------------------------------------
 #
-#  Regular expressions
+# REGULAR EXPRESSIONS
 #
 #------------------------------------------------------------------------------
 
@@ -65,7 +64,7 @@ TERM             = "\_([^_]+)_"
 RE_TERM          = re.compile(TERM, re.LOCALE|re.MULTILINE)
 QUOTED           = "\"(('?[^'])+)\""
 RE_QUOTED        = re.compile(QUOTED, re.LOCALE|re.MULTILINE)
-CITATION         = "«([^»]+)»"
+CITATION         = "Â«([^Â»]+)Â»"
 RE_CITATION      = re.compile(CITATION,re.LOCALE|re.MULTILINE)
 
 # Special Characters
@@ -117,7 +116,7 @@ def _processText( context, text ):
 
 #------------------------------------------------------------------------------
 #
-#  InlineParser
+# INLINE PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -199,7 +198,7 @@ class InlineParser:
 
 #------------------------------------------------------------------------------
 #
-#  Arrow parsers
+# ARROW PARSERS
 #
 #------------------------------------------------------------------------------
 
@@ -224,7 +223,7 @@ class ArrowInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  Entity parsers
+# ENTITY PARSERS
 #
 #------------------------------------------------------------------------------
 
@@ -243,7 +242,7 @@ class EntityInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  Pre parsers
+# PRE PARSERS
 #
 #------------------------------------------------------------------------------
 
@@ -268,7 +267,7 @@ class PreInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  CommentInlineParser
+# COMMENT INLINE PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -297,7 +296,7 @@ class CommentInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  Escape inline parser
+# ESCAPE INLINE PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -335,7 +334,7 @@ class EscapedInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  Escaped String Inline Parser
+# ESCAPED STRING INLINE PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -351,7 +350,7 @@ class EscapedStringInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  Link/Reference parser
+# LINK/REFERENCE PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -399,7 +398,7 @@ class LinkInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  Target parser
+# TARGET PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -430,7 +429,7 @@ class TargetInlineParser( InlineParser ):
 
 #------------------------------------------------------------------------------
 #
-#  MarkupInlineParser
+# MARKUP INLINE PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -597,4 +596,4 @@ class MarkupInlineParser( InlineParser ):
 	def processText( self, context, text ):
 		return context.parser.normaliseText(text)
 
-# EOF
+# EOF - vim: ts=4 sw=4 tw=80 noet

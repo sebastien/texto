@@ -4,7 +4,7 @@
 # -----------------------------------------------------------------------------
 # Project           :   Kiwi
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# Author            :   Sebastien Pierre                <sebastien.pierre@gmail.com>
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006

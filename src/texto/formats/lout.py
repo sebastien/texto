@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# Encoding: iso-8859-1
+# Encoding: utf8
 # vim: tw=80 ts=4 sw=4 noet
 # -----------------------------------------------------------------------------
 # Project           :   Texto
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# Author            :   Sebastien Pierre                <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
 # Creation date     :   17-Aug-2006
 # Last mod.         :   17-Aug-2006
@@ -12,12 +12,11 @@
 
 import re, xml.dom
 import sys
-from .formatting import *
-from . import templates
+import texto.formats as templates
 
 #------------------------------------------------------------------------------
 #
-#  Processing functions
+# PROCESSING FUNCTIONS
 #
 #------------------------------------------------------------------------------
 
@@ -122,7 +121,7 @@ def convertCaption( element ):
 
 def convertRow( element ):
 	try: index = element.parentNode.childNodes.index(element) % 2 + 1
-	except: index = 0 
+	except: index = 0
 	classes = ( "", "even", "odd" )
 	return process(element, """<tr class='%s'%s>$(*)</tr>""" % (classes[index], wattrs(element)))
 

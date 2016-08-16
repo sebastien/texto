@@ -1,19 +1,17 @@
 #!/usr/bin/env python_
-# Encoding: iso-8859-1
-# vim: tw=80 ts=4 sw=4 noet
+# Encoding: utf8
 # -----------------------------------------------------------------------------
-# Project           :   Texto
+# Project           : Texto
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
+# Author            : Sebastien Pierre             <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
-# Creation  date    :   07-Feb-2006
-# Last mod.         :   18-Feb-2016
+# Creation  date    : 07-Feb-2006
+# Last mod.         : 16-Aug-2016
 # -----------------------------------------------------------------------------
 
 import re, xml.dom
 import sys
-from .formatting import *
-from . import templates
+from texto.formats import Processor, escapeHTML
 
 #------------------------------------------------------------------------------
 #
@@ -21,7 +19,7 @@ from . import templates
 #
 #------------------------------------------------------------------------------
 
-class Processor(templates.Processor):
+class Processor(Processor):
 
 	def defaultProcessElement( self, element, selector ):
 		"""We override this for elements with the 'html' attribute."""
@@ -41,7 +39,7 @@ class Processor(templates.Processor):
 				res += "/>"
 			return res
 		else:
-			return templates.Processor.defaultProcessElement(self,element,selector)
+			return super(self.__class__,self).defaultProcessElement(element,selector)
 
 	def generate( self, xmlDocument, bodyOnly=False, variables={} ):
 		node = xmlDocument.getElementsByTagName("Document")[0]
@@ -350,4 +348,4 @@ class Processor(templates.Processor):
 processor = Processor()
 process   = processor.process
 
-# EOF
+# EOF - vim: tw=80 ts=4 sw=4 noet

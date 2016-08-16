@@ -13,7 +13,7 @@
 	documents, and generates an XML document that conforms to the OrchidéeNoire
 	XML application.
 
-	Authors:  Sébastien Pierre <sebastien@type-z.org>
+	Authors:  Sébastien Pierre<sebastien.pierre@gmail.com>
 	Revision: 0.6.5
 	Language: EN
 
@@ -958,7 +958,7 @@
 	|
 	|[start Meta]
 	|
-	| Author:   Sébastien Pierre <sebastien@type-z.org>
+	| Author:   Sébastien Pierre<sebastien.pierre@gmail.com>
 	| Revision: 1.0.0
 	| Keywords: SimTex, meta information.
 	|
@@ -1007,7 +1007,7 @@
 	  and optionally ending with a point. Email adresses can follow the author
 	  name, provided they are enclosed in `<' and `>'.
 	  |
-	  Example: `Author: Sébastien Pierre <sebastien@type-z.org>'
+	  Example: `Author: Sébastien Pierre<sebastien.pierre@gmail.com>'
 	  |
 	  Example: `Authors: Will Self, Poppy Z. Brite.'
 	- `Creation'/

@@ -1,26 +1,23 @@
-
-# Encoding: iso-8859-1
-# vim: tw=80 ts=4 sw=4 noet
+# Encoding: utf8
 # -----------------------------------------------------------------------------
-# Project           :   Texto
-# Module            :   Block parsers
+# Project           : Texto
+# Module            : Block parsers
 # -----------------------------------------------------------------------------
-# Author            :   Sebastien Pierre                 <sebastien@type-z.org>
-# License           :   Revised BSD License
+# Author            : Sebastien Pierre             <sebastien.pierre@gmail.com>
+# License           : Revised BSD License
 # -----------------------------------------------------------------------------
-# Creation date     :   19-Nov-2003
-# Last mod.         :   07-Oct-2009
+# Creation date     : 19-Nov-2003
+# Last mod.         : 16-Aug-2016
 # -----------------------------------------------------------------------------
 
 import re, string
-from .formatting import *
+from   . import *
 
-__doc__       = """Write module doc here"""
-__pychecker__ = "unusednames=recogniseInfo,content"
+__doc__         = """Write module doc here"""
+__pychecker__   = "unusednames=recogniseInfo,content"
 
-EMPTY_LIST_ITEM = "Empty list item."
-
-BLOCK_ELEMENTS = ("Block", "ListItem", "Definition", "Content", "Chapter", "Section", "Appendix")
+EMPTY_LIST_ITEM  = "Empty list item."
+BLOCK_ELEMENTS   = ("Block", "ListItem", "Definition", "Content", "Chapter", "Section", "Appendix")
 
 STANDARD_LIST    = 1
 DEFINITION_LIST  = 2
@@ -33,7 +30,7 @@ TODO_DONE_ITEM   = 102
 
 #------------------------------------------------------------------------------
 #
-#  Regular expressions
+# REGULAR EXPRESSIONS
 #
 #------------------------------------------------------------------------------
 
@@ -87,7 +84,7 @@ LANGUAGE_CODES = ("EN", "FR", "DE", "UK" )
 
 #------------------------------------------------------------------------------
 #
-#  Error messages
+#  ERROR MESSAGES
 #
 #------------------------------------------------------------------------------
 
@@ -95,7 +92,7 @@ ERROR_TITLE_TOO_DEEPLY_NESTED = "Title too deeply nested"
 
 #------------------------------------------------------------------------------
 #
-#  BlockParser
+# BLOCKPARSER
 #
 #------------------------------------------------------------------------------
 
@@ -119,7 +116,7 @@ class BlockParser:
 
 #------------------------------------------------------------------------------
 #
-#  ParagraphBlockParser
+# PARAGRAPH BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -193,7 +190,7 @@ class ParagraphBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-#  TaggedBlockParser
+# TAGGED BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -244,7 +241,7 @@ class TaggedBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-#  CommentBlockParser
+# COMMENT BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -270,7 +267,7 @@ class CommentBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-#  MarkupBlockParser
+# MARKUP BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -320,7 +317,7 @@ class MarkupBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-#  TitleBlockParser
+# TITLE BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -387,7 +384,7 @@ class TitleBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-#  SectionBlockParser
+# SECTION BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -509,7 +506,7 @@ class SectionBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-#  DefinitionBlockParser
+# DEFINITION BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -579,7 +576,7 @@ class DefinitionBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-#  ListItemBlockParser
+# LIST ITEM BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -762,7 +759,7 @@ class ListItemBlockParser(BlockParser):
 
 #------------------------------------------------------------------------------
 #
-#  PreBlockParser
+# PRE BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -886,7 +883,7 @@ class PreBlockParser2( BlockParser ):
 
 #------------------------------------------------------------------------------
 #
-#  TableBlockParser
+# TABLE BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -1092,7 +1089,7 @@ class TableBlockParser( BlockParser ):
 
 #------------------------------------------------------------------------------
 #
-#  MetaBlockParser
+# META BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -1106,18 +1103,18 @@ class MetaBlockParser( BlockParser ):
 		self.field_parsers = {
 			'abstract':			self.p_abstract,
 			'acknowledgements':	self.p_ack,
-			'author':				self.p_author,
-			'authors':				self.p_author,
+			'author':			self.p_author,
+			'authors':			self.p_author,
 			'creation':			self.p_creation,
 			'keywords':			self.p_keywords,
 			'language':			self.p_language,
 			'last-mod':			self.p_last_mod,
-			'markup':				self.p_markup,
+			'markup':			self.p_markup,
 			'organisation':		self.p_organisation,
 			'organization':		self.p_organisation,
 			'revision':			self.p_revision,
 			'type':				self.p_type,
-			'reference':			self.p_reference
+			'reference':		self.p_reference
 		}
 
 	def process( self, context, recogniseInfo ):
@@ -1321,7 +1318,7 @@ class MetaBlockParser( BlockParser ):
 
 #------------------------------------------------------------------------------
 #
-# ReferenceEntryBlockParser
+# REFERENCE ENTRY BLOCK PARSER
 #
 #------------------------------------------------------------------------------
 
@@ -1363,4 +1360,4 @@ class ReferenceEntryBlockParser( BlockParser ):
 			context.restoreOffsets(sub_offsets)
 		context.restoreOffsets(offsets)
 
-# EOF
+# EOF - vim: tw=80 ts=4 sw=4 noet

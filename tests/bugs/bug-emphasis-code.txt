@@ -1,0 +1,2 @@
+The handler is *bound on the* `<body>` *tag*.
+The handler is *bound on the `<body>` tag*.
