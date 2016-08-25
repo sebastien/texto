@@ -189,6 +189,8 @@ class Processor(object):
 	def generate( self, xmlDocument, bodyOnly=False, variables={} ):
 		node = xmlDocument.getElementsByTagName("Document")[0]
 		self.variables = variables
+		# FIXME: Not ideal for multithreading
+		self.bodyOnly = bodyOnly
 		if bodyOnly:
 			for child in node.childNodes:
 				if child.nodeName == "Content":

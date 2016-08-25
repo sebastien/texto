@@ -41,8 +41,8 @@ class Processor(Processor):
 		else:
 			return super(self.__class__,self).defaultProcessElement(element,selector)
 
-	def on_Document( self, element, bodyOnly=False):
-		if bodyOnly:
+	def on_Document( self, element ):
+		if self.bodyOnly:
 			return self.process(element, """\
 	$(Header:title)
 	$(Content)

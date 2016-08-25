@@ -56,7 +56,7 @@ def convertList( element ):
 def convertListItem( element ):
 	attrs   = [""]
 	is_todo = element.getAttributeNS(None, "todo")
-	return process(element, """[ ] $(*)\n""")
+	return process(element, """ - $(*)\n""")
 
 def convertTable( element ):
 	return process(element, """$(Content:table)\n\n""")
