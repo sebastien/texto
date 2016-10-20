@@ -23,6 +23,7 @@ STANDARD_LIST    = 1
 DEFINITION_LIST  = 2
 TODO_LIST        = 3
 ORDERED_LIST     = 4
+TAB_VALUE        = "    "
 
 STANDARD_ITEM    = 100
 TODO_ITEM        = 101
@@ -834,8 +835,14 @@ class PreBlockParser2( BlockParser ):
 	def findBlockEnd( self, context, indent ):
 		# FIXME: Issue a warning if no end is found
 		cur_offset = context.blockEndOffset + 1
-		block_end = context.blockEndOffset
-		lines = context.currentFragment().split("\n")
+		block_end  = context.blockEndOffset
+		text       = context.documentText
+		# We look beyond the current block end, as  the preformatted block
+		# may start with empty newlines
+		while block_end < len(text) and text[block_end] in "\n\t ":
+			block_end += 1
+		fragment   = text[context.blockStartOffset:block_end]
+		lines      = fragment.split("\n")
 		if self.isEndLine(context, lines[-1], indent):
 			return block_end
 		while True:
@@ -875,7 +882,7 @@ class PreBlockParser2( BlockParser ):
 		prefix = self.getLeadingSpaces(context, context.blockStartOffset - len(match.group(0)) - 1)
 		if lines:
 			for line in lines:
-				line = line[len(prefix):]
+				line = line[len(prefix):].replace("\t", TAB_VALUE)
 				result.append(line)
 		text = "\n".join(result)
 		pre_node = context.document.createElementNS(None, self.name)
