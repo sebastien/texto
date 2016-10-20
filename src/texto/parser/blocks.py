@@ -852,16 +852,13 @@ class PreBlockParser2( BlockParser ):
 			cur_offset = block_end
 		return block_end - 1
 
-	def getCommonPrefix( self, linea, lineb ):
-		if not lineb.replace("\t", " ").strip():
-			return linea
-		else:
-			limit = 0
-			max_limit = min(len(linea), len(lineb))
-			while limit < max_limit and linea[limit] in "\t " and linea[limit] == lineb[limit]:
-				limit += 1
-			assert linea[:limit] == lineb[:limit]
-			return linea[:limit]
+	def getLeadingSpaces( self, context, offset ):
+		e = offset
+		o = e
+		t = context.documentText
+		while o > 0 and t[o] in " \t":
+			o -= 1
+		return t[o + 1:e]
 
 	def process( self, context, recognised ):
 		result = []
@@ -874,11 +871,9 @@ class PreBlockParser2( BlockParser ):
 		context.setCurrentBlockEnd(self.findBlockEnd(context, indent))
 		lines = context.currentFragment().split("\n")
 		while not lines[0]:lines = lines[1:]
-		lines = lines[1:-1]
+		lines  = lines[1:-1]
+		prefix = self.getLeadingSpaces(context, context.blockStartOffset - len(match.group(0)) - 1)
 		if lines:
-			prefix   = lines[0]
-			for line in lines:
-				prefix = self.getCommonPrefix(prefix, line)
 			for line in lines:
 				line = line[len(prefix):]
 				result.append(line)

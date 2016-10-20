@@ -173,8 +173,17 @@ def convertemdash( element ):
 def convertentity( element ):
 	return "&%s;" % (element.getAttributeNS( None, "num"))
 
+def defaultProcess( element, selector, processor ):
+	if element.getAttribute("_html") == "true":
+		if element.nodeName == "script" and (not element.childNodes):
+			return element.toprettyxml("").replace("/>",">/**/</script>\n")
+		else:
+			return element.toprettyxml("")
+	else:
+		return "".join([processor.processElement(e) for e in element.childNodes])
+
 # We create the processor, register the rules and define the process variable
-processor  = Processor(sys.modules[__name__])
+processor  = Processor(sys.modules[__name__], default=defaultProcess)
 process    = processor.process
 
 # EOF - vim: tw=80 ts=4 sw=4 noet

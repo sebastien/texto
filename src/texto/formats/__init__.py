@@ -46,9 +46,10 @@ class Processor(object):
 	"""The processor is the core of the template engine. You give it a Python
 	module with "convert*" functions, and it will process it."""
 
-	def __init__( self, module=None ):
+	def __init__( self, module=None, default=None ):
 		self.expressionTable = {}
 		self.variables       = {}
+		self._defaultProcess = default
 		self.introspect ()
 		if module:
 			symbols   = [_ for _ in dir(module) if _.startswith("convert")]
@@ -145,7 +146,10 @@ class Processor(object):
 
 	def defaultProcessElement( self, element, selector ):
 		"""Default function for processing elements. This returns the text."""
-		return "".join([self.processElement(e) for e in element.childNodes])
+		if self._defaultProcess:
+			return self._defaultProcess(element, selector, self)
+		else:
+			return "".join([self.processElement(e) for e in element.childNodes])
 
 	def interpret( self, element, expression ):
 		"""Interprets the given expression for the given element"""
