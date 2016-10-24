@@ -1,0 +1,11 @@
+Deferred cells are only executed at the end of a cycle.
+Take the following network
+
+```
+	
+A ----+
+      |
+B ----+---- S
+      |
+C ----+
+```

@@ -837,6 +837,15 @@ class PreBlockParser2( BlockParser ):
 		cur_offset = context.blockEndOffset + 1
 		block_end  = context.blockEndOffset
 		text       = context.documentText
+		# FIXME: THis should be rewritten
+		# We look beyond the current block end, as  the preformatted block
+		# may start with empty newlines
+		# while block_end < len(text) and text[block_end] in "\n\t ":
+		# 	block_end += 1
+		fragment   = text[context.blockStartOffset:block_end]
+		lines      = fragment.split("\n")
+		if self.isEndLine(context, lines[-1], indent):
+			return block_end
 		# We look beyond the current block end, as  the preformatted block
 		# may start with empty newlines
 		while block_end < len(text) and text[block_end] in "\n\t ":

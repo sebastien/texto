@@ -1,0 +1,22 @@
+
+```html
+<div class="component"
+data-type="IndicatorInformation"
+data-indicator="STI.INNOV.HAMP_FACTOR.INNOV_ACTIVE"
+data-location="['AU','CA','FR']"
+data-period="[2003,2016]"
+data-view="chart",
+data-selector="none"
+data-lang="en"
+></div>
+```
+
+
+Options:
+
+- `indicator` (required): the ID of the indicator to display
+- `location`: a JSON-encoded list of location IDs (as per the API)
+- `period`: the JSON-encoded selected period as `[start,end]` (inclusive), `[-1,-1]` for latest
+- `view`: the selected view (`chart`, `table` or `meta`)
+- `selector`: the opened selector (`none`
+
