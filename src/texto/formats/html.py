@@ -214,7 +214,7 @@ class Processor(Processor):
 		else:   tid = ""
 		return self.process(element, """<div class="table"%s><table cellpadding="0" cellspacing="0" align="center">$(Caption)$(Content:table)</table></div>""" % (tid))
 
-	def on_DefinitionList_( self, element ):
+	def on_DefinitionList( self, element ):
 		return self.process(element, """<dl%s>$(*)</dl>""" % (self._wattrs(element)))
 
 	def on_DefinitionItem( self, element ):
