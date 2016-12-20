@@ -46,23 +46,23 @@ Usage: texto [options] source [destination]
 
 Options:
 
-   -i --input-encoding           Allows to specify the input encoding
-   -o --output-encoding          Allows to specify the output encoding
+   -i --input-encoding           Specifie the input encoding
+   -o --output-encoding          Specify the output encoding
    -t --tab                      The space value for tabs (default=4).
    -f --offsets                  Add offsets information
-   -s --stylesheet               Path or URL to the CSS stylesheet
+   -s --stylesheet               Path or URL to the CSS stylesheet (HTML output)
    -O --output-format            Specifies and alternate output FORMAT
-   -x --extension                Specifies a comma-separated lis of python
+   -x --extension                Specifies a comma-separated list of python
                                  modules to load as extension to the parser.
-      --body-only                Only returns the content of the <body< element
+      --body-only                Only returns the content of the <body> element
       --level=n                  If n>0, n will transform HTML h1 to h2, etc...
 
    The available encodings are   %s
    The available formats are     %s
 
 Misc:
-   -h,  --help                    prints this help.
-   -v,  --version                 prints the version of Texto.
+   -h,  --help                   prints this help.
+   -v,  --version                prints the version of Texto.
 """
 
 # Error codes
@@ -79,7 +79,7 @@ LATIN2 = "iso-8859-2"
 UTF8   = "utf-8"
 UTF16  = "utf-16"
 MACROMAN  = "macroman"
-NORMALISED_ENCODINGS = (LATIN1, LATIN2, UTF8, UTF16, MACROMAN)
+NORMALISED_ENCODINGS = (UTF8, UTF16, LATIN1, LATIN2, MACROMAN)
 
 # Supported encodings
 
@@ -119,7 +119,7 @@ def run( arguments, input=None, noOutput=False ):
 	# We get the list of available encodings
 	available_enc = []
 	ENCODINGS_LIST=""
-	for encoding in NORMALISED_ENCODINGS:
+	for encoding in sorted(NORMALISED_ENCODINGS):
 		try:
 			codecs.lookup(encoding)
 			available_enc.append(encoding)
@@ -128,7 +128,7 @@ def run( arguments, input=None, noOutput=False ):
 			pass
 	ENCODINGS_LIST=ENCODINGS_LIST[:-2]+"."
 
-	usage = USAGE % (ENCODINGS_LIST, ", ".join(list(FORMATS.keys())))
+	usage = USAGE % (ENCODINGS_LIST, ", ".join(list(sorted(FORMATS.keys()))))
 
 	# We set attributes
 	show_offsets    = False

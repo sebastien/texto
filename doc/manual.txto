@@ -1,5 +1,5 @@
 == Texto User Manual
--- Authors: Sébastien Pierre<sebastien.pierre@gmail.com>
+-- Authors: SÃ©bastien Pierre<sebastien.pierre@gmail.com>
 -- Revision: 0.8.6
 
 1. Introduction
@@ -399,7 +399,7 @@
   -------------------------------------------------------------------
   Quoted   || ``''quoted text''``        || ''quoted text''
   -------------------------------------------------------------------
-  Citation || <code>«a citation»</code>  || «a citation»
+  Citation || <code>Â«a citationÂ»</code>  || Â«a citationÂ»
   ===================================================================
   **Linking**
   ===================================================================

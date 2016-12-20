@@ -29,6 +29,7 @@ STANDARD_ITEM    = 100
 TODO_ITEM        = 101
 TODO_DONE_ITEM   = 102
 
+
 #------------------------------------------------------------------------------
 #
 # REGULAR EXPRESSIONS
@@ -71,6 +72,7 @@ PREFORMATTED_2_END   = re.compile("^\s*```\s*$")
 CUSTOM_MARKUP    = "\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
 RE_CUSTOM_MARKUP = re.compile(CUSTOM_MARKUP, re.LOCALE|re.MULTILINE)
 
+RE_DOCSTRING     = re.compile("^\s*@(param|return[s]?)\s", re.LOCALE)
 RE_META_START    = re.compile("^(\s*)--\s*$")
 RE_META_END      = re.compile("^(\s*)--\s*$")
 
@@ -120,6 +122,7 @@ class BlockParser:
 	def processText( self, context, text ):
 		assert context, text
 		return text
+
 
 #------------------------------------------------------------------------------
 #
@@ -492,6 +495,7 @@ class SectionBlockParser(BlockParser):
 		section_node.setAttributeNS(None, "_depth", str(section_depth))
 		section_node.setAttributeNS(None, "_start", str(block_start))
 		section_node.setAttributeNS(None, "_sstart", str(block_start))
+		section_node.setAttributeNS(None, "id", str(context.asKey(heading_text, section_node)))
 		heading_node = context.document.createElementNS(None, "Heading")
 		section_node.appendChild(heading_node)
 		offsets = context.saveOffsets()

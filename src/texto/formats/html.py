@@ -9,9 +9,8 @@
 # Last mod.         : 16-Aug-2016
 # -----------------------------------------------------------------------------
 
-import re, xml.dom
-import sys
-from texto.formats import Processor, escapeHTML
+import sys, re, xml.dom
+import texto.formats
 
 #------------------------------------------------------------------------------
 #
@@ -19,7 +18,7 @@ from texto.formats import Processor, escapeHTML
 #
 #------------------------------------------------------------------------------
 
-class Processor(Processor):
+class Processor(texto.formats.Processor):
 
 	def defaultProcessElement( self, element, selector ):
 		"""We override this for elements with the 'html' attribute."""
@@ -115,7 +114,7 @@ class Processor(Processor):
 
 
 	def processTextNode( self, element, seelctor, isSelectorOptional=False ):
-		return escapeHTML(element.data)
+		return texto.formats.escapeHTML(element.data)
 
 	def getSectionNumberPrefix(self, element):
 		if not element:

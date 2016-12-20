@@ -1,12 +1,12 @@
 == KIWI USER MANUAL
--- Authors: Sébastien Pierre<sebastien.pierre@gmail.com>
+-- Authors: SÃ©bastien Pierre<sebastien.pierre@gmail.com>
 -- Revision: 0.7.6
 
 1. Introduction
 ===============
 
 Kiwi aims to be an easy way to edit XML and HTML documents, by allowing to use
-syntactic shortucts (à la *Wiki*) to be mixed with regular XML/HTML markup.
+syntactic shortucts (Ã  la *Wiki*) to be mixed with regular XML/HTML markup.
 
 There already exist many text markup language that easily allow to generate
 XML/HTML/DocBook/Texinfo, etc. However, none was flexible enough to be easily
@@ -178,7 +178,7 @@ facilities:
 	-------------------------------------------------------------------
 	Quoted		|| ``''quoted text''``	|| ''quoted text''
 	-------------------------------------------------------------------
-	Citation	|| <code>«a citation»</code>	|| «a citation»
+	Citation	|| <code>Â«a citationÂ»</code>	|| Â«a citationÂ»
 	===================================================================
 
 	== Linking

@@ -10,11 +10,11 @@
 
 import sys, os, glob, re, imp, xml.dom
 
-RE_EXPRESSION    =re.compile("\$\(([^\)]+)\)")
+RE_EXPRESSION = re.compile("\$\(([^\)]+)\)")
 
 __doc__ = """\
-The template module implements a simple way to convert an XML document to another
-format (HTML, text, whatever) by expanding very simple XPath-like expressions. Of
+The `formats` module implements a simple way to convert an XML document to another
+format (HTML or text) by expanding simple XPath-like expressions. Of
 course, it is a very-small subset of what you could do in XSLT, but it has a
 Python syntax and is very, very easy to use.
 
@@ -25,13 +25,13 @@ tagName. All these functions should take an element as parameter and run the
 Expressions like `$(XXX)' (XXX being the expression) in the template strings
 will be expanded by procesing the set of nodes indicated by the XXX expression.
 
- - $(*) will process all children
- - $(MyNode) will process only nodes with 'MyNode' tagName
- - $(MyParent/MyNode) will process only the children of MyParent named MyNode
- - $(MyNode:alt) will use the function `convertMyNode_alt' instead of the
+ - `$(*)` will process all children
+ - `$(MyNode)` will process only nodes with 'MyNode' tagName
+ - `$(MyParent/MyNode)` will process only the children of MyParent named MyNode
+ - `$(MyNode:alt)` will use the function `convertMyNode_alt' instead of the
    default 'convertMyNode', if available. This allows to setup 'processing
    modes' for your document (like table of content, references, etc).
- - $(MyNode:alt?) will use the function `convertMyNode_alt' if it is defined, or
+ - `$(MyNode:alt?)` will use the function `convertMyNode_alt' if it is defined, or
    fallback to `convertMyNode`.
 
 """
@@ -43,23 +43,26 @@ will be expanded by procesing the set of nodes indicated by the XXX expression.
 #------------------------------------------------------------------------------
 
 class Processor(object):
-	"""The processor is the core of the template engine. You give it a Python
-	module with "convert*" functions, and it will process it."""
+	"""The processor is the core of the template engine. It registers handlers
+	to handle elements on a by-name basis."""
 
 	def __init__( self, module=None, default=None ):
 		self.expressionTable = {}
 		self.variables       = {}
 		self._defaultProcess = default
-		self.introspect ()
-		if module:
-			symbols   = [_ for _ in dir(module) if _.startswith("convert")]
-			functions = dict((_,getattr(module,_)) for _ in symbols)
-			self.register(functions)
+		self.bindInstance(self)
+		if module: self.bindModule(module)
 
-	def introspect( self ):
+	def bindModule( self, module ):
+		# FIXME: legacy
+		symbols   = [_ for _ in dir(module) if _.startswith("convert")]
+		functions = dict((_,getattr(module,_)) for _ in symbols)
+		self.register(functions)
+
+	def bindInstance( self, instance ):
 		"""Registers any function that starts with `on` as a processor
 		for the node with the given name."""
-		return self.register(dict((_[3:],getattr(self,_)) for _ in dir(self) if _.startswith("on_")))
+		return self.register(dict((_[3:],getattr(instance,_)) for _ in dir(instance) if _.startswith("on_")))
 
 	def register( self, name2functions ):
 		"""Fills the EXPRESSION_TABLE which maps element names to processing
@@ -123,6 +126,17 @@ class Processor(object):
 		else:
 			return ""
 
+	def text( self, element, selector=None ):
+		if element and hasattr(element, "nodeType"):
+			if element.nodeType == xml.dom.Node.TEXT_NODE:
+				return element.data
+			elif element.nodeType == xml.dom.Node.ELEMENT_NODE:
+				return "".join([self.text(e) for e in element.childNodes])
+			else:
+				return ""
+		else:
+			return ""
+
 	def processElementNode( self, element, selector, isSelectorOptional=False ):
 		element._processor = self
 		fname = element.nodeName
@@ -151,14 +165,20 @@ class Processor(object):
 		else:
 			return "".join([self.processElement(e) for e in element.childNodes])
 
-	def interpret( self, element, expression ):
-		"""Interprets the given expression for the given element"""
+
+	def first( self, element, expression ):
+		r = self.query(element, expression)
+		return r[0][0] if r else None
+
+	def query( self, element, expression ):
+		"""Queries the given expression at the given element, returning
+		matching (element,selector) couples."""
 		assert self.expressionTable
 		# =VARIABLE means that we replace the expression by the content of the
 		# variable in the varibales directory
 		if expression.startswith("="):
 			vname = expression[1:].upper()
-			return self.variables.get(vname) or ""
+			return [(self.variables.get(vname) or "", None)]
 		# Otherwise, the expression is a node selection expression, which may also
 		# have a selector
 		elif expression.rfind(":") != -1:
@@ -168,10 +188,7 @@ class Processor(object):
 			names           = expression
 			selector        = None
 		names = names.split("/")
-		r     = ""
-		for element in self.resolveSet(element, names):
-			r += self.processElement(element, selector)
-		return r
+		return [(_,selector) for _ in self.resolveSet(element, names)]
 
 	# SYNTAX: $(EXPRESSION)
 	# Where EXPRESSION is a "/" separated list of element names, optionally followed
@@ -186,7 +203,8 @@ class Processor(object):
 				break
 			else:
 				r += text[i:m.start()]
-			r+= self.interpret(element, m.group(1))
+			for e, s in self.query(element, m.group(1)):
+				 r += e if isinstance(e, str) or isinstance(e, unicode) else self.processElement(e, s)
 			i = m.end()
 		return r
 

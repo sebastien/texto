@@ -41,6 +41,8 @@ def ensureBytes( t, encoding="utf8" ):
 		return t if isinstance(t, bytes) else bytes(t, encoding)
 	else:
 		return t
+
+
 #------------------------------------------------------------------------------
 #
 # GLOBALS
@@ -108,6 +110,19 @@ class Context:
 		# post-verification of the links (are they all resolved)
 		self._links   = []
 		self._targets = []
+		self._keys    = {}
+
+
+	def asKey( self, text, node=None ):
+		key = "".join([_ if _ in "abcdefghijklmnopqrstuvwxyz0123456789-_" else "-" for _ in text.lower().strip()])
+		if key in self._keys:
+			i = 1
+			base = key
+			while key in self._keys:
+				key = base + "-" + str(i)
+				i += 1
+		self._keys[key] = node
+		return key
 
 	def _getElementsByTagName(self, node, name):
 		if node.nodeType == node.ELEMENT_NODE and \
