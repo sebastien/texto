@@ -494,6 +494,7 @@ class SectionBlockParser(BlockParser):
 		section_node.setAttributeNS(None, "_indent", str(section_indent ))
 		section_node.setAttributeNS(None, "_depth", str(section_depth))
 		section_node.setAttributeNS(None, "_start", str(block_start))
+		section_node.setAttributeNS(None, "_end",   str(block_end))
 		section_node.setAttributeNS(None, "_sstart", str(block_start))
 		section_node.setAttributeNS(None, "id", str(context.asKey(heading_text, section_node)))
 		heading_node = context.document.createElementNS(None, "Heading")

@@ -38,7 +38,7 @@ class Processor(texto.formats.Processor):
 				res += "/>"
 			return res
 		else:
-			return super(self.__class__,self).defaultProcessElement(element,selector)
+			return super(Processor,self).defaultProcessElement(element,selector)
 
 	def on_Document( self, element ):
 		if self.bodyOnly:
