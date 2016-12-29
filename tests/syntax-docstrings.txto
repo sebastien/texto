@@ -1,0 +1,6 @@
+This shows how documentation strings are interpeted
+
+@param    a {type} description
+@param    b {type} description
+@param    c {type} description
+@returns  {type} description

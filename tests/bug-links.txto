@@ -1,0 +1,5 @@
+# NOTE: The links are not parsed properly
+
+- [widgets/MethodologyOverlay](widgets/MethodologyOverlay.html), 
+  [widgets/EmotionOverlay](widgets/EmotionOverlay.html), 
+  [widgets/EmbedOverlay](widgets/EmbedOverlay.html) (depends on `eq.components.overlays`): 

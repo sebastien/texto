@@ -6,7 +6,7 @@
 # Author            :   Sebastien Pierre           <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   16-Aug-2016
+# Last mod.         :   29-Dec-2016
 # -----------------------------------------------------------------------------
 
 import re
@@ -66,6 +66,7 @@ QUOTED           = "\"(('?[^'])+)\""
 RE_QUOTED        = re.compile(QUOTED, re.LOCALE|re.MULTILINE)
 CITATION         = "«([^»]+)»"
 RE_CITATION      = re.compile(CITATION,re.LOCALE|re.MULTILINE)
+RE_CHECKBOX      = re.compile("\[[ X]\]", re.LOCALE)
 
 # Special Characters
 
@@ -102,6 +103,7 @@ TARGET           = "\|([\w\s]+(:[^\|]*)?)\|"
 RE_TARGET        = re.compile(TARGET, re.LOCALE)
 
 # Custom markup
+
 MARKUP_ATTR      = """[\-_\d\w]+\s*=\s*('[^']*'|"[^"]*")"""
 MARKUP           = "\<([\-_\d\w]+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
 RE_MARKUP        = re.compile(MARKUP, re.LOCALE|re.MULTILINE)
@@ -195,6 +197,25 @@ class InlineParser:
 			inline_node   = context.document.createTextNode(text)
 			node.appendChild(inline_node)
 		return self.endOf(recogniseInfo)
+
+#------------------------------------------------------------------------------
+#
+# CHECKBOX PARSER
+#
+#------------------------------------------------------------------------------
+
+class CheckboxParser( InlineParser ):
+
+	def __init__( self ):
+		InlineParser.__init__( self, "checkbox", RE_CHECKBOX )
+
+	def parse( self, context, node, match ):
+		assert match
+		enabled =  match.group()[1].strip() and True or False
+		res     = context.document.createElementNS(None, "checkbox")
+		res.setAttributeNS(None, "checked", str(enabled))
+		node.appendChild(res)
+		return match.end()
 
 #------------------------------------------------------------------------------
 #

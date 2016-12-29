@@ -190,7 +190,7 @@ class Processor(texto.formats.Processor):
 		if list_type:
 			attrs.append('class="%s"' % (list_type))
 		if list_type == "ordered":
-			return self.process(element, """<ol%s%s>$(*)</ul>""" % (self._wattrs(element), " ".join(attrs)))
+			return self.process(element, """<ol%s%s>$(*)</ol>""" % (self._wattrs(element), " ".join(attrs)))
 		else:
 			return self.process(element, """<ul%s%s>$(*)</ul>""" % (self._wattrs(element), " ".join(attrs)))
 
@@ -284,6 +284,10 @@ class Processor(texto.formats.Processor):
 
 	def on_term( self, element ):
 		return self.process(element, """<span class='term'>$(*)</span>""")
+
+	def on_checkbox( self, element ):
+		# FIXME: Not the right one
+		return "<input type=\"checkbox\"" + (" checked" if element.getAttributeNS(None, "checked") == "true" else "") + " />"
 
 	def on_quote( self, element ):
 		return self.process(element, """&ldquo;<span class='quote'>$(*)</span>&rdquo;""")

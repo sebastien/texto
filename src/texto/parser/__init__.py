@@ -89,7 +89,8 @@ class Context:
 		- parser: a reference to the Texto parser instance using the context.
 	"""
 
-	def __init__( self, documentText, markOffsets=False ):
+	def __init__( self, documentText, markOffsets=False, parser=None ):
+		self.parser = parser
 		self.document = None
 		self.rootNode = None
 		self.header   = None
@@ -97,6 +98,7 @@ class Context:
 		self.references = None
 		self.appendices = None
 		self.currentNode = None
+		self.lastBlockNode = None
 		self._offset = 0
 		self.blockStartOffset = 0
 		self.blockEndOffset = -1
@@ -111,7 +113,6 @@ class Context:
 		self._links   = []
 		self._targets = []
 		self._keys    = {}
-
 
 	def asKey( self, text, node=None ):
 		key = "".join([_ if _ in "abcdefghijklmnopqrstuvwxyz0123456789-_" else "-" for _ in text.lower().strip()])
@@ -151,8 +152,8 @@ class Context:
 		specific node"""
 		if self.currentNode!=None:
 			while ( self.currentNode.nodeName not in parentNames
-				or not predicate(self.currentNode)
-				) and self.currentNode.nodeName!="Document":
+			  or not predicate(self.currentNode)
+			  ) and self.currentNode.nodeName!="Document":
 				if self.currentNode.parentNode:
 					self.currentNode = self.currentNode.parentNode
 				else:
@@ -204,6 +205,17 @@ class Context:
 	def getOffset(self):
 		"""Returns the current offset."""
 		return self._offset
+
+	def findNextBlockOffset( self ):
+		if self.parser:
+			cur_end, next_start = self.parser._findNextBlockSeparator(self)
+			return next_start
+		else:
+			o = context.blockEndOffset
+			l = len(context.documentText)
+			while o < l and context.documentText[o] in "\t\n ":
+				o += 1
+			return l if o < l else context.blockEndOffset
 
 	def increaseOffset( self, increase ):
 		"""Increases the current offset"""
@@ -431,6 +443,7 @@ class Parser:
 			InlineParser("quote",		RE_QUOTED,   normal),
 			InlineParser("code",		RE_CODE_3, requiresLeadingSpace=True),
 			InlineParser("citation",	RE_CITATION, normal),
+			CheckboxParser(),
 			# Special characters
 			InlineParser("break",		RE_BREAK),
 			InlineParser(None,			RE_SWALLOW_BREAK),
@@ -487,7 +500,7 @@ class Parser:
 		end) offset tuples for each element."""
 		# Text MUST be unicode
 		assert type(text) in (str, unicode)
-		context = Context(text, markOffsets=offsets)
+		context = Context(text, markOffsets=offsets, parser=self)
 		self._initialiseContextDocument(context)
 		context.parser = self
 		while not context.documentEndReached():
@@ -522,6 +535,7 @@ class Parser:
 		# If the block is an empty block (a SEPARATOR), we try to find the
 		# parent node
 		if block_end_offset == block_start_offset:
+			context.lastBlockNode = context.currentNode
 			# We rewind until we find a "Content" block
 			while context.currentNode.nodeName != "Content" and \
 			context.currentNode.parentNode != None:

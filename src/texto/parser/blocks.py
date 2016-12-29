@@ -45,7 +45,7 @@ RE_TITLES         = re.compile("%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MUL
 
 SECTION_HEADING   = "^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
-SECTION_HEADING_ALT = "^(\=+\s*).+$"
+SECTION_HEADING_ALT = "^((\=+|##+)\s*).+$"
 RE_SECTION_HEADING_ALT= re.compile(SECTION_HEADING_ALT, re.LOCALE)
 SECTION_UNDERLINE = "^\s*[\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
@@ -55,7 +55,7 @@ RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.LOCALE|re.MULTILINE)
 
 TAGGED_BLOCK      = "^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
 RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE | re.LOCALE)
-LIST_ITEM         = "^(\s*)(-|\*\)|[0-9A-z][\)/]|\[[ \-\~xX]\])\s*"
+LIST_ITEM         = "^(\s*)(-|\*\)|[0-9A-z]+[\)/]|\[[ \-\~xX]\])\s*"
 RE_LIST_ITEM      = re.compile(LIST_ITEM, re.MULTILINE | re.LOCALE)
 LIST_HEADING      = "(^\s*[^:{().<]*:)"
 RE_LIST_HEADING   = re.compile(LIST_HEADING, re.MULTILINE | re.LOCALE)
@@ -602,7 +602,9 @@ class ListItemBlockParser(BlockParser):
 		return RE_LIST_ITEM.match(context.currentFragment())
 
 	def process( self, context, itemMatch ):
-
+		# These two lines will re-use a previous list item as the current node
+		if context.lastBlockNode and context.lastBlockNode.nodeName == "ListItem":
+			context.currentNode = context.lastBlockNode
 		context.ensureParent( ("Content", "Appendix", "Chapter", "Section", "List") )
 		start_offset = context.getOffset()
 
@@ -622,11 +624,11 @@ class ListItemBlockParser(BlockParser):
 			context.parser.warning(EMPTY_LIST_ITEM, context)
 			return
 
-		# We search a possible next list item after the first eol
+		# We search a possible next list item after the first eol in the
+		# current fragment, or at the beginning of the next fragment.
 		next_eol = context.currentFragment().find("\n")
 		if next_eol!=-1:
-			next_item_match = RE_LIST_ITEM.search(
-				context.currentFragment(), next_eol)
+			next_item_match = RE_LIST_ITEM.search(context.currentFragment(), next_eol)
 		else:
 			next_item_match = None
 
@@ -635,15 +637,17 @@ class ListItemBlockParser(BlockParser):
 		if next_item_match:
 			current_item_text = current_item_text[:next_item_match.start()]
 
-		# We get the list item identation
-		indent = context.parser.getIndentation(
-			context.parser.charactersToSpaces(itemMatch.group()))
+		# We get the list item identation, based on the whole item text, not just
+		# the list item match
+		l = len(itemMatch.group())
+		f = context.parser.getIndentation(itemMatch.group()) * " " + current_item_text[l:]
+		indent = context.parser.getIndentation(f)
 
 		# We look for the optional list heading
-		heading = RE_LIST_ITEM_HEADING.match(current_item_text)
+		heading        = RE_LIST_ITEM_HEADING.match(current_item_text)
 		heading_offset = 0
-		list_type   = STANDARD_LIST
-		item_type   = STANDARD_ITEM
+		list_type      = STANDARD_LIST
+		item_type      = STANDARD_ITEM
 		if heading:
 			# We remove the heading from the item text
 			heading_offset = heading.end()
@@ -678,9 +682,9 @@ class ListItemBlockParser(BlockParser):
 		# with a STRICLY LOWER indentation, or a node which is neither a List
 		# or a ListItem.
 		while context.currentNode.nodeName == "List" and \
-		int(context.currentNode.getAttributeNS(None, "_indent"))>indent or \
-		context.currentNode.nodeName == "ListItem" and \
-		int(context.currentNode.getAttributeNS(None, "_indent"))>=indent:
+		  int(context.currentNode.getAttributeNS(None, "_indent"))>indent or \
+		  context.currentNode.nodeName == "ListItem" and \
+		  int(context.currentNode.getAttributeNS(None, "_indent"))>=indent:
 			context.currentNode = context.currentNode.parentNode
 
 		# If the current node is a list, then we have to create a nested list.
@@ -709,7 +713,7 @@ class ListItemBlockParser(BlockParser):
 			list_item_node.setAttributeNS(None, "todo", "true")
 		elif item_type == TODO_DONE_ITEM:
 			list_item_node.setAttributeNS(None, "todo", "done")
-		#list_item_node.setAttributeNS(None, "_start", str(start_offset))
+		list_item_node.setAttributeNS(None, "_start", str(context.getOffset()))
 		if next_item_match:
 			list_item_node.setAttributeNS(None, "_end", str(context.getOffset() + next_item_match.start() -1))
 		else:
@@ -733,11 +737,9 @@ class ListItemBlockParser(BlockParser):
 			context.increaseOffset(heading_offset)
 		# We parse the content of the list item
 		old_node = context.currentNode
-		# FIXME: This is necessary to assign the current node, but I do not
-		# quite understand why... this needs some code review.
+		# We temporarily set he list item node as the current node
 		context.currentNode = list_item_node
 		context.parser.parseBlock(context, list_item_node, self.processText)
-		context.currentNode = old_node
 		context.restoreOffsets(offsets)
 		# We eventually append the created list item node to the parent list
 		# node
@@ -755,7 +757,8 @@ class ListItemBlockParser(BlockParser):
 			# We set the offset in which the next_item Match object was
 			# created, because match object start and end are relative
 			# to the context offset at pattern matching time.
-			list_item_node = self.process(context, next_item_match)
+			context.lastBlockNode = context.currentNode
+			list_item_node        = self.process(context, next_item_match)
 		# Or we have reached the block end
 		else:
 			context.setOffset(context.blockEndOffset)
