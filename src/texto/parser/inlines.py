@@ -52,8 +52,13 @@ RE_ESCAPED_STRING = re.compile(ESCAPED_STRING, re.MULTILINE|re.LOCALE)
 
 CODE             = "`([^\`]+)`"
 RE_CODE          = re.compile(CODE, re.LOCALE|re.MULTILINE)
-CODE_3           = "'([^']+)'"
-RE_CODE_3        = re.compile(CODE_3, re.LOCALE|re.MULTILINE)
+
+CODE_REF_1       = "@`([^\`]+)`"
+RE_CODE_REF_1      = re.compile(CODE_REF_1, re.LOCALE)
+
+CODE_REF_2       = "@(([\w_][\w\d]*)(\.[\w_][\w\d]*)*)"
+RE_CODE_REF_2      = re.compile(CODE_REF_2, re.LOCALE)
+
 PRE              = "^((\s*\>(\t|   ))(.*)\n?)+"
 RE_PRE           = re.compile(PRE, re.LOCALE|re.MULTILINE)
 EMPHASIS         = "\*([^*]+)\*"

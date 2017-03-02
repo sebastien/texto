@@ -191,7 +191,8 @@ class Context:
 	def setDocumentText( self, text ):
 		"""Sets the text of the current document. This should only be called
 		at context initialisation."""
-		text = ensureUnicode(text)
+		# FIXME: Somehow this does not work...
+		# text = ensureUnicode(text)
 		self.documentText = text
 		self.documentTextLength = len(text)
 		self.blockEndOffset = self.documentTextLength
@@ -375,13 +376,15 @@ class Context:
 
 class Parser:
 
-	def __init__( self, baseDirectory=".", inputEncoding="utf8", outputEncoding="utf8", inlineParsers=None, blockParsers=None, customParsers=None):
+	def __init__( self, baseDirectory=".", inputEncoding="utf8",
+			outputEncoding="utf8", inlineParsers=None, blockParsers=None,
+			customParsers=None, document=None, root=None):
+		self.document = document
+		self.root     = root
 		self.blockParsers  = []
 		self.inlineParsers = []
 		self.customParsers = {}
 		self.baseDirectory = baseDirectory
-		self.inputEncoding = inputEncoding
-		self.outputEncoding = outputEncoding
 		self.defaultBlockParser = ParagraphBlockParser()
 		if blockParsers is not None:
 			self.blockParsers.extend(blockParsers)
@@ -435,13 +438,13 @@ class Parser:
 			LinkInlineParser(),
 			PreInlineParser(),
 			TargetInlineParser(),
-			#InlineParser("code",		RE_CODE_2),
+			InlineParser("coderef",		RE_CODE_REF_1),
+			InlineParser("coderef",		RE_CODE_REF_2),
 			InlineParser("code",		RE_CODE),
 			InlineParser("term",		RE_TERM,     normal),
 			InlineParser("strong",		RE_STRONG,   normal),
 			InlineParser("emphasis",	RE_EMPHASIS, normal),
 			InlineParser("quote",		RE_QUOTED,   normal),
-			InlineParser("code",		RE_CODE_3, requiresLeadingSpace=True),
 			InlineParser("citation",	RE_CITATION, normal),
 			CheckboxParser(),
 			# Special characters
@@ -457,9 +460,15 @@ class Parser:
 	def _initialiseContextDocument(self, context):
 		"""Creates the XML document that will be populated by Texto
 		parsing."""
-		document  = dom.createDocument(None,None,None)
-		root_node = document.createElementNS(None, "Document")
-		document.appendChild(root_node)
+		if not self.document:
+			document = dom.createDocument(None,None,None)
+		else:
+			document = self.document
+		if not self.root:
+			root_node = document.createElementNS(None, "Document")
+			document.appendChild(root_node)
+		else:
+			root_node = self.root
 		context.rootNode = root_node
 		context.document = document
 		context.header   = document.createElementNS(None, "Header")
@@ -479,7 +488,7 @@ class Parser:
 		line   = len(text.split("\n"))
 		offset = context.getOffset() - text.rfind("\n") - 1
 		message = str(message % (line, offset) + "\n")
-		sys.stderr.write(message.encode("iso-8859-1"))
+		sys.stderr.write(message.encode("utf8"))
 
 	def warning( self, message, context ):
 		self._print( "WARNING at line %4d, character %3d: "+message, context)

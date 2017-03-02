@@ -24,6 +24,14 @@ from  texto import parser, formats, VERSION
 FORMATS = formats.get()
 FORMATS["xml"] = True
 
+IS_PYTHON3 = sys.version_info[0] > 2
+
+def ensureUnicode( t, encoding="utf8" ):
+	if IS_PYTHON3:
+		return t if isinstance(t, str) else str(t, encoding)
+	else:
+		return t if isinstance(t, unicode) else str(t).decode(encoding)
+
 #------------------------------------------------------------------------------
 #
 # COMMAND-LINE INTERFACE
@@ -284,6 +292,8 @@ def run( arguments, input=None, noOutput=False ):
 
 def text2htmlbody( text, inputEncoding=None, outputEncoding=None, offsets=True ):
 	"""Converts the given text to HTML, returning only the body."""
+
+	text = ensureUnicode(text)
 	s = io.StringIO(text)
 	command = "-m --body-only"
 	if offsets: command += " -f"

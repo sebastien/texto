@@ -305,6 +305,9 @@ class Processor(texto.formats.Processor):
 	def on_code( self, element ):
 		return self.process(element, """<code>$(*)</code>""")
 
+	def on_coderef( self, element ):
+		return self.process(element, """<code class='ref'>$(*)</code>""")
+
 	def on_emphasis( self, element ):
 		return self.process(element, """<em>$(*)</em>""")
 
