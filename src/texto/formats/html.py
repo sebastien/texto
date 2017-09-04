@@ -292,10 +292,13 @@ class Processor(texto.formats.Processor):
 	def on_quote( self, element ):
 		return self.process(element, """&ldquo;<span class='quote'>$(*)</span>&rdquo;""")
 
-	def on_citation_( self, element ):
+	def on_citation( self, element ):
 		return self.process(element, """&laquo;<span class='citation'>$(*)</span>&raquo;""")
 
-	def on_stron_g( self, element ):
+	def on_variable( self, element ):
+		return self.process(element, """<span id='$(*)' class='variable'></span>""")
+
+	def on_strong( self, element ):
 		return self.process(element, """<strong>$(*)</strong>""")
 
 	def on_pre( self, element ):

@@ -637,11 +637,9 @@ class ListItemBlockParser(BlockParser):
 		if next_item_match:
 			current_item_text = current_item_text[:next_item_match.start()]
 
-		# We get the list item identation, based on the whole item text, not just
-		# the list item match
-		l = len(itemMatch.group())
-		f = context.parser.getIndentation(itemMatch.group()) * " " + current_item_text[l:]
-		indent = context.parser.getIndentation(f)
+		# We get the list item identation, based on the indentation of the
+		# item
+		indent = context.parser.getIndentation(itemMatch.group(0))
 
 		# We look for the optional list heading
 		heading        = RE_LIST_ITEM_HEADING.match(current_item_text)
