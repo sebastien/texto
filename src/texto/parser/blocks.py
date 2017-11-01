@@ -36,55 +36,55 @@ TODO_DONE_ITEM   = 102
 #
 #------------------------------------------------------------------------------
 
-RE_BLANK          = re.compile("\s*", re.LOCALE|re.MULTILINE)
+RE_BLANK          = re.compile("\s*", re.MULTILINE)
 
 TITLE             = "^\s*(==)([^=].+)$"
-RE_TITLE          = re.compile(TITLE, re.LOCALE|re.MULTILINE)
+RE_TITLE          = re.compile(TITLE, re.MULTILINE)
 TITLE_HEADER      = "^\s*(--)([^\:]+):(.+)?$"
-RE_TITLES         = re.compile("%s|%s" % (TITLE, TITLE_HEADER), re.LOCALE|re.MULTILINE)
+RE_TITLES         = re.compile("%s|%s" % (TITLE, TITLE_HEADER), re.MULTILINE)
 
 SECTION_HEADING   = "^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
-RE_SECTION_HEADING= re.compile(SECTION_HEADING, re.LOCALE)
+RE_SECTION_HEADING= re.compile(SECTION_HEADING)
 SECTION_HEADING_ALT = "^((\=+|##+)\s*).+$"
-RE_SECTION_HEADING_ALT= re.compile(SECTION_HEADING_ALT, re.LOCALE)
+RE_SECTION_HEADING_ALT= re.compile(SECTION_HEADING_ALT)
 SECTION_UNDERLINE = "^\s*[\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
-RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.LOCALE|re.MULTILINE)
+RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.MULTILINE)
 
 DEFINITION_ITEM   = "^(\s*(\:[^\:]|[^\:])+)\:\:+\s*(\n+\s*|\s*\|\s*\n)*"
-RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.LOCALE|re.MULTILINE)
+RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.MULTILINE)
 
 TAGGED_BLOCK      = "^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
-RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE | re.LOCALE)
+RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE )
 LIST_ITEM         = "^(\s*)(-|\*\)|[0-9A-z]+[\)/]|\[[ \-\~xX]\])\s*"
-RE_LIST_ITEM      = re.compile(LIST_ITEM, re.MULTILINE | re.LOCALE)
+RE_LIST_ITEM      = re.compile(LIST_ITEM, re.MULTILINE)
 LIST_HEADING      = "(^\s*[^:{().<]*:)"
-RE_LIST_HEADING   = re.compile(LIST_HEADING, re.MULTILINE | re.LOCALE)
+RE_LIST_HEADING   = re.compile(LIST_HEADING, re.MULTILINE)
 LIST_ITEM_HEADING = "^([^:]+(:\s*\n\s*|::\s*))|([^/\\\]+[/\\\]\s*\n\s*)"
-RE_LIST_ITEM_HEADING =  re.compile(LIST_ITEM_HEADING, re.MULTILINE|re.LOCALE)
+RE_LIST_ITEM_HEADING =  re.compile(LIST_ITEM_HEADING, re.MULTILINE)
 RE_NUMBER          = re.compile("\d+[\)\.]")
 
 PREFORMATTED      = "^(\s*\>(\t|   ))(.*)$"
-RE_PREFORMATTED   = re.compile(PREFORMATTED, re.LOCALE)
+RE_PREFORMATTED   = re.compile(PREFORMATTED)
 
 PREFORMATTED_2_START = re.compile("^(\s*)```((\w+)?(\{(.+)\})?(\|([\w\d\-_]+))?)\s*$")
 PREFORMATTED_2_END   = re.compile("^\s*```\s*$")
 
 CUSTOM_MARKUP    = "\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
-RE_CUSTOM_MARKUP = re.compile(CUSTOM_MARKUP, re.LOCALE|re.MULTILINE)
+RE_CUSTOM_MARKUP = re.compile(CUSTOM_MARKUP, re.MULTILINE)
 
-RE_DOCSTRING     = re.compile("^\s*@(param|return[s]?)\s", re.LOCALE)
+RE_DOCSTRING     = re.compile("^\s*@(param|return[s]?)\s")
 RE_META_START    = re.compile("^(\s*)--\s*$")
 RE_META_END      = re.compile("^(\s*)--\s*$")
 
 META_TYPE        = "\s*(\w+)\s*(\((\w+)\))?"
-RE_META_TYPE     = re.compile(META_TYPE, re.LOCALE|re.MULTILINE)
+RE_META_TYPE     = re.compile(META_TYPE, re.MULTILINE)
 
 META_FIELD = '(^|\n)\s*([\w\-]+)\s*:\s*'
-RE_META_FIELD= re.compile(META_FIELD, re.LOCALE)
-RE_META_AUTHOR_EMAIL = re.compile("\<([^>]+)\>", re.LOCALE)
+RE_META_FIELD= re.compile(META_FIELD)
+RE_META_AUTHOR_EMAIL = re.compile("\<([^>]+)\>")
 
 REFERENCE_ENTRY    = "\s+\[([^\]]+)]:"
-RE_REFERENCE_ENTRY = re.compile(REFERENCE_ENTRY, re.LOCALE|re.MULTILINE)
+RE_REFERENCE_ENTRY = re.compile(REFERENCE_ENTRY, re.MULTILINE)
 
 TABLE_ROW_SEPARATOR    = "^\s*([\-\+]+|[\=\+]+)\s*$"
 RE_TABLE_ROW_SEPARATOR = re.compile(TABLE_ROW_SEPARATOR)

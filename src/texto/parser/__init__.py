@@ -58,11 +58,11 @@ TAB_SIZE = 4
 #
 #------------------------------------------------------------------------------
 
-RE_BLOCK_SEPARATOR = re.compile("[ \t\r]*\n[ \t\r]*\n", re.MULTILINE | re.LOCALE)
-RE_SPACES = re.compile("[\s\n]+", re.LOCALE|re.MULTILINE)
+RE_BLOCK_SEPARATOR = re.compile("[ \t\r]*\n[ \t\r]*\n", re.MULTILINE )
+RE_SPACES = re.compile("[\s\n]+", re.MULTILINE)
 RE_TABS = re.compile("\t+")
 ATTRIBUTE = """([\w\d_][\-_\d\w]*)\s*=\s*('[^']*'|"[^"]*")"""
-RE_ATTRIBUTE = re.compile(ATTRIBUTE, re.LOCALE|re.MULTILINE)
+RE_ATTRIBUTE = re.compile(ATTRIBUTE, re.MULTILINE)
 
 #------------------------------------------------------------------------------
 #

@@ -36,46 +36,46 @@ MUST_BE_START_OR_END = \
 # Texto core
 
 COMMENT          = "^\s*#.*$"
-RE_COMMENT       = re.compile(COMMENT, re.LOCALE | re.MULTILINE )
+RE_COMMENT       = re.compile(COMMENT, re.MULTILINE )
 
 ESCAPED_START    = "<\["
-RE_ESCAPED_START = re.compile(ESCAPED_START, re.LOCALE)
+RE_ESCAPED_START = re.compile(ESCAPED_START)
 ESCAPED_END      = "\]>"
-RE_ESCAPED_END   = re.compile(ESCAPED_END, re.LOCALE)
+RE_ESCAPED_END   = re.compile(ESCAPED_END)
 ESCAPED_REPLACE  = '\\"'
-RE_ESCAPED_REPLACE=re.compile(ESCAPED_REPLACE, re.LOCALE)
+RE_ESCAPED_REPLACE=re.compile(ESCAPED_REPLACE)
 
 ESCAPED_STRING   = '\\\\"([^"]+)"'
-RE_ESCAPED_STRING = re.compile(ESCAPED_STRING, re.MULTILINE|re.LOCALE)
+RE_ESCAPED_STRING = re.compile(ESCAPED_STRING, re.MULTILINE)
 
 # Text style
 
 CODE             = "`([^\`]+)`"
-RE_CODE          = re.compile(CODE, re.LOCALE|re.MULTILINE)
+RE_CODE          = re.compile(CODE, re.MULTILINE)
 
 CODE_REF_1       = "@`([^\`]+)`"
-RE_CODE_REF_1      = re.compile(CODE_REF_1, re.LOCALE)
+RE_CODE_REF_1      = re.compile(CODE_REF_1)
 
 CODE_REF_2       = "@(([\w_][\w\d]*)(\.[\w_][\w\d]*)*)"
-RE_CODE_REF_2      = re.compile(CODE_REF_2, re.LOCALE)
+RE_CODE_REF_2      = re.compile(CODE_REF_2)
 
 PRE              = "^((\s*\>(\t|   ))(.*)\n?)+"
-RE_PRE           = re.compile(PRE, re.LOCALE|re.MULTILINE)
+RE_PRE           = re.compile(PRE, re.MULTILINE)
 EMPHASIS         = "\*([^*]+)\*"
-RE_EMPHASIS      = re.compile(EMPHASIS, re.LOCALE|re.MULTILINE)
+RE_EMPHASIS      = re.compile(EMPHASIS, re.MULTILINE)
 STRONG           = "\*\*([^*]+)\*\*"
-RE_STRONG        = re.compile(STRONG, re.LOCALE|re.MULTILINE)
+RE_STRONG        = re.compile(STRONG, re.MULTILINE)
 TERM             = "\_([^_]+)_"
-RE_TERM          = re.compile(TERM, re.LOCALE|re.MULTILINE)
+RE_TERM          = re.compile(TERM, re.MULTILINE)
 QUOTED           = "\"(('?[^'])+)\""
-RE_QUOTED        = re.compile(QUOTED, re.LOCALE|re.MULTILINE)
+RE_QUOTED        = re.compile(QUOTED, re.MULTILINE)
 CITATION         = "«([^»]+)»"
-RE_CITATION      = re.compile(CITATION,re.LOCALE|re.MULTILINE)
+RE_CITATION      = re.compile(CITATION,re.MULTILINE)
 
 VARIABLE         = "\\$\\{([A-Za-z_][A-Za-z_0-9]*)\}"
-RE_VARIABLE      = re.compile(VARIABLE,re.LOCALE|re.MULTILINE)
+RE_VARIABLE      = re.compile(VARIABLE,re.MULTILINE)
 
-RE_CHECKBOX      = re.compile("\[[ X]\]", re.LOCALE)
+RE_CHECKBOX      = re.compile("\[[ X]\]")
 
 # Special Characters
 
@@ -99,23 +99,23 @@ RE_ENTITIES      = re.compile(ENTITIES,)
 # Linking content
 
 EMAIL            = "\<([\w.\-_]+@[\w.\-_]+)\>"
-RE_EMAIL         = re.compile(EMAIL, re.LOCALE|re.MULTILINE)
+RE_EMAIL         = re.compile(EMAIL, re.MULTILINE)
 URL              = "\<([A-z]+://[^\>]+)\>"
-RE_URL           = re.compile(URL, re.LOCALE|re.MULTILINE)
+RE_URL           = re.compile(URL, re.MULTILINE)
 URL_2            = "([A-z]+://[^\>]+)"
-RE_URL_2         = re.compile(URL_2, re.LOCALE|re.MULTILINE)
+RE_URL_2         = re.compile(URL_2, re.MULTILINE)
 #LINK             = """\[([^\\#]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
 LINK             = """\[([^\]]+)\]\s*((\(([^ \)]+)(\s+"([^"]+)"\s*)?\))|\[([\w\s]+)\])?"""
-RE_LINK          = re.compile(LINK, re.LOCALE|re.MULTILINE)
+RE_LINK          = re.compile(LINK, re.MULTILINE)
 #TARGET           = "\[\#([\w\s]+(:[^\]]*)?)\]"
 TARGET           = "\|([\w\s]+(:[^\|]*)?)\|"
-RE_TARGET        = re.compile(TARGET, re.LOCALE)
+RE_TARGET        = re.compile(TARGET)
 
 # Custom markup
 
 MARKUP_ATTR      = """[\-_\d\w]+\s*=\s*('[^']*'|"[^"]*")"""
 MARKUP           = "\<([\-_\d\w]+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
-RE_MARKUP        = re.compile(MARKUP, re.LOCALE|re.MULTILINE)
+RE_MARKUP        = re.compile(MARKUP, re.MULTILINE)
 
 def _processText( context, text ):
 	"""Common operation for expanding tabs and normalising text. Use by
@@ -149,7 +149,7 @@ class InlineParser:
 		self.name   = name
 		#Checks if regexp is a string or a precompiled regular expression
 		if type(regexp) in (type(""), type("")):
-			self.regexp = re.compile(regexp, re.LOCALE|re.MULTILINE)
+			self.regexp = re.compile(regexp, re.MULTILINE)
 		else:
 			self.regexp = regexp
 		self.result = result
