@@ -10,6 +10,11 @@
 
 import sys, os, glob, re, imp, xml.dom
 
+
+IS_PYTHON3 = sys.version_info[0] > 2
+if IS_PYTHON3:
+	unicode = str
+
 RE_EXPRESSION = re.compile("\$\(([^\)]+)\)")
 
 __doc__ = """\
