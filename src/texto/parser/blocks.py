@@ -266,7 +266,10 @@ class CommentBlockParser(BlockParser):
 		lines = context.currentFragment().split("\n")
 		for line in lines:
 			line = line.strip()
-			if line and line.strip()[0]!= "#": return False
+			if line :
+				# This makes sure alt headings are not detected as comments
+				if len(line) > 0 and line[0]!= "#" : return False
+				if len(line) > 1 and line[1]=="#": return False
 		return True
 
 	def process( self, context, recogniseInfo ):
