@@ -66,7 +66,7 @@ RE_NUMBER          = re.compile("\d+[\)\.]")
 PREFORMATTED      = "^(\s*\>(\t|   ))(.*)$"
 RE_PREFORMATTED   = re.compile(PREFORMATTED)
 
-PREFORMATTED_2_START = re.compile("^(\s*)```((\w+)?(\{(.+)\})?(\|([\w\d\-_]+))?)\s*$")
+PREFORMATTED_2_START = re.compile("^(\s*)```((\w+)?(\{(.+)\})?(\|([\w\d\-_]+))?)(\s*(>>?)\s*(.*))?\s*$")
 PREFORMATTED_2_END   = re.compile("^\s*```\s*$")
 
 CUSTOM_MARKUP    = "\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
@@ -892,6 +892,8 @@ class PreBlockParser2( BlockParser ):
 		lang    = match.group(3)
 		ranges  = match.group(5)
 		process = match.group(7)
+		file_op = match.group(9)
+		path    = match.group(10)
 		# We find the block end
 		context.setCurrentBlockEnd(self.findBlockEnd(context, indent))
 		lines = context.currentFragment().split("\n")
@@ -908,6 +910,8 @@ class PreBlockParser2( BlockParser ):
 		if lang:   pre_node.setAttributeNS(None, "data-lang", lang)
 		if ranges: pre_node.setAttributeNS(None, "data-ranges", ranges)
 		if process: pre_node.setAttributeNS(None, "data-process", process)
+		if file_op: pre_node.setAttributeNS(None, "data-file-op", "append" if file_op is ">>" else "create")
+		if path: pre_node.setAttributeNS(None, "data-file", path.strip())
 		pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
 		pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
 		context.currentNode.appendChild(pre_node)

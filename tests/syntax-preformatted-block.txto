@@ -19,3 +19,15 @@ typedef struct ParsingContext {
 } ParsingContext;
 ```
 
+scheme outputted to a given file
+
+```scheme > examples/account.ss
+(context "account"
+	(slot "amount" NUMBER)
+	(slot ("transactions"
+		(list-of
+			(context "transaction" (slot "amount" NUMBER))
+		)
+	)
+)
+```
