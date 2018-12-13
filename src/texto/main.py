@@ -166,7 +166,7 @@ def run( arguments, input=None, noOutput=False ):
 		elif opt in ('-v', '--version'):
 			return (INFO, VERSION)
 		elif opt in ('-i', '--input-encoding'):
-			arg = string.lower(arg)
+			arg = arg.lower()
 			if arg in list(ENCODINGS.keys()) and ENCODINGS[arg] in available_enc:
 				input_enc=output_enc=ENCODINGS[arg]
 			else:
@@ -174,7 +174,7 @@ def run( arguments, input=None, noOutput=False ):
 				r += ENCODINGS_LIST
 				return (ERROR, r)
 		elif opt in ('-o', '--output-encoding'):
-			arg = string.lower(arg)
+			arg = arg.lower()
 			if arg in list(ENCODINGS.keys()) and ENCODINGS[arg] in available_enc:
 				output_enc=ENCODINGS[arg]
 			else:
@@ -182,7 +182,7 @@ def run( arguments, input=None, noOutput=False ):
 				r += ENCODINGS_LIST
 				return (ERROR, r)
 		elif opt in ('-O', '--output-format'):
-			arg = string.lower(arg)
+			arg = arg.lower()
 			if arg in list(FORMATS.keys()):
 				output_format=arg
 			else:
@@ -292,12 +292,13 @@ def run( arguments, input=None, noOutput=False ):
 		if not noOutput: ofile.write(result)
 	return (SUCCESS, result)
 
-def text2htmlbody( text, inputEncoding=None, outputEncoding=None, offsets=True ):
+def text2htmlbody( text, inputEncoding=None, outputEncoding=None, offsets=True, format=None):
 	"""Converts the given text to HTML, returning only the body."""
 
 	text = ensureUnicode(text)
 	s = io.StringIO(text)
 	command = "-m --body-only"
+	if format: command += " -O" + str(format)
 	if offsets: command += " -f"
 	if inputEncoding: command += " -i " + inputEncoding
 	if outputEncoding: command += " -o " + outputEncoding
