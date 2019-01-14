@@ -23,6 +23,7 @@ import re, string, operator, getopt, codecs
 from  texto import parser, formats, VERSION
 FORMATS = formats.get()
 FORMATS["xml"] = True
+FORMATS["dom"] = True
 
 IS_PYTHON3 = sys.version_info[0] > 2
 if IS_PYTHON3:
@@ -270,7 +271,9 @@ def run( arguments, input=None, noOutput=False ):
 	xml_document = texto_parser.parse(data, offsets=show_offsets).document
 
 	result = None
-	if output_format == "xml":
+	if output_format == "dom":
+		return (SUCCESS, xml_document)
+	elif output_format == "xml":
 		result = xml_document.toprettyxml("  ").encode(output_enc)
 		#result = xml_document.toxml().encode(output_enc)
 		if not noOutput: ofile.write(result)
