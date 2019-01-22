@@ -157,9 +157,9 @@ class Processor(texto.formats.Processor):
 		offset = element._processor.variables.get("LEVEL") or 0
 		level = int(element.getAttributeNS(None, "_depth")) + offset
 		return self.process(element,
-		  '<div class="section level-%d" data-level="%d">' % (level, level)
-		  + '<div class="header"><h%d><a class="number" name="S%s"></a>$(Heading)</h%d></div>' % (level, self.formatSectionNumber(self.getSectionNumberPrefix(element)), level)
-		  + '<div class="body">$(Content:section)</div></div>'
+		'<div class="section level-%d" data-level="%d">' % (level, level)
+		+ '<div class="header"><h%d><a class="number" name="S%s"></a>$(Heading)</h%d></div>' % (level, self.formatSectionNumber(self.getSectionNumberPrefix(element)), level)
+		+ '<div class="body">$(Content:section)</div></div>'
 		)
 
 	def on_References( self, element ):
@@ -284,6 +284,9 @@ class Processor(texto.formats.Processor):
 
 	def on_term( self, element ):
 		return self.process(element, """<span class='term'>$(*)</span>""")
+
+	def on_strikethrough( self, element ):
+		return self.process(element, """<s class='strikethrough'>$(*)</s>""")
 
 	def on_checkbox( self, element ):
 		# FIXME: Not the right one

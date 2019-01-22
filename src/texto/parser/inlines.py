@@ -71,6 +71,8 @@ QUOTED           = "\"(('?[^'])+)\""
 RE_QUOTED        = re.compile(QUOTED, re.MULTILINE)
 CITATION         = "«([^»]+)»"
 RE_CITATION      = re.compile(CITATION,re.MULTILINE)
+STRIKETHROUGH    = "~~((~[^~]|[^~])+)~~"
+RE_STRIKETHROUGH = re.compile(STRIKETHROUGH, re.MULTILINE)
 
 VARIABLE         = "\\$\\{([A-Za-z_][A-Za-z_0-9]*)\}"
 RE_VARIABLE      = re.compile(VARIABLE,re.MULTILINE)

@@ -447,6 +447,7 @@ class Parser:
 			InlineParser("quote",		RE_QUOTED,   normal),
 			InlineParser("citation",	RE_CITATION, normal),
 			InlineParser("variable",	RE_VARIABLE, normal),
+			InlineParser("strikethrough",	RE_STRIKETHROUGH, normal),
 			CheckboxParser(),
 			# Special characters
 			InlineParser("break",		RE_BREAK),

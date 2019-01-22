@@ -143,6 +143,9 @@ def convertpre( element ):
 def convertcode( element ):
 	return process(element, """`$(*)`""")
 
+def convertstrikethrough( element ):
+	return process(element, """~~$(*)~~""")
+
 def convertemphasis( element ):
 	return process(element, """_$(*)_""")
 
