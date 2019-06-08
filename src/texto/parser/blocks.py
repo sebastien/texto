@@ -53,7 +53,7 @@ RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.MULTILINE)
 DEFINITION_ITEM   = "^(\s*(\:[^\:]|[^\:])+)\:\:+\s*(\n+\s*|\s*\|\s*\n)*$"
 RE_DEFINITION_ITEM = re.compile(DEFINITION_ITEM, re.MULTILINE)
 
-TAGGED_BLOCK      = "^\s*(([^_]+\s*)(\:[^_]+)?)?(____+)\s*$"
+TAGGED_BLOCK      = "^\s*(([^_]+\s*)(\:[^_]+)?)?(___+)\s*$"
 RE_TAGGED_BLOCK   = re.compile(TAGGED_BLOCK, re.MULTILINE )
 LIST_ITEM         = "^(\s*)(-|\*\)|[0-9A-z]+[\)/]|\[[ \-\~xX]\])\s*"
 RE_LIST_ITEM      = re.compile(LIST_ITEM, re.MULTILINE)
