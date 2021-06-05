@@ -1,0 +1,4 @@
+appenv_name texto
+appenv_prepend PYTHONPATH $APPENV_DIR/src
+appenv_prepend PATH $APPENV_DIR/bin
+# EOF

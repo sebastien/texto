@@ -1,0 +1,6 @@
+- A URL http://github.com/sebastien/texto
+- A fully enclosed URL <http://github.com/sebastien/texto>
+- A [URL link](http://github.com/sebastien/texto)
+- A relative [URL link](../README)
+- An [internal link][document/name]
+- A [bibliographical link][REF01]

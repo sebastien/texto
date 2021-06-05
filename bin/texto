@@ -1,3 +1,4 @@
 #!/usr/bin/python
-import sys, texto.main
-texto.main.runAsCommand()
+from texto.main import command
+command()
+# EOF
