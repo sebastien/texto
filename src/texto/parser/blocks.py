@@ -38,16 +38,20 @@ TODO_DONE_ITEM = 102
 # ------------------------------------------------------------------------------
 
 RE_BLANK = re.compile(r"\s*", re.MULTILINE)
+RE_COMMENT = re.compile(r"^//")
 
 TITLE = r"^\s*(==)([^=].+)$"
 RE_TITLE = re.compile(TITLE, re.MULTILINE)
+
 TITLE_HEADER = r"^\s*(--)([^\:]+):(.+)?$"
 RE_TITLES = re.compile("%s|%s" % (TITLE, TITLE_HEADER), re.MULTILINE)
 
 SECTION_HEADING = r"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING = re.compile(SECTION_HEADING)
-SECTION_HEADING_ALT = r"^((\=+|##+)\s*).+$"
+
+SECTION_HEADING_ALT = r"^((#+)\s*).+$"
 RE_SECTION_HEADING_ALT = re.compile(SECTION_HEADING_ALT)
+
 SECTION_UNDERLINE = r"^\s*[\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"
 RE_SECTION_UNDERLINE = re.compile(SECTION_UNDERLINE, re.MULTILINE)
 
@@ -68,7 +72,7 @@ PREFORMATTED = r"^(\s*\>(\t|   ))(.*)$"
 RE_PREFORMATTED = re.compile(PREFORMATTED)
 
 PREFORMATTED_2_START = re.compile(
-    r"^(\s*)```((\w+)?(\{(.+)\})?(\|([\w\d\-_]+))?)(\s*(>>?)\s*(.*))?\s*$")
+    r"^(\s*)```((\w+)?.*)$")
 PREFORMATTED_2_END = re.compile(r"^\s*```\s*$")
 
 CUSTOM_MARKUP = r"\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
@@ -274,21 +278,18 @@ class CommentBlockParser(BlockParser):
     def recognises(self, context):
         assert context and context.parser.commentParser
         lines = context.currentFragment().split("\n")
+        comments = 0
         for line in lines:
-            line = line.strip()
-            if line:
-                # This makes sure alt headings are not detected as comments
-                if len(line) > 0 and line[0] != "//":
-                    return False
-                if len(line) > 1 and line[1] == "//":
-                    return False
-        return True
+            if (l := line.strip()) and not l.startswith("//"):
+                return False
+            elif l:
+                comments += 1
+        return comments > 0
 
     def process(self, context, recogniseInfo):
         context.currentNode.appendChild(context.document.createComment(
-            # NOTE: Comments can't have --
-            self.processText(
-                context, context.currentFragment()).replace("--", "__")
+            " ".join(RE_COMMENT.sub("", _).strip()
+                     for _ in context.currentFragment().split("\n")).strip()
         ))
         context.setOffset(context.blockEndOffset)
 
@@ -949,10 +950,6 @@ class PreBlockParser2(BlockParser):
         _, indent, match = recognised
         # We extract the lang{range}|process structure.
         lang = match.group(3)
-        ranges = match.group(5)
-        process = match.group(7)
-        file_op = match.group(9)
-        path = match.group(10)
         # We find the block end
         context.setCurrentBlockEnd(self.findBlockEnd(context, indent))
         lines = context.currentFragment().split("\n")
@@ -970,15 +967,6 @@ class PreBlockParser2(BlockParser):
         pre_node.appendChild(context.document.createTextNode(text))
         if lang:
             pre_node.setAttributeNS(None, "data-lang", lang)
-        if ranges:
-            pre_node.setAttributeNS(None, "data-ranges", ranges)
-        if process:
-            pre_node.setAttributeNS(None, "data-process", process)
-        if file_op:
-            pre_node.setAttributeNS(
-                None, "data-file-op", "append" if file_op == ">>" else "create")
-        if path:
-            pre_node.setAttributeNS(None, "data-file", path.strip())
         pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
         pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
         context.currentNode.appendChild(pre_node)
