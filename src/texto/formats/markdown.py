@@ -230,4 +230,4 @@ def defaultProcess(element, selector, processor):
 processor = Processor(sys.modules[__name__], default=defaultProcess)
 process = processor.process
 
-# EOF - vim: tw=80 ts=4 sw=4 noet
+# EOF

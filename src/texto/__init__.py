@@ -1,2 +1,2 @@
-from texto.main import command
-run = command
+from texto.command import run
+# EOF

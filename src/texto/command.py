@@ -29,7 +29,7 @@ FORMATS["xml"] = True
 FORMATS["dom"] = True
 
 
-def command(args=sys.argv[1:], name=None):
+def run(args=sys.argv[1:], name=None):
     """The command-line interface of this module."""
     if type(args) not in (type([]), type(())):
         args = [args]
@@ -63,7 +63,9 @@ def command(args=sys.argv[1:], name=None):
             with open(_) as f:
                 data = f.read()
         result = parse(data, offsets=args.offsets, parser=parser)
-        out.write(render(result, args.format))
+        r = render(result, args.format)
+        print(r)
+        out.write(r)
 
 
 def render(result: ParsingContext, format: str):
@@ -121,6 +123,6 @@ def extendParser(parser: Parser, extensions: List[str]) -> Parser:
 
 
 if __name__ == "__main__":
-    command()
+    run()
 
 # EOF

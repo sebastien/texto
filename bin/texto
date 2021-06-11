@@ -1,4 +1,4 @@
 #!/usr/bin/python
-from texto.main import command
-command()
+from texto.command import run
+run()
 # EOF

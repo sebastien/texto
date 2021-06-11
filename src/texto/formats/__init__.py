@@ -8,7 +8,6 @@
 # Last mod.         : 16-Aug-2016
 # -----------------------------------------------------------------------------
 
-import sys
 import os
 import glob
 import re
@@ -261,4 +260,4 @@ def get():
             formats[name] = submodule
     return formats
 
-# EOF - vim: tw=80 ts=4 sw=4 noet
+# EOF

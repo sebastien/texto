@@ -1,0 +1,8 @@
+
+1)  An HTML file is created, importing the `material.css` and `eq.css`
+
+	2)  The HTML file declares the *dependency map* for the modules (which
+	3)  The HTML files declares a `<script>` tag with the required modules,
+
+
+ 

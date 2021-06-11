@@ -1,0 +1,9 @@
+There are a few things to know about implementing pages:
+
+- Each page should have its root node referenced as `page` (add a `jsx::ref=page` on the root node)
+
+- When a page has *speech bubbles*, they should be registered as `bubbles` (using `jsx::ref=bubbles`).
+  These nodes will be introspected by the pages component to position the narrator based on the step.
+
+- The page can defined a `step` cell that defines its current step (and hence which speech bubble to
+  display). When present, this cell will be proxied by the pages component.
