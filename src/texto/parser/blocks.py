@@ -49,7 +49,7 @@ RE_TITLES = re.compile("%s|%s" % (TITLE, TITLE_HEADER), re.MULTILINE)
 SECTION_HEADING = r"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING = re.compile(SECTION_HEADING)
 
-SECTION_HEADING_ALT = r"^((#+)\s*).+$"
+SECTION_HEADING_ALT = r"^(\s*(#+)\s*).+$"
 RE_SECTION_HEADING_ALT = re.compile(SECTION_HEADING_ALT)
 
 SECTION_UNDERLINE = r"^\s*[\*\-\=#][\*\-\=#][\*\-\=#]+\s*$"

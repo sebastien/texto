@@ -53,7 +53,8 @@ def run(args=sys.argv[1:], name=None):
                          help="Uses the given extension (Python module name)")
     # We create the parse and register the options
     args = oparser.parse_args(args=args)
-    out = sys.stdout
+    out_path = args.output if args.output and args.output != "-" else None
+    out = open(out_path, "wt") if out_path else sys.stdout
     parser = extendParser(Parser, args.extensions or [])
     inputs = args.files or ["-"]
     for _ in inputs:
@@ -64,8 +65,9 @@ def run(args=sys.argv[1:], name=None):
                 data = f.read()
         result = parse(data, offsets=args.offsets, parser=parser)
         r = render(result, args.format)
-        print(r)
         out.write(r)
+    if out_path:
+        out.close()
 
 
 def render(result: ParsingContext, format: str):
