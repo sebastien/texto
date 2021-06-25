@@ -1,2 +1,2 @@
-from texto.command import run
+from texto.command import run, parse, render
 # EOF
