@@ -470,7 +470,7 @@ class Parser:
         line = len(text.split("\n"))
         offset = context.getOffset() - text.rfind("\n") - 1
         message = str(message % (line, offset) + "\n")
-        sys.stderr.write(ensureString(message))
+        sys.stderr.write(message)
 
     def warning(self, message, context):
         self._print("WARNING at line %4d, character %3d: "+message, context)
