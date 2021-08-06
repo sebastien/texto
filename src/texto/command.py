@@ -27,6 +27,7 @@ See <http://www.github.com/sebastien/texto>
 FORMATS = formats.get()
 FORMATS["xml"] = True
 FORMATS["dom"] = True
+FORMATS["md"] = FORMATS.get("markdown")
 
 
 def run(args=sys.argv[1:], name=None):
@@ -70,7 +71,7 @@ def run(args=sys.argv[1:], name=None):
         out.close()
 
 
-def render(result: ParsingContext, format: str):
+def render(result: ParsingContext, format: str = "html"):
     xml_document = result.document
     if format == "dom":
         return xml_document

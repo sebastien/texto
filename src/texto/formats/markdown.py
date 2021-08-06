@@ -38,6 +38,7 @@ def convertHeading(element):
 def convertSection(element):
     level = int(element.getAttributeNS(None, "depth"))
     prefix = "#" + "#" * level
+    print("SECTION", level)
     return process(element,
                    prefix + " $(Heading)\n\n"
                    + "$(Content:section)"

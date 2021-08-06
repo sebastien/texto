@@ -5,7 +5,7 @@
 # Author            : Sebastien Pierre           <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
 # Creation date     : 06-Mar-2006
-# Last mod.         : 16-Aug-2016
+# Last mod.         : 07-Aug-2021
 # -----------------------------------------------------------------------------
 
 import os
@@ -86,7 +86,7 @@ class Processor(object):
                 ename = name[len("convert"):]
             else:
                 ename = name
-            ename = ename.replace("_", ":")
+            ename = ename.replace("__", ":")
             self.expressionTable[ename] = function
 
     def registerElementProcessor(self, function, elementName, variant=None):
@@ -124,7 +124,7 @@ class Processor(object):
     def apply(self, element):
         return self.processElement(element)
 
-    def processElement(self, element, selector=None):
+    def processElement(self, element, selector=None) -> str:
         """Processes the given element according to the EXPRESSION_TABLE, using the
         given selector to select an alternative function."""
         selector_optional = False
@@ -149,7 +149,9 @@ class Processor(object):
         else:
             return ""
 
-    def processElementNode(self, element, selector, isSelectorOptional=False):
+    def processElementNode(self, element: xml.dom.Node, selector: str, isSelectorOptional=False):
+        """"""
+        # FIXME: Monkey patching objects is not ideal
         element._processor = self
         fname = element.nodeName.replace("-", "_")
         if selector:
@@ -168,7 +170,8 @@ class Processor(object):
         else:
             return self.defaultProcessElement(element, selector)
 
-    def processTextNode(self, element, selector, isSelectorOptional=False):
+    def processTextNode(self, element, selector, isSelectorOptional=False) -> str:
+        """Returns the text node"""
         return element.data
 
     def defaultProcessElement(self, element, selector):
@@ -205,19 +208,21 @@ class Processor(object):
     # SYNTAX: $(EXPRESSION)
     # Where EXPRESSION is a "/" separated list of element names, optionally followed
     # by a colon ':' and a name
-    def process(self, element, text):
+    def process(self, element, template: str):
+        """Expands the given template string with the given element as data."""
         i = 0
         r = ""
-        while i < len(text):
-            m = RE_EXPRESSION.search(text, i)
-            if not m:
-                r += text[i:]
-                break
+        while i < len(template):
+            m = RE_EXPRESSION.search(template, i)
+            if m:
+                r += template[i:m.start()]
+                # Call the query with the template expression
+                for e, s in self.query(element, m.group(1)):
+                    r += e if isinstance(e, str) else self.processElement(e, s)
+                i = m.end()
             else:
-                r += text[i:m.start()]
-            for e, s in self.query(element, m.group(1)):
-                r += e if isinstance(e, str) else self.processElement(e, s)
-            i = m.end()
+                r += template[i:]
+                break
         return r
 
     def generate(self, xmlDocument, bodyOnly=False, variables={}):

@@ -371,4 +371,4 @@ class Processor(texto.formats.Processor):
 processor = Processor()
 process = processor.process
 
-# EOF - vim: tw=80 ts=4 sw=4 noet
+# EOF
