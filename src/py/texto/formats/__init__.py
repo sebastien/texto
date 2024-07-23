@@ -11,11 +11,10 @@
 import os
 import glob
 import re
-import imp
 import xml.dom
 
 
-RE_EXPRESSION = re.compile("\$\(([^\)]+)\)")
+RE_EXPRESSION = re.compile(r"\$\(([^\)]+)\)")
 
 __doc__ = """\
 The `formats` module implements a simple way to convert an XML document to another
@@ -28,7 +27,7 @@ tagName. All these functions should take an element as parameter and run the
 `process' function with the element and template string as parameter.
 
 Expressions like `$(XXX)' (XXX being the expression) in the template strings
-will be expanded by procesing the set of nodes indicated by the XXX expression.
+will be expanded by processing the set of nodes indicated by the XXX expression.
 
  - `$(*)` will process all children
  - `$(MyNode)` will process only nodes with 'MyNode' tagName
@@ -69,7 +68,13 @@ class Processor(object):
     def bindInstance(self, instance):
         """Registers any function that starts with `on` as a processor
         for the node with the given name."""
-        return self.register(dict((_[3:], getattr(instance, _)) for _ in dir(instance) if _.startswith("on_")))
+        return self.register(
+            dict(
+                (_[3:], getattr(instance, _))
+                for _ in dir(instance)
+                if _.startswith("on_")
+            )
+        )
 
     def register(self, name2functions):
         """Fills the EXPRESSION_TABLE which maps element names to processing
@@ -83,7 +88,7 @@ class Processor(object):
         """
         for name, function in list(name2functions.items()):
             if name.startswith("convert"):
-                ename = name[len("convert"):]
+                ename = name[len("convert") :]
             else:
                 ename = name
             ename = ename.replace("__", ":")
@@ -93,7 +98,7 @@ class Processor(object):
         """Registers the given function to process the given element name and
         the given optional variant.
 
-        Note that this will replace any previsously registered processor for the
+        Note that this will replace any previously registered processor for the
         element and variant."""
         if variant:
             elementName += ":" + variant
@@ -149,7 +154,9 @@ class Processor(object):
         else:
             return ""
 
-    def processElementNode(self, element: xml.dom.Node, selector: str, isSelectorOptional=False):
+    def processElementNode(
+        self, element: xml.dom.Node, selector: str, isSelectorOptional=False
+    ):
         """"""
         # FIXME: Monkey patching objects is not ideal
         element._processor = self
@@ -190,7 +197,7 @@ class Processor(object):
         matching (element,selector) couples."""
         assert self.expressionTable
         # =VARIABLE means that we replace the expression by the content of the
-        # variable in the varibales directory
+        # variable in the variables directory
         if expression.startswith("="):
             vname = expression[1:].upper()
             return [(self.variables.get(vname) or "", None)]
@@ -215,7 +222,7 @@ class Processor(object):
         while i < len(template):
             m = RE_EXPRESSION.search(template, i)
             if m:
-                r += template[i:m.start()]
+                r += template[i : m.start()]
                 # Call the query with the template expression
                 for e, s in self.query(element, m.group(1)):
                     r += e if isinstance(e, str) else self.processElement(e, s)
@@ -236,6 +243,7 @@ class Processor(object):
                     return self.processElement(node)
         else:
             return self.processElement(node)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -260,9 +268,10 @@ def get():
         if name != "__init__":
             fullname = "texto.formats." + name
             # NOTE: __import__ does not work
-            # submodule =  __import__(fullname)
-            submodule = imp.load_source(fullname, path)
+            submodule = __import__(fullname)
+            # submodule = imp.load_source(fullname, path)
             formats[name] = submodule
     return formats
+
 
 # EOF

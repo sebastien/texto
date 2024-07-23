@@ -1,4 +1,4 @@
-#!/usr/bin/python
-from texto.command import run
-run()
+#!/usr/bin/bash
+BASE="$(dirname $(dirname $(readlink -f "${BASH_SOURCE[0]}")))"
+exec env "PYTHONPATH=$BASE/src/py:$PYTHONPATH" python -m texto "$@"
 # EOF
