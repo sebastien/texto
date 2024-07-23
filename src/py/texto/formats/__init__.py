@@ -260,18 +260,6 @@ def escapeHTML(text):
     return text
 
 
-def get():
-    """Returns a map of formats and the corresponding formatters."""
-    formats = {}
-    for path in glob.glob(os.path.dirname(__file__) + "/*.py"):
-        name = os.path.basename(path).rsplit(".", 1)[0]
-        if name != "__init__":
-            fullname = "texto.formats." + name
-            # NOTE: __import__ does not work
-            submodule = __import__(fullname)
-            # submodule = imp.load_source(fullname, path)
-            formats[name] = submodule
-    return formats
 
 
 # EOF
