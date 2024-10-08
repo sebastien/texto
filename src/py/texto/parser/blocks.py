@@ -7,18 +7,26 @@
 # License           : Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     : 2003-11-19
-# Last mod.         : 2021-06-05
+# Last mod.         : 2024-10-09
 # -----------------------------------------------------------------------------
 
 import re
+
+# FIXME: Not great
 from . import *
 
-__doc__ = """Write module doc here"""
 __pychecker__ = "unusednames=recogniseInfo,content"
 
 EMPTY_LIST_ITEM = "Empty list item."
-BLOCK_ELEMENTS = ("block", "list-item", "definition",
-                  "content", "chapter", "section", "appendix")
+BLOCK_ELEMENTS = (
+    "block",
+    "list-item",
+    "definition",
+    "content",
+    "chapter",
+    "section",
+    "appendix",
+)
 
 STANDARD_LIST = 1
 DEFINITION_LIST = 2
@@ -46,6 +54,11 @@ RE_TITLE = re.compile(TITLE, re.MULTILINE)
 TITLE_HEADER = r"^\s*(--)([^\:]+):(.+)?$"
 RE_TITLES = re.compile("%s|%s" % (TITLE, TITLE_HEADER), re.MULTILINE)
 
+
+BLOCK_SEPARATOR = r"^\s*(--)\s+(?P<name>[A-z0-9][A-z0-9_\-]+)(?P<attributes>(\s+([A-z0-9][A-z0-9_\-]+)=[^\s]+)*)$"
+RE_BLOCK_SEPARATOR = re.compile(BLOCK_SEPARATOR)
+
+
 SECTION_HEADING = r"^\s*((([0-9]+|[A-z])\.)+([0-9]+|[A-z])?\.?)"
 RE_SECTION_HEADING = re.compile(SECTION_HEADING)
 
@@ -64,15 +77,14 @@ LIST_ITEM = r"^(\s*)(-|\*\)|[0-9A-z]+[\)/]|\[[ \-\~xX]\])\s*"
 RE_LIST_ITEM = re.compile(LIST_ITEM, re.MULTILINE)
 LIST_HEADING = r"(^\s*[^:{().<]*:)"
 RE_LIST_HEADING = re.compile(LIST_HEADING, re.MULTILINE)
-LIST_ITEM_HEADING = "^([^:\(\`]+(:\s*\n\s*|::\s*))|([^/\\\]+[/\\\]\s*\n\s*)$"
+LIST_ITEM_HEADING = r"^([^:\(\`]+(:\s*\n\s*|::\s*))|([^/\\]+[/\\]\s*\n\s*)$"
 RE_LIST_ITEM_HEADING = re.compile(LIST_ITEM_HEADING, re.MULTILINE)
 RE_NUMBER = re.compile(r"\d+[\)\.]")
 
 PREFORMATTED = r"^(\s*\>(\t|   ))(.*)$"
 RE_PREFORMATTED = re.compile(PREFORMATTED)
 
-PREFORMATTED_2_START = re.compile(
-    r"^(\s*)```((\w+)?.*)$")
+PREFORMATTED_2_START = re.compile(r"^(\s*)```((\w+)?.*)$")
 PREFORMATTED_2_END = re.compile(r"^\s*```\s*$")
 
 CUSTOM_MARKUP = r"\s*-\s*\"([^\"]+)\"\s*[=:]\s*([\w\-_]+)(\s*\(\s*(\w+)\s*\))?"
@@ -85,7 +97,7 @@ RE_META_END = re.compile(r"^(\s*)--\s*$")
 META_TYPE = r"\s*(\w+)\s*(\((\w+)\))?"
 RE_META_TYPE = re.compile(META_TYPE, re.MULTILINE)
 
-META_FIELD = r'(^|\n)\s*([\w\-]+)\s*:\s*'
+META_FIELD = r"(^|\n)\s*([\w\-]+)\s*:\s*"
 RE_META_FIELD = re.compile(META_FIELD)
 RE_META_AUTHOR_EMAIL = re.compile(r"\<([^>]+)\>")
 
@@ -120,7 +132,7 @@ class BlockParser:
     def recognises(self, context):
         """Tells wether the given block is recognised or not. This returns
         this block recognition information, or False (or None) if the block was
-        not recongised."""
+        not recognised."""
         return False
 
     def process(self, context, recogniseInfo):
@@ -137,6 +149,7 @@ class BlockParser:
 #
 # ------------------------------------------------------------------------------
 
+
 class ParagraphBlockParser(BlockParser):
     """Parses a paragraph block. This parser always recognised the given block,
     so it should not appear in the block parsers."""
@@ -152,18 +165,23 @@ class ParagraphBlockParser(BlockParser):
         paragraph_depth = context.getBlockIndentation()
         # Here we move to the first block element that has an indentation that
         # is lower or equal to this paragraph
-        while context.currentNode.nodeName not in BLOCK_ELEMENTS \
-                or context.currentNode.getAttribute("_indent") \
-                and int(context.currentNode.getAttribute("_indent")) > paragraph_depth:
+        while (
+            context.currentNode.nodeName not in BLOCK_ELEMENTS
+            or context.currentNode.getAttribute("_indent")
+            and int(context.currentNode.getAttribute("_indent")) > paragraph_depth
+        ):
             context.currentNode = context.currentNode.parentNode
         # If the currentNode last element is a paragraph with a higher
         # indentation than the current one, then we create a block, and set it
         # as current node (this allows to create "indented paragraphs" - the
         # equivalent of blockquotes).
-        if context.currentNode.childNodes \
-                and context.currentNode.childNodes[-1].nodeName == "p" \
-                and context.currentNode.childNodes[-1].getAttribute("_indent") \
-                and int(context.currentNode.childNodes[-1].getAttribute("_indent")) < paragraph_depth:
+        if (
+            context.currentNode.childNodes
+            and context.currentNode.childNodes[-1].nodeName == "p"
+            and context.currentNode.childNodes[-1].getAttribute("_indent")
+            and int(context.currentNode.childNodes[-1].getAttribute("_indent"))
+            < paragraph_depth
+        ):
             block_node = context.document.createElementNS(None, "Block")
             block_node.setAttributeNS(None, "_indent", str(paragraph_depth))
             context.currentNode.appendChild(block_node)
@@ -175,37 +193,47 @@ class ParagraphBlockParser(BlockParser):
         para_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
         context.parser.parseBlock(context, para_node, self.processText)
         # Now we suppress leading and trailing whitespaces
-        first_text_node = para_node.childNodes[0]
-        last_text_node = para_node.childNodes[-1]
-        if first_text_node.nodeType != para_node.TEXT_NODE:
-            first_text_node = None
-        if last_text_node.nodeType != para_node.TEXT_NODE:
-            last_text_node = None
-        # Removed first and last text nodes if empty
-        if first_text_node != None and first_text_node.data.strip() == "":
-            para_node.removeChild(first_text_node)
-            first_text_node = None
-        if last_text_node != None and last_text_node.data.strip() == "":
-            para_node.removeChild(last_text_node)
-            last_text_node = None
-        # We strip the leading whitespace
-        if first_text_node != None and len(first_text_node.data) > 0 and \
-                first_text_node.data[0] == " ":
-            first_text_node.data = first_text_node.data[1:]
-        if last_text_node != None and len(last_text_node.data) > 0 and \
-                last_text_node.data[-1] == " ":
-            last_text_node.data = last_text_node.data[:-1]
+        if para_node.childNodes:
+            first_text_node = para_node.childNodes[0]
+            last_text_node = para_node.childNodes[-1]
+            if first_text_node.nodeType != para_node.TEXT_NODE:
+                first_text_node = None
+            if last_text_node.nodeType != para_node.TEXT_NODE:
+                last_text_node = None
+            # Removed first and last text nodes if empty
+            if first_text_node != None and first_text_node.data.strip() == "":
+                para_node.removeChild(first_text_node)
+                first_text_node = None
+            if last_text_node != None and last_text_node.data.strip() == "":
+                para_node.removeChild(last_text_node)
+                last_text_node = None
+            # We strip the leading whitespace
+            if (
+                first_text_node != None
+                and len(first_text_node.data) > 0
+                and first_text_node.data[0] == " "
+            ):
+                first_text_node.data = first_text_node.data[1:]
+            if (
+                last_text_node != None
+                and len(last_text_node.data) > 0
+                and last_text_node.data[-1] == " "
+            ):
+                last_text_node.data = last_text_node.data[:-1]
         # FIXME: Maybe the paragraph contains text nodes with only spaces ?
         if len(para_node.childNodes) > 0:
             context.currentNode.appendChild(para_node)
         else:
-            context.parser.warning("Empty paragraph removed", context)
+            pass
+            # NOTE: Can be legit (@embed)
+            # context.parser.warning("Empty paragraph removed", context)
 
     def processText(self, context, text):
         assert text
         text = context.parser.expandTabs(text)
         text = context.parser.normaliseText(text)
         return text
+
 
 # ------------------------------------------------------------------------------
 #
@@ -227,7 +255,7 @@ class TaggedBlockParser(BlockParser):
             return
         return RE_TAGGED_BLOCK.match(lines[0])
 
-    def _goToParent(self, thisblock, parent):
+    def _goToParent(self, parent):
         if not parent:
             return parent
         if parent.nodeName == "block":
@@ -240,7 +268,7 @@ class TaggedBlockParser(BlockParser):
         tagtitle = recogniseInfo.group(3)
         # This is an opening tag
         if tagname and tagname[0] != "_":
-            # TODO: Asserts we are not already in a sepcific block
+            # TODO: Asserts we are not already in a specific block
             block_depth = context.getBlockIndentation()
             block_node = context.document.createElementNS(None, "block")
             block_node.setAttributeNS(None, "type", tagname.strip().lower())
@@ -251,8 +279,7 @@ class TaggedBlockParser(BlockParser):
             # Now we can process the document
             context.increaseOffset(len(recogniseInfo.group()))
             context.parser.parseBlock(context, block_node, self.processText)
-            context.currentNode = self._goToParent(
-                block_node, context.currentNode)
+            context.currentNode = self._goToParent(context.currentNode)
             context.currentNode.appendChild(block_node)
             context.currentNode = block_node
             assert context.currentNode
@@ -261,6 +288,7 @@ class TaggedBlockParser(BlockParser):
             while context.currentNode.nodeName != "block":
                 context.currentNode = context.currentNode.parentNode
             context.currentNode = context.currentNode.parentNode
+
 
 # ------------------------------------------------------------------------------
 #
@@ -287,10 +315,14 @@ class CommentBlockParser(BlockParser):
         return comments > 0
 
     def process(self, context, recogniseInfo):
-        context.currentNode.appendChild(context.document.createComment(
-            " ".join(RE_COMMENT.sub("", _).strip()
-                     for _ in context.currentFragment().split("\n")).strip()
-        ))
+        context.currentNode.appendChild(
+            context.document.createComment(
+                " ".join(
+                    RE_COMMENT.sub("", _).strip()
+                    for _ in context.currentFragment().split("\n")
+                ).strip()
+            )
+        )
         context.setOffset(context.blockEndOffset)
 
 
@@ -299,6 +331,7 @@ class CommentBlockParser(BlockParser):
 # MARKUP BLOCK PARSER
 #
 # ------------------------------------------------------------------------------
+
 
 class MarkupBlockParser(BlockParser):
     """Parses a custom markup block."""
@@ -311,25 +344,30 @@ class MarkupBlockParser(BlockParser):
         offset, match = context.parser.markupParser.recognises(context)
         # We make sure that the recognised markup is a block markup which has
         # only whitespaces at the beginning
-        if match and context.parser.markupParser.isStartTag(match) \
-                and len(context.currentFragment()[:match.start()].strip()) == 0:
+        if (
+            match
+            and context.parser.markupParser.isStartTag(match)
+            and len(context.currentFragment()[: match.start()].strip()) == 0
+        ):
             # We parse the tag to see if it is a block tag and that it spans
             # the whole context current fragment.
             dummy_node = context.document.createElementNS(None, "dummy")
-            match_end = context.parser.markupParser.parse(
-                context, dummy_node, match)
+            match_end = context.parser.markupParser.parse(context, dummy_node, match)
             # The returned matched end MUST BE GREATER than the start tag match
             # end, and there MUST BE ONLY SPACES after the match end for this
             # tag to represent a standalone block, and not a block inlined into
             # a paragraph.
-            if match_end > match.end() and \
-                    len(context.currentFragment()[match_end:].strip()) == 0:
+            if (
+                match_end > match.end()
+                and len(context.currentFragment()[match_end:].strip()) == 0
+            ):
                 # If there is a child node, we return it
                 if len(dummy_node.childNodes) >= 1:
                     result_node = dummy_node.childNodes[0]
                     # We take care of the attributes
-                    for key, value \
-                            in list(context.parseAttributes(match.group(2)).items()):
+                    for key, value in list(
+                        context.parseAttributes(match.group(2)).items()
+                    ):
                         result_node.setAttributeNS(None, key, value)
                     return result_node
                 # Otherwise this means that the block is empty
@@ -351,6 +389,7 @@ class MarkupBlockParser(BlockParser):
 # TITLE BLOCK PARSER
 #
 # ------------------------------------------------------------------------------
+
 
 class TitleBlockParser(BlockParser):
     """Parses a title object"""
@@ -391,14 +430,16 @@ class TitleBlockParser(BlockParser):
         titleText = match.group(2) or match.group(4)
         # We prefix with 'sub' or 'subsub' depending on the number of
         # preceding titles
-        titleType = "sub" * \
-            len([n for n in titleNode.childNodes if n.nodeName.endswith("title")])
+        titleType = "sub" * len(
+            [n for n in titleNode.childNodes if n.nodeName.endswith("title")]
+        )
         titleType += "title"
         # We add the node to the document tree
         resultNode = context.ensureElement(titleNode, titleType)
         titleNode.appendChild(resultNode)
-        resultNode.appendChild(context.document.createTextNode(
-            self.processText(context, titleText)))
+        resultNode.appendChild(
+            context.document.createTextNode(self.processText(context, titleText))
+        )
 
     def processMetaTitle(self, context, match):
         metaNode = context.ensureElement(context.header, "meta")
@@ -408,13 +449,55 @@ class TitleBlockParser(BlockParser):
         # We prepare the header node
         node = context.document.createElementNS(None, "meta")
         node.setAttributeNS(None, "name", header_name)
-        node.appendChild(context.document.createTextNode(self.processText(context,
-                                                                          header_text)))
+        node.appendChild(
+            context.document.createTextNode(self.processText(context, header_text))
+        )
         # And we add it to the document header
         metaNode.appendChild(node)
 
     def processText(self, context, text):
         return context.parser.normaliseText(text.strip())
+
+
+# ------------------------------------------------------------------------------
+#
+# SEPARATED BLOCK PARSER
+#
+# ------------------------------------------------------------------------------
+
+
+class SeparatedBlockParser(BlockParser):
+    """Look for `-- block attr=value` and creates a new content block for it."""
+
+    def __init__(self):
+        super().__init__(name="content")
+
+    def recognises(self, context):
+        match = RE_BLOCK_SEPARATOR.match(context.currentFragment())
+        return [match] if match else None
+
+    def _processLine(self, line):
+        pass
+
+    def process(self, context, recogniseInfo):
+        # This is a top level
+        context.ensureParent(("document"))
+        match = recogniseInfo[0]
+        start = context.getOffset() + match.start()
+        end = context.getOffset() + match.end()
+        node = context.document.createElementNS(None, "content")
+        node.setAttributeNS(None, "type", str(match.group("name")))
+        node.setAttributeNS(None, "_start", str(start))
+        node.setAttributeNS(None, "_end", str(end))
+        node.setAttributeNS(None, "_indent", str(-1))
+        node.setAttributeNS(None, "depth", str(0))
+        for k, v in context.parseAttributes(match.group("attributes")).items():
+            node.setAttributeNS(None, k, v)
+        content_node = context.currentNode
+        content_node.appendChild(node)
+        context.currentNode = node
+        context.setOffset(end)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -434,8 +517,7 @@ class SectionBlockParser(BlockParser):
         match = RE_SECTION_HEADING.match(context.currentFragment())
         # We return directly if there are at least two section numbers (2.3)
         if match:
-            match_underline = RE_SECTION_UNDERLINE.search(
-                context.currentFragment())
+            match_underline = RE_SECTION_UNDERLINE.search(context.currentFragment())
             if match_underline:
                 return (RE_SECTION_UNDERLINE, match_underline)
             else:
@@ -449,16 +531,19 @@ class SectionBlockParser(BlockParser):
         if match:
             # If we reached the end of the block, and that there is something
             # before, this OK
-            if match.end() == context.blockEndOffset and \
-                    context.currentFragment()[:match.start()].strip():
+            if (
+                match.end() == context.blockEndOffset
+                and context.currentFragment()[: match.start()].strip()
+            ):
                 return (RE_SECTION_UNDERLINE, match)
             # Otherwise the rest must be blank
             else:
-                blank_match = RE_BLANK.match(
-                    context.currentFragment()[match.end():])
+                blank_match = RE_BLANK.match(context.currentFragment()[match.end() :])
                 # The rest is blank, it's OK
-                if blank_match.end()+match.end()+context.getOffset()\
-                        == context.blockEndOffset:
+                if (
+                    blank_match.end() + match.end() + context.getOffset()
+                    == context.blockEndOffset
+                ):
                     return (RE_SECTION_UNDERLINE, match)
                 # Otherwise there is a trailing text
                 else:
@@ -486,8 +571,7 @@ class SectionBlockParser(BlockParser):
         #  3. Three
         #
         # These sections will all be children of the previous section
-        section_weight = trail.endswith(
-            "==") and 2 or trail.endswith("--") and 1 or 0
+        section_weight = trail.endswith("==") and 2 or trail.endswith("--") and 1 or 0
         #
         # FIRST STEP - We detect section text bounds
         #
@@ -516,7 +600,8 @@ class SectionBlockParser(BlockParser):
         if delim_match:
             block_end = context.getOffset() + delim_match.start()
         context.currentNode = context.getParentSection(
-            dots_count-section_weight, section_indent)
+            dots_count - section_weight, section_indent
+        )
         section_depth = context.getDepthInSection(context.currentNode) + 1
         #
         # SECOND STEP - We create the section
@@ -525,10 +610,11 @@ class SectionBlockParser(BlockParser):
         section_node.setAttributeNS(None, "_indent", str(section_indent))
         section_node.setAttributeNS(None, "depth", str(section_depth))
         section_node.setAttributeNS(None, "_start", str(block_start))
-        section_node.setAttributeNS(None, "_end",   str(block_end))
+        section_node.setAttributeNS(None, "_end", str(block_end))
         section_node.setAttributeNS(None, "_sstart", str(block_start))
-        section_node.setAttributeNS(None, "id", str(
-            context.asKey(heading_text, section_node)))
+        section_node.setAttributeNS(
+            None, "id", str(context.asKey(heading_text, section_node))
+        )
         heading_node = context.document.createElementNS(None, "title")
         section_node.appendChild(heading_node)
         offsets = context.saveOffsets()
@@ -543,11 +629,11 @@ class SectionBlockParser(BlockParser):
         # We append the section node and assign it as current node
         context.currentNode.appendChild(section_node)
         context.currentNode = content_node
-        context.declareSection(section_node, content_node,
-                               dots_count-section_weight)
+        context.declareSection(section_node, content_node, dots_count - section_weight)
 
     def processText(self, context, text):
         return context.parser.normaliseText(text.strip())
+
 
 # ------------------------------------------------------------------------------
 #
@@ -589,52 +675,53 @@ class DefinitionBlockParser(BlockParser):
                 if parent_node.nodeName not in BLOCK_ELEMENTS:
                     continue
             context.currentNode = parent_node
-            definition_node = context.document.createElementNS(
-                None, "definition-list")
+            definition_node = context.document.createElementNS(None, "definition-list")
             definition_node.setAttributeNS(None, "_indent", str(_indent))
             context.currentNode.appendChild(definition_node)
             parent_node = definition_node
-        # Creates the defintion item
-        definition_item = context.document.createElementNS(
-            None, "definition-item")
+        # Creates the definition item
+        definition_item = context.document.createElementNS(None, "definition-item")
         definition_item.setAttributeNS(None, "_indent", str(_indent + 1))
         definition_title = context.document.createElementNS(None, "title")
+        definition_title.setAttributeNS(None, "_start", str(context.blockStartOffset))
         definition_title.setAttributeNS(
-            None, "_start", str(context.blockStartOffset))
-        definition_title.setAttributeNS(None, "_end", str(
-            context.blockStartOffset + len(match.group())))
+            None, "_end", str(context.blockStartOffset + len(match.group()))
+        )
         # Parse the content of the definition title
         offsets = context.saveOffsets()
-        context.setCurrentBlock(context.blockStartOffset,
-                                context.blockStartOffset + len(match.group(1)))
+        context.setCurrentBlock(
+            context.blockStartOffset, context.blockStartOffset + len(match.group(1))
+        )
         context.parser.parseBlock(context, definition_title, self.processText)
         context.restoreOffsets(offsets)
         # And continue the processing
         definition_content = context.document.createElementNS(None, "content")
         definition_content.setAttributeNS(None, "_indent", str(_indent + 1))
         definition_content.setAttributeNS(
-            None, "_start", str(context.blockStartOffset + match.end()))
-        definition_content.setAttributeNS(
-            None, "_end", str(context.blockEndOffset))
+            None, "_start", str(context.blockStartOffset + match.end())
+        )
+        definition_content.setAttributeNS(None, "_end", str(context.blockEndOffset))
         definition_item.appendChild(definition_title)
         definition_item.appendChild(definition_content)
         parent_node.appendChild(definition_item)
         context.currentNode = definition_content
         # We check if there is a rest after the definition name
-        rest = context.documentText[context.blockStartOffset +
-                                    match.end():context.blockEndOffset]
+        rest = context.documentText[
+            context.blockStartOffset + match.end() : context.blockEndOffset
+        ]
         if not context.parser.normaliseText(rest).strip():
             rest = ""
         if rest:
             offsets = context.saveOffsets()
             context.setCurrentBlock(
-                context.blockStartOffset + match.end(), context.blockEndOffset)
-            context.parser.parseBlock(
-                context, definition_content, self.processText)
+                context.blockStartOffset + match.end(), context.blockEndOffset
+            )
+            context.parser.parseBlock(context, definition_content, self.processText)
             context.restoreOffsets(offsets)
 
     def processText(self, context, text):
         return context.parser.normaliseText(text)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -653,11 +740,10 @@ class ListItemBlockParser(BlockParser):
         return RE_LIST_ITEM.match(context.currentFragment())
 
     def process(self, context, itemMatch):
-        # These two lines will re-use a previous list item as the current node
+        # These two lines will reuse a previous list item as the current node
         if context.lastBlockNode and context.lastBlockNode.nodeName == "list-item":
             context.currentNode = context.lastBlockNode
-        context.ensureParent(
-            ("content", "appendix", "chapter", "section", "list"))
+        context.ensureParent(("content", "appendix", "chapter", "section", "list"))
         start_offset = context.getOffset()
 
         # Step 1: Determine the range of the current line item in the current
@@ -680,17 +766,16 @@ class ListItemBlockParser(BlockParser):
         # current fragment, or at the beginning of the next fragment.
         next_eol = context.currentFragment().find("\n")
         if next_eol != -1:
-            next_item_match = RE_LIST_ITEM.search(
-                context.currentFragment(), next_eol)
+            next_item_match = RE_LIST_ITEM.search(context.currentFragment(), next_eol)
         else:
             next_item_match = None
 
         # We assign to current_item_text the text of the current item
         current_item_text = context.currentFragment()
         if next_item_match:
-            current_item_text = current_item_text[:next_item_match.start()]
+            current_item_text = current_item_text[: next_item_match.start()]
 
-        # We get the list item identation, based on the indentation of the
+        # We get the list item indentation, based on the indentation of the
         # item
         indent = context.parser.getIndentation(itemMatch.group(0))
 
@@ -730,12 +815,14 @@ class ListItemBlockParser(BlockParser):
         # "list-item" node we wish to create will be inserted.
 
         # We want either a "list" with a LOWER OR EQUAL indent, or a "list-item"
-        # with a STRICLY LOWER indentation, or a node which is neither a List
+        # with a STRICTLY LOWER indentation, or a node which is neither a List
         # or a ListItem.
-        while context.currentNode.nodeName == "list" and \
-                int(context.currentNode.getAttributeNS(None, "_indent")) > indent or \
-                context.currentNode.nodeName == "list-item" and \
-                int(context.currentNode.getAttributeNS(None, "_indent")) >= indent:
+        while (
+            context.currentNode.nodeName == "list"
+            and int(context.currentNode.getAttributeNS(None, "_indent")) > indent
+            or context.currentNode.nodeName == "list-item"
+            and int(context.currentNode.getAttributeNS(None, "_indent")) >= indent
+        ):
             context.currentNode = context.currentNode.parentNode
 
         # If the current node is a list, then we have to create a nested list.
@@ -744,8 +831,7 @@ class ListItemBlockParser(BlockParser):
         # sibling, otherwise it is a parent.
         if context.currentNode.nodeName == "list":
             # A List should always have a least one ListItem
-            items = context._getElementsByTagName(
-                context.currentNode, "list-item")
+            items = context._getElementsByTagName(context.currentNode, "list-item")
             assert len(items) > 0
             if int(items[-1].getAttributeNS(None, "_indent")) < indent:
                 context.currentNode = items[-1]
@@ -767,17 +853,18 @@ class ListItemBlockParser(BlockParser):
             list_item_node.setAttributeNS(None, "todo", "done")
         list_item_node.setAttributeNS(None, "_start", str(context.getOffset()))
         if next_item_match:
-            list_item_node.setAttributeNS(None, "_end", str(
-                context.getOffset() + next_item_match.start() - 1))
-        else:
             list_item_node.setAttributeNS(
-                None, "_end", str(context.blockEndOffset))
+                None, "_end", str(context.getOffset() + next_item_match.start() - 1)
+            )
+        else:
+            list_item_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
         # and the optional heading
         if heading:
             offsets = context.saveOffsets()
             heading_node = context.document.createElementNS(None, "heading")
             context.setCurrentBlock(
-                context.getOffset(), context.getOffset()+heading_end)
+                context.getOffset(), context.getOffset() + heading_end
+            )
             context.parser.parseBlock(context, heading_node, self.processText)
             # heading_text = context.document.createTextNode(heading)
             # heading_node.appendChild(heading_text)
@@ -786,8 +873,10 @@ class ListItemBlockParser(BlockParser):
         # and the content
         offsets = context.saveOffsets()
         if next_item_match:
-            context.setCurrentBlock(heading_offset+context.getOffset(),
-                                    context.getOffset()+next_item_match.start())
+            context.setCurrentBlock(
+                heading_offset + context.getOffset(),
+                context.getOffset() + next_item_match.start(),
+            )
         else:
             context.increaseOffset(heading_offset)
         # We parse the content of the list item
@@ -827,6 +916,7 @@ class ListItemBlockParser(BlockParser):
         text = context.parser.normaliseText(text)
         return text
 
+
 # ------------------------------------------------------------------------------
 #
 # PRE BLOCK PARSER (ORIGINAL TEXTO)
@@ -862,6 +952,7 @@ class PreBlockParser(BlockParser):
         pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
         pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
         context.currentNode.appendChild(pre_node)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -911,7 +1002,7 @@ class PreBlockParser2(BlockParser):
         # may start with empty newlines
         # while block_end < len(text) and text[block_end] in "\n\t ":
         # 	block_end += 1
-        fragment = text[context.blockStartOffset:block_end]
+        fragment = text[context.blockStartOffset : block_end]
         lines = fragment.split("\n")
         if self.isEndLine(context, lines[-1], indent):
             return block_end
@@ -919,7 +1010,7 @@ class PreBlockParser2(BlockParser):
         # may start with empty newlines
         while block_end < len(text) and text[block_end] in "\n\t ":
             block_end += 1
-        fragment = text[context.blockStartOffset:block_end]
+        fragment = text[context.blockStartOffset : block_end]
         lines = fragment.split("\n")
         if self.isEndLine(context, lines[-1], indent):
             return block_end
@@ -943,7 +1034,7 @@ class PreBlockParser2(BlockParser):
         t = context.documentText
         while o > 0 and t[o] in " \t":
             o -= 1
-        return t[o + 1:e]
+        return t[o + 1 : e]
 
     def process(self, context, recognised):
         result = []
@@ -957,10 +1048,11 @@ class PreBlockParser2(BlockParser):
             lines = lines[1:]
         lines = lines[1:-1]
         prefix = self.getLeadingSpaces(
-            context, context.blockStartOffset - len(match.group(0)) - 1)
+            context, context.blockStartOffset - len(match.group(0)) - 1
+        )
         if lines:
             for line in lines:
-                line = line[len(prefix):].replace("\t", TAB_VALUE)
+                line = line[len(prefix) :].replace("\t", TAB_VALUE)
                 result.append(line)
         text = "\n".join(result)
         pre_node = context.document.createElementNS(None, self.name)
@@ -970,6 +1062,7 @@ class PreBlockParser2(BlockParser):
         pre_node.setAttributeNS(None, "_start", str(context.getOffset()))
         pre_node.setAttributeNS(None, "_end", str(context.blockEndOffset))
         context.currentNode.appendChild(pre_node)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -1005,8 +1098,8 @@ class Table:
         row = self._table[y]
         while x >= len(row):
             row.append(["T", None])
-        self._cols = max(self._cols, x+1)
-        self._rows = max(self._rows, y+1)
+        self._cols = max(self._cols, x + 1)
+        self._rows = max(self._rows, y + 1)
         return row[x]
 
     def setTitle(self, title):
@@ -1063,11 +1156,9 @@ class Table:
                     cell_node.setAttributeNS(None, "type", "header")
                 # We create a temporary Content node that will stop the nodes
                 # from seeking a parent content
-                cell_content_node = context.document.createElementNS(
-                    None, "content")
+                cell_content_node = context.document.createElementNS(None, "content")
                 if is_last and len(row) != self._cols:
-                    cell_node.setAttributeNS(
-                        None, "colspan", "%s" % (len(row) + 2 - i))
+                    cell_node.setAttributeNS(None, "colspan", "%s" % (len(row) + 2 - i))
                 new_context = context.clone()
                 new_context.setDocumentText(cell_text)
                 new_context.currentNode = cell_content_node
@@ -1141,7 +1232,7 @@ class TableBlockParser(BlockParser):
             # If we have not found a separator yet, we simply ensure that the
             # cell exists and appends content to it
             if not separator:
-                # If the separtor is not '||' it is '|'
+                # If the separator is not '||' it is '|'
                 if row.find("||") == -1:
                     row = row.replace("|", "||")
                 for cell in row.split("||"):
@@ -1156,10 +1247,10 @@ class TableBlockParser(BlockParser):
                     # The default cell type is the same as the above
                     # cell, if any.
                     # if y>0 and table.isHeader(x,y-1):
-                    #	table.headerCell(x,y)
+                    # 	table.headerCell(x,y)
                     x += 1
             # We move to the next row only when we encounter a separator. The
-            # analysis of the separtor will tell you if the above cell is a
+            # analysis of the separator will tell you if the above cell is a
             # header or a data cell
             else:
                 # FIXME: This is wrong, see below
@@ -1190,8 +1281,8 @@ class TableBlockParser(BlockParser):
                     offset += len(cell)
                     x += 1
                 y += 1
-        context.currentNode.appendChild(
-            table.getNode(context, self.processText))
+        context.currentNode.appendChild(table.getNode(context, self.processText))
+
 
 # ------------------------------------------------------------------------------
 #
@@ -1225,15 +1316,22 @@ class MetaBlockParser(BlockParser):
         text = ""
         _, indent, match = recogniseInfo
         lines = context.currentFragment().split("\n")[1:-1]
-        rows = [context.node("meta",
-                             name=line.split(":", 1)[0].strip(),
-                             value=line.split(":", 1)[-1].strip()
-                             ) for line in lines if line.strip()]
-        return context.addNode("meta",
-                               *rows,
-                               _start=str(context.getOffset()),
-                               _end=str(context.blockEndOffset)
-                               )
+        rows = [
+            context.node(
+                "meta",
+                name=line.split(":", 1)[0].strip(),
+                value=line.split(":", 1)[-1].strip(),
+            )
+            for line in lines
+            if line.strip()
+        ]
+        return context.addNode(
+            "meta",
+            *rows,
+            _start=str(context.getOffset()),
+            _end=str(context.blockEndOffset),
+        )
+
 
 # ------------------------------------------------------------------------------
 #
@@ -1265,8 +1363,8 @@ class ReferenceEntryBlockParser(BlockParser):
             offset = m.end()
         ranges.append((None, len(context.currentFragment())))
         new_ranges = []
-        for i in range(0, len(ranges)-1):
-            new_ranges.append((ranges[i][0], ranges[i][1], ranges[i+1][1]))
+        for i in range(0, len(ranges) - 1):
+            new_ranges.append((ranges[i][0], ranges[i][1], ranges[i + 1][1]))
         ranges = new_ranges
         # We loop for each found reference entry
         for match, start_offset, end_offset in ranges:
@@ -1274,12 +1372,14 @@ class ReferenceEntryBlockParser(BlockParser):
             # We set the current block and process it
             sub_offsets = context.saveOffsets()
             context.setCurrentBlock(
-                context.getOffset() + match.end(), context.getOffset() + end_offset)
+                context.getOffset() + match.end(), context.getOffset() + end_offset
+            )
             entry_node = context.document.createElementNS(None, "entry")
             entry_node.setAttributeNS(None, "id", entry_name)
             context.parser.parseBlock(context, entry_node, self.processText)
             context.references.appendChild(entry_node)
             context.restoreOffsets(sub_offsets)
         context.restoreOffsets(offsets)
+
 
 # EOF

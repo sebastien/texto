@@ -7,7 +7,7 @@
 # License           :   Revised BSD License
 # -----------------------------------------------------------------------------
 # Creation date     :   07-Fev-2006
-# Last mod.         :   16-Aug-2016
+# Last mod.         :   09-Oct-2023
 # -----------------------------------------------------------------------------
 
 import sys
@@ -16,6 +16,7 @@ import operator
 import xml.dom.minidom
 from .inlines import *
 from .blocks import *
+
 dom = xml.dom.minidom.getDOMImplementation()
 
 # ------------------------------------------------------------------------------
@@ -34,10 +35,14 @@ TAB_SIZE = 4
 # ------------------------------------------------------------------------------
 
 RE_BLOCK_SEPARATOR = re.compile("[ \t\r]*\n[ \t\r]*\n", re.MULTILINE)
-RE_SPACES = re.compile("[\s\n]+", re.MULTILINE)
+RE_SPACES = re.compile(r"[\s\n]+", re.MULTILINE)
 RE_TABS = re.compile("\t+")
-ATTRIBUTE = """([\w\d_][\-_\d\w]*)\s*=\s*('[^']*'|"[^"]*")"""
-RE_ATTRIBUTE = re.compile(ATTRIBUTE, re.MULTILINE)
+NAME = r"[A-Za-z0-9\-_]+"
+STR_SQ = r"'(\\'|[^'])*'"
+STR_DQ = r'"(\\"|[^"])*"'
+# A value is either a quoted string or a sequence without spaces
+VALUE = f"({STR_SQ}|{STR_DQ}|" r"[^ \t\r\n]+)"
+RE_ATTR = re.compile(f"[ \t]*((?P<ns>{NAME}):)?(?P<name>{NAME})=(?P<value>{VALUE})?")
 
 # ------------------------------------------------------------------------------
 #
@@ -92,7 +97,11 @@ class ParsingContext:
 
     def asKey(self, text, node=None):
         key = "".join(
-            [_ if _ in "abcdefghijklmnopqrstuvwxyz0123456789-_" else "-" for _ in text.lower().strip()])
+            [
+                _ if _ in "abcdefghijklmnopqrstuvwxyz0123456789-_" else "-"
+                for _ in text.lower().strip()
+            ]
+        )
         if key in self._keys:
             i = 1
             base = key
@@ -103,8 +112,7 @@ class ParsingContext:
         return key
 
     def _getElementsByTagName(self, node, name):
-        if node.nodeType == node.ELEMENT_NODE and \
-           node.localName == name:
+        if node.nodeType == node.ELEMENT_NODE and node.localName == name:
             result = [node]
         else:
             result = []
@@ -128,7 +136,10 @@ class ParsingContext:
         is useful for block parsers which want to ensure that their parent is a
         specific node"""
         if self.currentNode != None:
-            while (self.currentNode.nodeName not in parentNames or not predicate(self.currentNode)) and self.currentNode.nodeName != "document":
+            while (
+                self.currentNode.nodeName not in parentNames
+                or not predicate(self.currentNode)
+            ) and self.currentNode.nodeName != "document":
                 if self.currentNode.parentNode:
                     self.currentNode = self.currentNode.parentNode
                 else:
@@ -142,7 +153,7 @@ class ParsingContext:
     def getParentSection(self, depth, indent):
         """Gets the section that would be the parent section for the
         given depth."""
-        for i in range(len(self.sections)-1, -1, -1):
+        for i in range(len(self.sections) - 1, -1, -1):
             section = self.sections[i]
             section_node = section[0]
             section_content = section[1]
@@ -196,7 +207,7 @@ class ParsingContext:
         # We get the current fragment, because it will be freed by changing the
         # offset
         fragment = self.currentFragment()
-        self.setOffset(self.getOffset()+increase)
+        self.setOffset(self.getOffset() + increase)
         # We optimise current fragment access, by restoring it with a proper
         # value when possible
         if self.getOffset() < self.blockEndOffset:
@@ -214,12 +225,16 @@ class ParsingContext:
     def currentFragment(self):
         """Returns the current text fragment, from the current offset to the
         block end offset."""
-        assert self.getOffset() < self.blockEndOffset,\
-            "Offset greater than block end: %s >= %s" % (
-                self.getOffset(), self.blockEndOffset)
+        assert (
+            self.getOffset() < self.blockEndOffset
+        ), "Offset greater than block end: %s >= %s" % (
+            self.getOffset(),
+            self.blockEndOffset,
+        )
         if not self._currentFragment:
-            self._currentFragment = \
-                self.documentText[self.getOffset():self.blockEndOffset]
+            self._currentFragment = self.documentText[
+                self.getOffset() : self.blockEndOffset
+            ]
         return self._currentFragment
 
     def documentEndReached(self):
@@ -233,7 +248,7 @@ class ParsingContext:
         return self.getOffset() >= self.blockEndOffset
 
     def offsetInBlock(self, offset):
-        """Tells if the givne offset is in the current block."""
+        """Tells if the given offset is in the current block."""
         return self.blockStartOffset <= offset <= self.blockEndOffset
 
     def setCurrentBlock(self, startOffset, endOffset):
@@ -244,7 +259,9 @@ class ParsingContext:
         assert startOffset >= 0
         assert endOffset <= self.documentTextLength
         assert startOffset <= endOffset, "Start offset too big: %s > %s" % (
-            startOffset, endOffset)
+            startOffset,
+            endOffset,
+        )
         self.setOffset(startOffset)
         self.blockStartOffset = startOffset
         self.blockEndOffset = endOffset
@@ -258,7 +275,8 @@ class ParsingContext:
     def getBlockIndentation(self):
         """Returns the indentation of the current block."""
         return self.parser.getIndentation(
-            self.documentText[self.blockStartOffset:self.blockEndOffset])
+            self.documentText[self.blockStartOffset : self.blockEndOffset]
+        )
 
     def saveOffsets(self):
         """Returns a value that can be later used with the restoreOffsets
@@ -306,7 +324,7 @@ class ParsingContext:
                 assert match_offset >= 0
                 results.append((match_offset, result, inlineParser))
         matchedResult = None
-        minimumOffset = self.documentTextLength+1
+        minimumOffset = self.documentTextLength + 1
         # We get the closest matching parser
         for result in results:
             if result[0] < minimumOffset:
@@ -314,23 +332,38 @@ class ParsingContext:
                 matchedResult = result
         return matchedResult
 
-    def parseAttributes(self, text):
-        """Parses attributes expressed in the given text. Attributes have the
-        following form: ATTRIBUTE="VALUE" and are separated by spaces."""
-        if not text:
-            return {}
-        text = text.strip()
-        attributes = {}
-        match = True
-        # We parse attributes
-        while match and text:
-            match = RE_ATTRIBUTE.match(text)
-            if not match:
-                break
-            attributes[match.group(1)] = match.group(2)[1:-1]
-            offset = match.end()
-            text = text[match.end():].strip()
-        return attributes
+    def parseAttributes(self, line: str) -> dict[str, str]:
+        """Parses the attributes and returns a stream of `(key,value)` pairs."""
+        res: dict[str, str] = {}
+        # We remove the trailing spaces.
+        while line and line[-1] in "\n \t":
+            line = line[:-1]
+        # Inline attributes are like
+        #   ATTR=VALUE ATTR=VALUE…
+        # Where value can be unquoted, single quoted or double quoted,
+        # with \" or \' to escape quotes.
+        o = 0
+        while m := RE_ATTR.match(line, o):
+            v = m.group("value")
+            if not v:
+                w = v
+            # This little dance corrects the string escaping
+            elif len(v) < 2:
+                w = v
+            else:
+                s = v[0]
+                e = v[-1]
+                if s != e:
+                    w = v
+                elif s == '"':
+                    w = v[1:-1].replace('\\"', '"')
+                elif s == "'":
+                    w = v[1:-1].replace("\\'", "'")
+                else:
+                    w = v
+            res[m.group("name")] = w or ""
+            o = m.end()
+        return res
 
     def node(self, node, *children, **attributes):
         if isinstance(node, str):
@@ -347,6 +380,7 @@ class ParsingContext:
         self.currentNode.appendChild(self.node(node, *children, **attributes))
         return node
 
+
 # ------------------------------------------------------------------------------
 #
 # TEXTO PARSER
@@ -356,9 +390,17 @@ class ParsingContext:
 
 class Parser:
 
-    def __init__(self, baseDirectory=".", inputEncoding="utf8",
-                 outputEncoding="utf8", inlineParsers=None, blockParsers=None,
-                 customParsers=None, document=None, root=None):
+    def __init__(
+        self,
+        baseDirectory=".",
+        inputEncoding="utf8",
+        outputEncoding="utf8",
+        inlineParsers=None,
+        blockParsers=None,
+        customParsers=None,
+        document=None,
+        root=None,
+    ):
         self.document = document
         self.root = root
         self.blockParsers = []
@@ -377,21 +419,24 @@ class Parser:
         self.createCustomParsers()
 
     def createBlockParsers(self):
-        self.blockParsers.extend((
-            CommentBlockParser(),
-            MarkupBlockParser(),
-            PreBlockParser(),
-            PreBlockParser2(),
-            MetaBlockParser(),
-            TableBlockParser(),
-            ReferenceEntryBlockParser(),
-            TitleBlockParser(),
-            SectionBlockParser(),
-            DefinitionBlockParser(),
-            ListItemBlockParser(),
-            ReferenceEntryBlockParser(),
-            TaggedBlockParser(),
-        ))
+        self.blockParsers.extend(
+            (
+                CommentBlockParser(),
+                SeparatedBlockParser(),
+                MarkupBlockParser(),
+                PreBlockParser(),
+                PreBlockParser2(),
+                MetaBlockParser(),
+                TableBlockParser(),
+                ReferenceEntryBlockParser(),
+                TitleBlockParser(),
+                SectionBlockParser(),
+                DefinitionBlockParser(),
+                ListItemBlockParser(),
+                ReferenceEntryBlockParser(),
+                TaggedBlockParser(),
+            )
+        )
 
     def createCustomParsers(self):
         self.customParsers["pre"] = PreBlockParser()
@@ -404,40 +449,48 @@ class Parser:
         self.escapedParser = EscapedInlineParser()
         self.commentParser = CommentInlineParser()
         self.markupParser = MarkupInlineParser()
-        def normal(x, y): return self.normaliseText(x.group(1))
-        def term(x, y): return self.normaliseText(x.group()[1:-1])
-        self.inlineParsers.extend((
-            self.escapedParser,
-            self.commentParser,
-            self.markupParser,
-            EscapedStringInlineParser(),
-            InlineParser("email", RE_EMAIL),
-            InlineParser("url", RE_URL),
-            InlineParser("url", RE_URL_2),
-            EntityInlineParser(),
-            LinkInlineParser(),
-            PreInlineParser(),
-            TargetInlineParser(),
-            InlineParser("coderef", RE_CODE_REF_1),
-            InlineParser("coderef", RE_CODE_REF_2),
-            InlineParser("code", RE_CODE),
-            InlineParser("term", RE_TERM, normal),
-            InlineParser("strong", RE_STRONG, normal),
-            InlineParser("em", RE_EMPHASIS, normal),
-            InlineParser("quote", RE_QUOTED, normal),
-            InlineParser("citation", RE_CITATION, normal),
-            InlineParser("variable", RE_VARIABLE, normal),
-            InlineParser("strikethrough", RE_STRIKETHROUGH, normal),
-            CheckboxParser(),
-            # Special characters
-            InlineParser("break", RE_BREAK),
-            InlineParser(None, RE_SWALLOW_BREAK),
-            InlineParser("newline", RE_NEWLINE),
-            InlineParser("dots", RE_DOTS),
-            ArrowInlineParser(),
-            InlineParser("endash", RE_LONGDASH),
-            InlineParser("emdash", RE_LONGLONGDASH),
-        ))
+
+        def normal(x, y):
+            return self.normaliseText(x.group(1))
+
+        def term(x, y):
+            return self.normaliseText(x.group()[1:-1])
+
+        self.inlineParsers.extend(
+            (
+                self.escapedParser,
+                self.commentParser,
+                self.markupParser,
+                TargetInlineParser(),
+                EscapedStringInlineParser(),
+                InlineParser("email", RE_EMAIL),
+                InlineParser("url", RE_URL),
+                InlineParser("url", RE_URL_2),
+                EntityInlineParser(),
+                LinkInlineParser(),
+                PreInlineParser(),
+                EmbedInlineParser(),
+                InlineParser("coderef", RE_CODE_REF_1),
+                InlineParser("coderef", RE_CODE_REF_2),
+                InlineParser("code", RE_CODE),
+                InlineParser("term", RE_TERM, normal),
+                InlineParser("strong", RE_STRONG, normal),
+                InlineParser("em", RE_EMPHASIS, normal),
+                InlineParser("quote", RE_QUOTED, normal),
+                InlineParser("citation", RE_CITATION, normal),
+                InlineParser("variable", RE_VARIABLE, normal),
+                InlineParser("strikethrough", RE_STRIKETHROUGH, normal),
+                CheckboxParser(),
+                # Special characters
+                InlineParser("break", RE_BREAK),
+                InlineParser(None, RE_SWALLOW_BREAK),
+                InlineParser("newline", RE_NEWLINE),
+                InlineParser("dots", RE_DOTS),
+                ArrowInlineParser(),
+                InlineParser("endash", RE_LONGDASH),
+                InlineParser("emdash", RE_LONGLONGDASH),
+            )
+        )
 
     def _initialiseContextDocument(self, context):
         """Creates the XML document that will be populated by Texto
@@ -466,20 +519,20 @@ class Parser:
     # EXCEPTIONS_______________________________________________________________
 
     def _print(self, message, context):
-        text = context.documentText[:context.getOffset()]
+        text = context.documentText[: context.getOffset()]
         line = len(text.split("\n"))
         offset = context.getOffset() - text.rfind("\n") - 1
         message = str(message % (line, offset) + "\n")
         sys.stderr.write(message)
 
     def warning(self, message, context):
-        self._print("WARNING at line %4d, character %3d: "+message, context)
+        self._print("WARNING at line %4d, character %3d: " + message, context)
 
     def tip(self, message, context):
         self._print("%4d:%3d >> " + message, context)
 
     def error(self, message, context):
-        self._print("ERROR at line %4d, character %3d: "+message, context)
+        self._print("ERROR at line %4d, character %3d: " + message, context)
 
     # PARSING__________________________________________________________________
 
@@ -497,8 +550,12 @@ class Parser:
         while not context.documentEndReached():
             self._parseNextBlock(context)
         # We remove unnecessary nodes
-        for node in (context.header, context.content, context.references,
-                     context.appendices):
+        for node in (
+            context.header,
+            context.content,
+            context.references,
+            context.appendices,
+        ):
             if len(node.childNodes) == 0:
                 context.rootNode.removeChild(node)
         if offsets:
@@ -518,8 +575,9 @@ class Parser:
         recognised = None
         # We find block start and end
         block_start_offset = context.getOffset()
-        block_end_offset, next_block_start_offset = \
-            self._findNextBlockSeparator(context)
+        block_end_offset, next_block_start_offset = self._findNextBlockSeparator(
+            context
+        )
         # If we specify the end
         if end != None:
             block_end_offset = min(end, block_end_offset)
@@ -528,8 +586,10 @@ class Parser:
         if block_end_offset == block_start_offset:
             context.lastBlockNode = context.currentNode
             # We rewind until we find a "content" block
-            while context.currentNode.nodeName != "content" and \
-                    context.currentNode.parentNode != None:
+            while (
+                context.currentNode.nodeName != "content"
+                and context.currentNode.parentNode != None
+            ):
                 context.currentNode = context.currentNode.parentNode
         # Otherwise we set the current block and process it
         else:
@@ -562,11 +622,11 @@ class Parser:
     def parseBlock(self, context, node, textProcessor):
         """Parses the current block, looking for the inlines it may contain."""
         # if context.markOffsets and not node.getAttributeNS(None,"_start"):
-        #	node.setAttributeNS(None, "_start", str(context.getOffset()))
+        # 	node.setAttributeNS(None, "_start", str(context.getOffset()))
         while not context.blockEndReached():
             self._parseNextInline(context, node, textProcessor)
         # if context.markOffsets and not node.getAttributeNS(None,"_end"):
-        #	node.setAttributeNS(None, "_end", str(context.getOffset()))
+        # 	node.setAttributeNS(None, "_end", str(context.getOffset()))
 
     def _parseNextInline(self, context, node, textProcessor):
         """Parses the content of the current block, starting at the context
@@ -582,13 +642,12 @@ class Parser:
         if matchedResult:
             # We append the text between the search start offset and the matched
             # block start
-            text = context.currentFragment()[:matchedResult[0]]
+            text = context.currentFragment()[: matchedResult[0]]
             if text:
                 text = textProcessor(context, text)
                 text_node = context.document.createTextNode(text)
                 node.appendChild(text_node)
-            new_offset = matchedResult[2].parse(
-                context, node, matchedResult[1])
+            new_offset = matchedResult[2].parse(context, node, matchedResult[1])
             # We increase the offset so that the next parsing offset will be
             # the end of the parsed inline.
             context.increaseOffset(new_offset)
@@ -596,9 +655,9 @@ class Parser:
         # have to append the whole block as a text node
         else:
             assert parse_offset < context.blockEndOffset
-            text = textProcessor(context,
-                                 context.documentText[parse_offset:context.blockEndOffset]
-                                 )
+            text = textProcessor(
+                context, context.documentText[parse_offset : context.blockEndOffset]
+            )
             text_node = context.document.createTextNode(text)
             node.appendChild(text_node)
             # We set the end to the block end
@@ -613,14 +672,16 @@ class Parser:
         # FIXME: Should check if the found block separator is contained in a
         # custom block or not.
         block_match = RE_BLOCK_SEPARATOR.search(
-            context.documentText, context.getOffset())
+            context.documentText, context.getOffset()
+        )
         if block_match:
             local_offset = context.getOffset()
             # We look for a markup inline between the current offset and the
             # next block separator
             while local_offset < block_match.start():
-                markup_match = RE_MARKUP.search(context.documentText,
-                                                local_offset, block_match.start())
+                markup_match = RE_MARKUP.search(
+                    context.documentText, local_offset, block_match.start()
+                )
                 # If we have not found a markup, we break
                 if not markup_match:
                     break
@@ -628,7 +689,8 @@ class Parser:
                     # We have specified that markup inlines should not be searched
                     # after the block separator
                     local_offset, result = self._delimitXMLMarkupBlock(
-                        context, markup_match, block_match, local_offset)
+                        context, markup_match, block_match, local_offset
+                    )
                     if not result is None:
                         return result
             # We have found a block with no nested markup
@@ -646,15 +708,15 @@ class Parser:
         if Markup_isStartTag(markup_match):
             # We look for the markup end inline
             offsets = context.saveOffsets()
-            context.setCurrentBlock(
-                markup_match.end(), context.documentTextLength)
+            context.setCurrentBlock(markup_match.end(), context.documentTextLength)
             # There may be no 2nd group, so we  have to check this. Old
             # Texto documents may have [start:something] instead of
             # [start something]
             markup_end = None
             if markup_match.group(1):
                 markup_end = self.markupParser.findEnd(
-                    markup_match.group(1).strip(), context)
+                    markup_match.group(1).strip(), context
+                )
             context.restoreOffsets(offsets)
             # If we found an end markup
             if markup_end:
@@ -692,9 +754,9 @@ class Parser:
     def _nodeGetOffsets(self, node):
         start = node.getAttributeNS(None, "_start")
         end = node.getAttributeNS(None, "_end")
-        if start == '':
+        if start == "":
             start = None
-        if end == '':
+        if end == "":
             end = None
         if start != None:
             start = int(start)
@@ -723,14 +785,14 @@ class Parser:
         # The given offsets parameter is an array with the node number and the
         # offsets. It can be used by embedders to easily access nods by offset
         if offsets != None:
-            assert len(offsets) == counter, "%s != %s" % (
-                len(offsets), counter)
+            assert len(offsets) == counter, "%s != %s" % (len(offsets), counter)
             this_offsets = [None, None]
             offsets.append(this_offsets)
         # The first step is to fill an array with the child nodes offsets
         # Each child node may or may not have an offset
         child_nodes = tuple(
-            [n for n in node.childNodes if n.nodeType == n.ELEMENT_NODE])
+            [n for n in node.childNodes if n.nodeType == n.ELEMENT_NODE]
+        )
         nstart, nend = self._nodeGetOffsets(node)
         if child_nodes:
             self._nodeEnsureOffsets(child_nodes[0], start=nstart)
@@ -779,12 +841,13 @@ class Parser:
         all children and descendants."""
         # if start is None or end is None: return
         child_nodes = list(
-            [n for n in element.childNodes if n.nodeType == n.ELEMENT_NODE])
+            [n for n in element.childNodes if n.nodeType == n.ELEMENT_NODE]
+        )
         self._nodeEnsureOffsets(element, start, end)
         # At first, we set the bounds properly, so that the first child node
         # start is this node start, and the last node end is this node end
         if child_nodes:
-            self._nodeEnsureOffsets(child_nodes[0],  start=start)
+            self._nodeEnsureOffsets(child_nodes[0], start=start)
             self._nodeEnsureOffsets(child_nodes[-1], end=end)
         # Now
         for child in child_nodes:
@@ -825,15 +888,15 @@ class Parser:
             while match != None:
                 match = RE_TABS.search(line, start)
                 if match:
-                    rest = TAB_SIZE-operator.mod(match.start(), TAB_SIZE)
-                    new_line += line[start:match.start()]
+                    rest = TAB_SIZE - operator.mod(match.start(), TAB_SIZE)
+                    new_line += line[start : match.start()]
                     # We grow the line with additional tabs
-                    value = rest+(len(match.group())-1)*TAB_SIZE
+                    value = rest + (len(match.group()) - 1) * TAB_SIZE
                     while value > 0:
                         new_line += " "
                         value -= 1
                     # It is important to mutate the original line
-                    line = new_line+line[match.end():]
+                    line = new_line + line[match.end() :]
                     start = len(new_line)
             new_line += line[start:]
             cut_offset = min(len(new_line), cut)
@@ -849,7 +912,7 @@ class Parser:
         """Returns the indentation of a string.
 
         Basically if a string has the first three lines at the same
-        identation level, then it is indentation will be the number
+        indentation level, then it is indentation will be the number
         of spaces or tabs that lead the first three lines.
 
         Tabs have the value given by the *TAB_SIZE* variable."""
@@ -872,7 +935,7 @@ class Parser:
         count = 0
         for char in text:
             if char == "\t":
-                count += TAB_SIZE-operator.mod(count, TAB_SIZE)
+                count += TAB_SIZE - operator.mod(count, TAB_SIZE)
             elif char == " ":
                 count += 1
             else:
@@ -887,13 +950,13 @@ class Parser:
             if not maximum is None and count >= maximum:
                 return text[i:]
             if char == "\t":
-                count += TAB_SIZE-operator.mod(count, TAB_SIZE)
+                count += TAB_SIZE - operator.mod(count, TAB_SIZE)
             elif char == " ":
                 count += 1
             else:
                 return text[i:]
             i += 1
-        return ''
+        return ""
 
     @classmethod
     def charactersToSpaces(self, text):
@@ -907,4 +970,5 @@ class Parser:
                 new_text += " "
         return new_text
 
-# EOF - vim: tw=80 ts=4 sw=4 noet
+
+# EOF - vim: tw=80 ts=4 sw=4 et

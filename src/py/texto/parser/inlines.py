@@ -5,7 +5,7 @@
 # Author            :   Sebastien Pierre           <sebastien.pierre@gmail.com>
 # -----------------------------------------------------------------------------
 # Creation date     :   19-Nov-2003
-# Last mod.         :   29-Dec-2016
+# Last mod.         :   09-Oct-2023
 # -----------------------------------------------------------------------------
 
 import re
@@ -18,8 +18,9 @@ import re
 
 END_WITHOUT_START = "Markup `%s' end found without previous markup start"
 START_WITHOUT_END = "Markup `%s' start found without following markup end"
-MUST_BE_START_OR_END = \
+MUST_BE_START_OR_END = (
     "Unrecognised markup specifier: 'start' or 'end' would be expected"
+)
 
 # ------------------------------------------------------------------------------
 #
@@ -89,11 +90,17 @@ RE_LONGDASH = re.compile(LONGDASH)
 LONGLONGDASH = " --- ()"
 RE_LONGLONGDASH = re.compile(LONGLONGDASH)
 ARROW = "<-+>|-+->|<-+"
-RE_ARROW = re.compile(ARROW,)
+RE_ARROW = re.compile(
+    ARROW,
+)
 DOTS = r"\.\.\.()"
-RE_DOTS = re.compile(DOTS,)
+RE_DOTS = re.compile(
+    DOTS,
+)
 ENTITIES = r"(&(\w+|#[0-9]+);)"
-RE_ENTITIES = re.compile(ENTITIES,)
+RE_ENTITIES = re.compile(
+    ENTITIES,
+)
 
 # Linking content
 
@@ -116,6 +123,10 @@ MARKUP_ATTR = r"[\-_\d\w]+\s*=\s*('[^']*'|\"[^\"]*\")"
 MARKUP = r"\<([\-_\d\w]+)(\s*%s)*\s*/?>|\</(\w+)\s*>" % (MARKUP_ATTR)
 RE_MARKUP = re.compile(MARKUP, re.MULTILINE)
 
+# Embedding
+EMBED = r"@embed\((?P<name>[\w_-]+)(?P<attributes>(\s+[\w_-]+=[^\s]+)*)\)"
+RE_EMBED = re.compile(EMBED, re.MULTILINE)
+
 
 def _processText(context, text):
     """Common operation for expanding tabs and normalising text. Use by
@@ -126,6 +137,7 @@ def _processText(context, text):
     text = context.parser.normaliseText(text)
     return text
 
+
 # ------------------------------------------------------------------------------
 #
 # INLINE PARSER
@@ -135,8 +147,9 @@ def _processText(context, text):
 
 class InlineParser:
 
-    def __init__(self, name, regexp, result=lambda x, y: x.group(1),
-                 requiresLeadingSpace=False):
+    def __init__(
+        self, name, regexp, result=lambda x, y: x.group(1), requiresLeadingSpace=False
+    ):
         """Creates a new InlineParser.
 
         Name is the name of the parser, *regexp* is the string expression
@@ -163,8 +176,8 @@ class InlineParser:
         'requiresLeadingSpace'."""
         if match.start() == 0:
             return True
-        previous_char = context.currentFragment()[match.start()-1]
-        return previous_char in ' \t();:-!?'
+        previous_char = context.currentFragment()[match.start() - 1]
+        return previous_char in " \t();:-!?"
 
     def recognises(self, context):
         """Recognises this inlines in the given context, within the current
@@ -176,7 +189,7 @@ class InlineParser:
         match = self.regexp.search(context.currentFragment())
         fragment = context.currentFragment()
         if match:
-            match_start = max(0, match.start()-1)
+            match_start = max(0, match.start() - 1)
             if self.requiresLeadingSpace and not self._recognisesBefore(context, match):
                 return (None, None)
             return (match.start(), match)
@@ -210,6 +223,7 @@ class InlineParser:
             node.appendChild(inline_node)
         return self.endOf(recogniseInfo)
 
+
 # ------------------------------------------------------------------------------
 #
 # CHECKBOX PARSER
@@ -229,6 +243,7 @@ class CheckboxParser(InlineParser):
         res.setAttributeNS(None, "checked", str(enabled))
         node.appendChild(res)
         return match.end()
+
 
 # ------------------------------------------------------------------------------
 #
@@ -258,6 +273,7 @@ class ArrowInlineParser(InlineParser):
         node.appendChild(arrow_node)
         return match.end()
 
+
 # ------------------------------------------------------------------------------
 #
 # ENTITY PARSERS
@@ -277,6 +293,7 @@ class EntityInlineParser(InlineParser):
         entity_node.setAttributeNS(None, "num", text)
         node.appendChild(entity_node)
         return match.end()
+
 
 # ------------------------------------------------------------------------------
 #
@@ -305,6 +322,7 @@ class PreInlineParser(InlineParser):
         node.appendChild(pre_node)
         return match.end()
 
+
 # ------------------------------------------------------------------------------
 #
 # COMMENT INLINE PARSER
@@ -326,15 +344,17 @@ class CommentInlineParser(InlineParser):
                 new_text += line + "\n"
         if new_text:
             new_text = new_text[:-1]
-        new_text = " "+new_text+" "
+        new_text = " " + new_text + " "
         return new_text
 
     def parse(self, context, node, recogniseInfo):
         match = recogniseInfo
         assert match != None
-        node.appendChild(context.document.createComment(
-            self.processText(match.group(1))))
+        node.appendChild(
+            context.document.createComment(self.processText(match.group(1)))
+        )
         return match.end()
+
 
 # ------------------------------------------------------------------------------
 #
@@ -353,7 +373,8 @@ class EscapedInlineParser(InlineParser):
         if start_match:
             # And search the escape starting from the end of the escaped
             end_match = RE_ESCAPED_END.search(
-                context.currentFragment(), start_match.end())
+                context.currentFragment(), start_match.end()
+            )
             if end_match:
                 return (start_match.start(), (start_match, end_match))
             else:
@@ -370,10 +391,12 @@ class EscapedInlineParser(InlineParser):
 
         # Create a text node with the escaped text
         escaped_node = context.document.createTextNode(
-            context.currentFragment()[start_match.end():end_match.start()])
+            context.currentFragment()[start_match.end() : end_match.start()]
+        )
         node.appendChild(escaped_node)
         # And increase the offset
         return self.endOf(recogniseInfo)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -391,6 +414,7 @@ class EscapedStringInlineParser(InlineParser):
         res = context.document.createTextNode(match.group(1))
         node.appendChild(res)
         return match.end()
+
 
 # ------------------------------------------------------------------------------
 #
@@ -420,7 +444,7 @@ class LinkInlineParser(InlineParser):
         link_node = context.document.createElementNS(None, "link")
         if match.group(7):
             ref_entry = match.group(7)
-            link_node.setAttributeNS(None, "type",   "ref")
+            link_node.setAttributeNS(None, "type", "ref")
             link_node.setAttributeNS(None, "target", ref_entry)
         else:
             ref_url = match.group(4)
@@ -434,12 +458,15 @@ class LinkInlineParser(InlineParser):
         context._links.append(link_node)
         # Now we parse the content of the link
         offsets = context.saveOffsets()
-        context.setCurrentBlock(context.getOffset() + match.start() + 1,
-                                context.getOffset() + match.start() + 1 + len(match.group(1)))
+        context.setCurrentBlock(
+            context.getOffset() + match.start() + 1,
+            context.getOffset() + match.start() + 1 + len(match.group(1)),
+        )
         context.parser.parseBlock(context, link_node, _processText)
         context.restoreOffsets(offsets)
         node.appendChild(link_node)
         return match.end()
+
 
 # ------------------------------------------------------------------------------
 #
@@ -466,14 +493,42 @@ class TargetInlineParser(InlineParser):
             text = name_and_text[1]
             if not text:
                 text = name
-        target_node.setAttributeNS(
-            None, "name", name.replace("  ", " ").strip())
+        target_node.setAttributeNS(None, "name", name.replace("  ", " ").strip())
         if text:
             text_node = context.document.createTextNode(text)
             target_node.appendChild(text_node)
         context._targets.append(target_node)
         node.appendChild(target_node)
         return match.end()
+
+
+# ------------------------------------------------------------------------------
+#
+# EMBED INLINE PARSER
+#
+# ------------------------------------------------------------------------------
+
+
+class EmbedInlineParser(InlineParser):
+    """Look for `@embed{block attr=value}` and creates a new embedded block for it."""
+
+    def __init__(self):
+        super().__init__(name="target", regexp=RE_EMBED)
+
+    def parse(self, context, node, match):
+        # This is a top level
+        start = context.getOffset() + match.start()
+        end = context.getOffset() + match.end()
+        node = context.document.createElementNS(None, "embed")
+        node.setAttributeNS(None, "type", str(match.group("name")))
+        node.setAttributeNS(None, "_start", str(start))
+        node.setAttributeNS(None, "_end", str(end))
+        node.setAttributeNS(None, "_indent", str(-1))
+        for k, v in context.parseAttributes(match.group("attributes")).items():
+            node.setAttributeNS(None, k, v)
+        context.currentNode.appendChild(node)
+        return match.end()
+
 
 # ------------------------------------------------------------------------------
 #
@@ -482,6 +537,7 @@ class TargetInlineParser(InlineParser):
 # ------------------------------------------------------------------------------
 
 
+# FIXME: These should be static methods
 def Markup_isStartTag(match):
     return not Markup_isEndTag(match) and not match.group().endswith("/>")
 
@@ -492,7 +548,7 @@ def Markup_isEndTag(match):
 
 def Markup_attributes(match):
     """Returns the attribute string of this markup stat element."""
-    text = match.group()[1 + len(match.group(1))+1:-1]
+    text = match.group()[1 + len(match.group(1)) + 1 : -1]
     if text and text[-1] == "/":
         text = text[:-1]
     text = text.strip()
@@ -514,10 +570,11 @@ class MarkupInlineParser(InlineParser):
         if match.group().endswith("/>"):
             # TODO: Check if element name is recognised or not
             markup_name = match.group(1)
-            markup_node = context.document.createElementNS(
-                None, markup_name.strip())
+            markup_node = context.document.createElementNS(None, markup_name.strip())
             markup_node.setAttributeNS(None, "_html", "true")
-            for key, value in list(context.parseAttributes(Markup_attributes(match)).items()):
+            for key, value in list(
+                context.parseAttributes(Markup_attributes(match)).items()
+            ):
                 markup_node.setAttributeNS(None, key, value)
             node.appendChild(markup_node)
             return match.end()
@@ -528,15 +585,16 @@ class MarkupInlineParser(InlineParser):
             markup_name = match.group(1).strip()
             markup_range = self.findEnd(markup_name, context, match.end())
             if not markup_range:
-                context.parser.error(START_WITHOUT_END %
-                                     (markup_name), context)
+                context.parser.error(START_WITHOUT_END % (markup_name), context)
                 return match.end()
             else:
                 markup_end = markup_range[0] + context.getOffset()
                 # We do not want the context to be altered by block parsing
                 offsets = context.saveOffsets()
-                context.setCurrentBlock(context.getOffset()+match.end(),
-                                        context.getOffset()+markup_range[0])
+                context.setCurrentBlock(
+                    context.getOffset() + match.end(),
+                    context.getOffset() + markup_range[0],
+                )
                 # We check if there is a specific block parser for this markup
                 custom_parser = context.parser.customParsers.get(markup_name)
                 # Here we have found a custom parser, which is in charge for
@@ -546,35 +604,37 @@ class MarkupInlineParser(InlineParser):
                 # Otherwise we create the node for the markup and continue
                 # parsing
                 else:
-                    markup_node = context.document.createElementNS(
-                        None, "content")
+                    markup_node = context.document.createElementNS(None, "content")
                     markup_node.setAttributeNS(None, "_html", "true")
                     node.appendChild(markup_node)
                     # We add the attributes to this tag
-                    for key, value in list(context.parseAttributes(Markup_attributes(match)).items()):
+                    for key, value in list(
+                        context.parseAttributes(Markup_attributes(match)).items()
+                    ):
                         markup_node.setAttributeNS(None, key, value)
                     # FIXME: This should not be necessary
                     old_node = context.currentNode
                     context.currentNode = markup_node
                     context.currentNode = markup_node
                     before_offset = context.getOffset()
-                    next_block = context.parser._findNextBlockSeparator(
-                        context)
+                    next_block = context.parser._findNextBlockSeparator(context)
                     # There may be many blocks contained in the markup delimited
                     # by the node. Here we try to parse all the blocks until be
                     # reach the end of the markup minus 1 (that is the last
                     # separator before the block end)
-                    if context.offsetInBlock(next_block[0]) or context.offsetInBlock(next_block[1]):
+                    if context.offsetInBlock(next_block[0]) or context.offsetInBlock(
+                        next_block[1]
+                    ):
                         end_offset = context.blockEndOffset
                         context.setOffset(context.blockStartOffset)
                         while context.getOffset() < markup_end:
-                            context.parser._parseNextBlock(
-                                context, end=markup_end)
+                            context.parser._parseNextBlock(context, end=markup_end)
                     # If there was no block contained, we parse the text as a
                     # single block
                     else:
                         context.parser.parseBlock(
-                            context, markup_node, self.processText)
+                            context, markup_node, self.processText
+                        )
                     markup_node.nodeName = markup_name
                     markup_node.tagName = markup_name
                     context.currentNode = old_node
@@ -582,8 +642,7 @@ class MarkupInlineParser(InlineParser):
                 return markup_range[1]
         # Or is a a closing element ?
         elif self.isEndTag(match):
-            context.parser.error(END_WITHOUT_START % (match.group(4).strip()),
-                                 context)
+            context.parser.error(END_WITHOUT_START % (match.group(4).strip()), context)
             return match.end()
         else:
             context.parser.error(MUST_BE_START_OR_END, context)
@@ -655,4 +714,5 @@ class MarkupInlineParser(InlineParser):
     def processText(self, context, text):
         return context.parser.normaliseText(text)
 
-# EOF - vim: ts=4 sw=4 tw=80 noet
+
+# EOF - vim: ts=4 sw=4 tw=80 et
